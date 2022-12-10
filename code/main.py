@@ -283,6 +283,20 @@ def json2wiki(playlist_info, episodes, input_path, filename, playlist_name):
     mediaWiki.main(input_path)
     return
 
+# handle the difference between all the different input sources
+# Todo: for example: add missing episodes, missing links, titles, add different links per source, ...
+def handle_diff(list_var):
+    keys = []
+    res = {}
+    # todo: differentiate between nested dicts (episodes) and normal (playlist) 
+    for element in list_var:
+        keys += element.keys()
+    for key in keys:
+        # Todo: make a decision which to take
+        for element in list_var:
+            if key in element:
+                res[key] = element[key]
+    return res
 
 # ---- Globals ---- #
 
@@ -352,41 +366,72 @@ dict_author = {
     'author_type' : '{"@type":'
 }
 
-
 # ---- Main ---- #
 
-def html2wiki(input_path, filename, playlist_name):
+def extract_info(input_path, playlist_name):
     # --- 1. Setup --- #
     # Log file
     old_stdout = sys.stdout
-    log_file = open("message.log","w")
+    log_file = open("logfile.log","w")
     sys.stdout = log_file
 
-    # Read file
-    HTMLFile = open(input_path + filename, "r", encoding="utf8")
-    index = HTMLFile.read()
+    # check what info is available
+    data_all = [f for f in listdir(input_path)]
+    data_files = []
+    data_folders = []
+    for elm in data_all:
+        if isfile(join(input_path, elm)):
+            data_files.append(elm)
+        else:
+            data_folders.append(elm)
 
-    # convert from HTML to readable text
-    # TODO: Make exceptions for elements within links !
-    for key in replace_dict:
-        index = index.replace(key, replace_dict[key])
-
-    # --- 2. Extraction --- #
-
+    # Read existing info
     playlist_info = {}
-    episodes = {}
+    if 'playlist_info.json' in data_files:
+        with open(input_path + 'playlist_info.json') as json_file:
+            playlist_info = json.load(json_file)
 
-    if "YouTube" in filename:
-        return
-        playlist_info, episodes = YouTube2dict(index, input_path, filename, playlist_name)
-    elif "Spotify" in filename:
-        playlist_info, episodes = Spotify2dict(index, input_path, filename, playlist_name)
-    
-    dict2json(playlist_info, episodes, input_path, filename, playlist_name)
-    
-    json2csv(playlist_info, episodes, input_path, filename, playlist_name)
+    episodes_info = {}
+    if 'episodes_info.json' in data_files:
+        with open(input_path + 'episodes_info.json') as json_file:
+            episodes_info = json.load(json_file)
 
-    csv2wiki(playlist_info, episodes, input_path, filename, playlist_name)
+    for filename in data_files:
+        if filename.split('.')[-1] == 'html':
+            HTMLFile = open(input_path + filename, "r", encoding="utf8")
+            index = HTMLFile.read()
+            # convert from HTML to readable text
+            # TODO: Make exceptions for elements within links !
+            for key in replace_dict:
+                index = index.replace(key, replace_dict[key])
+            # handle different sources
+            if filename == "YouTube.html":
+                pass
+                playlist_info_YT, episodes_info_YT = YouTube2dict(index, input_path, filename, playlist_name)
+            elif filename == "Spotify.html":
+                playlist_info_SF, episodes_info_SF = Spotify2dict(index, input_path, filename, playlist_name)
+    
+    tempList = [playlist_info]
+    if 'YouTube.html' in data_files:
+        tempList.append(playlist_info_YT)
+    if 'Spotify.html' in data_files:
+        tempList.append(playlist_info_SF)
+    playlist_info = handle_diff(tempList)
+
+    tempList = [episodes_info]
+    if 'YouTube.html' in data_files:
+        tempList.append(episodes_info_YT)
+    if 'Spotify.html' in data_files:
+        tempList.append(episodes_info_SF)
+    episodes_info = handle_diff(tempList)
+    del tempList
+
+    # Read file
+    dict2json(playlist_info, episodes_info, input_path, filename, playlist_name)
+    
+    json2csv(playlist_info, episodes_info, input_path, filename, playlist_name)
+
+    csv2wiki(playlist_info, episodes_info, input_path, filename, playlist_name)
 
     sys.stdout = old_stdout
     log_file.close()
@@ -397,11 +442,8 @@ def main():
     playlist_names = [f for f in listdir(data_path) if not isfile(join(data_path, f))]
     playlist_names.remove('sample')
     for pl_n in playlist_names:
-        input_pl_path = data_path + pl_n + '\\'
-        onlyfiles = [f for f in listdir(input_pl_path) if isfile(join(input_pl_path, f))]
-        filenames =  [f for f in onlyfiles if ".html" in f]
-        for filename in filenames:
-            html2wiki(input_pl_path, filename,pl_n)
+        data_pl_path = data_path + pl_n + '\\'
+        extract_info(data_pl_path, pl_n)
 
 if __name__ == '__main__':
     main()
