@@ -38,40 +38,39 @@ def time_converter(var_s):
         # See if first entry is really a month
         just_once = 1
         while just_once == 1:
-            match month:
-                case 'Jan.':
-                    month = '01'
-                case 'Feb.':
-                    month = '02'
-                case 'März':
-                    month = '03'
-                case 'Apr.':
-                    month = '04'
-                case 'Mai':
-                    month = '05'
-                case 'Juni':
-                    month = '06'
-                case 'Juli':
-                    month = '07'
-                case 'Aug.':
-                    month = '08'
-                case 'Sept.':
-                    month = '09'
-                case 'Okt.':
-                    month = '10'
-                case 'Nov.':
-                    month = '11'
-                case 'Dez.':
-                    month = '12'
-                case _:
-                    # If first entry is not a month: 
-                    #   redo check with second entry
-                    #   and assume year is current year
-                    just_once += 1
-                    year = str(datetime.now().year)
-                    month = list[1]
-                    day = str(list[0].replace(".",""))
-                    day = "-" + fill_digits(day)
+            if month == 'Jan.':
+                month = '01'
+            elif month == 'Feb.':
+                month = '02'
+            elif month == 'März':
+                month = '03'
+            elif month == 'Apr.':
+                month = '04'
+            elif month == 'Mai':
+                month = '05'
+            elif month == 'Juni':
+                month = '06'
+            elif month == 'Juli':
+                month = '07'
+            elif month == 'Aug.':
+                month = '08'
+            elif month == 'Sept.':
+                month = '09'
+            elif month == 'Okt.':
+                month = '10'
+            elif month == 'Nov.':
+                month = '11'
+            elif month == 'Dez.':
+                month = '12'
+            else:
+                # If first entry is not a month: 
+                #   redo check with second entry
+                #   and assume year is current year
+                just_once += 1
+                year = str(datetime.now().year)
+                month = list[1]
+                day = str(list[0].replace(".",""))
+                day = "-" + fill_digits(day)
             just_once -= 1
         # reminder: day is either "" or "-DD"
         return year + '-' + month + day 
@@ -134,45 +133,44 @@ def clean_dict(dict, playlist_name):
     temp = {}
     for k in dict:
         dict[k] = remove_quot(dict[k])
-        match k:
-            case 'id':
-                temp[k] = dict[k]
-            case 'date':
-                dict[k] = time_converter(dict[k])
-                temp[k] = dict[k]
-            case 'runtime':
-                dict[k] = time_converter(dict[k])
-                temp[k] = dict[k]
-            case 'name':
-                temp[k] = dict[k]
-            case 'title':
-                if 'Zwanzig Jahre zu sp' in dict[k]:
-                    a=1
-                dict[k] = dict[k].replace('[','(')
-                dict[k] = dict[k].replace(']',')')
-                fulltitle = '[[' + playlist_name + ':'
-                fulltitle += dict[k] + '|' + dict[k] + ']]'
-                temp[k] = fulltitle
-            case 'description':
-                temp[k] = dict[k]
-            case 'author':
-                temp2 = cut_out(dict[k], dict_author)
-                temp['author_type'] = remove_quot(temp2['author_type'])
-                temp['author_name'] = remove_quot(temp2['author_name'])
-            case 'publisher':
-                temp[k] = dict[k]
-            case 'language':
-                temp[k] = dict[k]
-            case '@type':
-                temp[k] = dict[k]
-            case 'accessMode':
-                temp[k] = dict[k]
-            case 'url':
-                temp[k] = '[' + dict[k] + ' Spotify]'
-            case 'image':
-                temp[k] = '[' + dict[k] + ' image]'
-            case _:
-                temp[k] = dict[k]
+        if k == 'id':
+            temp[k] = dict[k]
+        elif k == 'date':
+            dict[k] = time_converter(dict[k])
+            temp[k] = dict[k]
+        elif k == 'runtime':
+            dict[k] = time_converter(dict[k])
+            temp[k] = dict[k]
+        elif k == 'name':
+            temp[k] = dict[k]
+        elif k == 'title':
+            if 'Zwanzig Jahre zu sp' in dict[k]:
+                a=1
+            dict[k] = dict[k].replace('[','(')
+            dict[k] = dict[k].replace(']',')')
+            fulltitle = '[[' + playlist_name + ':'
+            fulltitle += dict[k] + '|' + dict[k] + ']]'
+            temp[k] = fulltitle
+        elif k == 'description':
+            temp[k] = dict[k]
+        elif k == 'author':
+            temp2 = cut_out(dict[k], dict_author)
+            temp['author_type'] = remove_quot(temp2['author_type'])
+            temp['author_name'] = remove_quot(temp2['author_name'])
+        elif k == 'publisher':
+            temp[k] = dict[k]
+        elif k == 'language':
+            temp[k] = dict[k]
+        elif k == '@type':
+            temp[k] = dict[k]
+        elif k == 'accessMode':
+            temp[k] = dict[k]
+        elif k == 'url':
+            temp[k] = '[' + dict[k] + ' Spotify]'
+        elif k == 'image':
+            temp[k] = '[' + dict[k] + ' image]'
+        else:
+            temp[k] = dict[k]
     return temp
 
 # convert from Spotify index to dictionary
