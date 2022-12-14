@@ -301,17 +301,18 @@ def YouTube2dict(index, input_path, filename, playlist_name):
             episode_info_YT[idx] = episode
     return playlist_info_YT, episode_info_YT
 
+def dict2json(dict_var, name, path = os.getcwd()):
+    json_object = json.dumps(dict_var, indent=4)
+    if path[-2:] != "//":
+        path += "//"
+    with open(path + name + ".json", "w", encoding='utf8') as outfile:
+        outfile.write(json_object)
+
 # convert from dictionary to json
-def dict2json(playlist_info, episodes, input_path, filename, playlist_name):
+def infos2json(playlist_info, episodes_info, input_path, filename, playlist_name):
     # Serializing json
-    json_object = json.dumps(playlist_info, indent=4)
-    
-    # Writing to sample.json
-    with open(input_path + "playlist_info.json", "w", encoding='utf8') as outfile:
-        outfile.write(json_object)
-    json_object = json.dumps(episodes, indent=4)
-    with open(input_path + "episodes_info.json", "w", encoding='utf8') as outfile:
-        outfile.write(json_object)
+    dict2json(playlist_info, "playlist_info", input_path)
+    dict2json(episodes_info, "episodes_info", input_path)
     return
 
 # convert from json to csv
@@ -351,67 +352,58 @@ def json2wiki(playlist_info, episodes, input_path, filename, playlist_name):
     # Könnte man auch als Übersicht über alle podcast machen, die im Data.bnwiki sind
     ## Sortierbar nach Sprache etc.
     ## Kategorien ...
-    mediaWiki.main(input_path)
+    # mediaWiki.main(input_path)
     return
 
-def title_mine(title):
-    temp = {}
-    temp['title_full'] = title
-    # TODO: Put this into a dict and make it read from folder-name to load
-    # start = len(playlist_name)
-    # title_wo_pln = title[start:]
-    # structure title:
-    # Hagrids Hütte:
-    #   ^[\d\w]{1}\.[\d]{2}     eID
-    #   ( - )                   Trenner
-    #   .*                      Titel
-    # BMZ:
-    #   ^B+MZ                   playlist_name -> B+ weil BMZ 330 spotify
-    #   [- ]{0,3}\w*[- ]{0,3}   special
-    #   [ # ]{0,3}              Trenner
-    #   \d*                     eID
-    #   [: ,]{0,2}              Trenner
-    #   .*                      Titel
-    found = re.split(r'(^B+MZ)', title, 1)
-    playlist_name = found[1]
-    found = re.split(r'([- ]{0,3}\w*[- ]{0,3})', found[2], 1)
-    special = found[1]
-    found = re.split(r'([ # ]{0,3})', found[2], 1)
-    found = re.split(r'(\d*)', found[2], 1)
-    eID = found[1]
-    found = re.split(r'([: ,]{0,2})', found[2], 1)
-    title = found[2]
+title_structure = {
+    'BMZ'   :   {
+        'playlist_name' :   [r'(^B+MZ)', 0],
+        'void1'     :   [r'([- ]{0,3})', 0],
+        'special'   :   [r'(\w*[- ]{0,3})', 0.1],
+        'void2'     :   [r'([ # ]{0,3})', 0],
+        'eID'       :   [r'(\d*)', 1],
+        'void3'     :   [r'([: ,]{0,2})', 0],
+        'title'     :   [r'(.*)', 1]
+    },
+    'Hagrids Hütte' :   {
+        'eID'       :   [r'(^[\d\w]{1}\.[\d]{2})', 1],
+        'void1'     :   [r'[- ]{0,3}\w*[- ]{0,3}', 0],
+        'title'     :   [r'.*', 1]
+    }
+}
 
-    temp['playlist_name'] = playlist_name
-    if len(eID) > 0:
-        temp['eID'] = eID
-    if len(special) > 2:
-        temp['special'] = special
-    temp['title'] = title
+def title_mine(title, playlist_name):
+    temp = {}
+    splits = title_structure[playlist_name]
+    for split in splits:
+        sep = splits[split][0]
+        found = re.split(sep, title, 1)
+        if len(found) > 2:
+            if 'void' not in split and len(found[1]) > 0:
+                temp[split] = found[1]
+                # temp[split] = str(found[1])
+            title = found[2]
     return temp
 
 def similar(seq1, seq2, level = similar_enough):
-    # check for error-endings
     return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > similar_enough
 
-def search_for_title(try_this, title, episodes_infos):
+def compare_titles(try_this, comp, playlist_name):
+    similarity_score = 0
+    for struc in try_this:
+        if struc in try_this and struc in comp:
+            if comp[struc] == try_this[struc]:
+                similarity_score += title_structure[playlist_name][struc][1]
+                # We have found the matching episode and it has the ID idx
+    return similarity_score
+
+def search_for_title(try_this, episodes_infos, playlist_name):
     for idx, eID in enumerate(episodes_infos):
-        comp = title_mine(episodes_infos[eID]['title'])
-        if 'eID' in try_this and 'eID' in comp:
-            if comp['eID'] == try_this['eID']:
-                # We have found the matching episode and it has the ID idx
-                return idx
-        if 'eID' in try_this and 'eID' in comp:
-            if comp['eID'] == try_this['eID']:
-                # We have found the matching episode and it has the ID idx
-                return idx
+        comp = title_mine(episodes_infos[eID]['title'], playlist_name)
+        is_match = compare_titles(try_this, comp, playlist_name)
+        if is_match >= 1:
+            return idx
         # if 'try_pl_name' in try_this and 'try_pl_name' in comp:   Playlists should always be the same
-        if 'title' in try_this and 'title' in comp:
-            if len(comp['title']) > 1:
-                if comp['title'] == try_this['title']:
-                    # We have found the matching episode and it has the ID idx
-                    return idx
-    # We have not found the matching episode
     # Currently limited to only compare longer titles, otherwise may be unprecise
     #! Very time expensive
     # if len(title.lower()) > 10:
@@ -424,7 +416,7 @@ def search_for_title(try_this, title, episodes_infos):
 
 # handle the difference between all the different input sources
 # Todo: for example: add missing episodes, missing links, titles, add different links per source, ...
-def handle_diff_ep(list_var):
+def handle_diff_ep(list_var, playlist_name):
     temp = {}
     for element in list_var:
         if not element:
@@ -467,48 +459,291 @@ def handle_diff_ep(list_var):
             matched_counters.append([])
         matched.append(matched_counters)
     # print('order:')
+    last_eID = 1
     for plID, episode in list_var[longest].items():
         # TODO: find out why suddenly read as string -> saved in dict -> find out why
         plID = int(plID)
         title = episode['title']
-        try_this = title_mine(title)
-        try_this['plID'] = plID
+        try_this = title_mine(title, playlist_name)
+        try_this['plID'] = str(plID)
+        # try_this['plID'] = plID
         #if the ID is missing from the main Episode
-        if 'eID' not in try_this and 'special' not in try_this:
-            try_this['eID'] = plID+1
+        if 'eID' in try_this:
+            last_eID = int(try_this['eID'])
+        elif 'special' not in try_this:
+            last_eID += 1
+            try_this['eID'] = str(last_eID)
+            # try_this['eID'] = str(plID+1)
+            # try_this['eID'] = plID+1
         findings = [plID]
-        for idx, element in enumerate(list_var):
-            if idx != longest:
+        for listID, element in enumerate(list_var):
+            if listID != longest:
                 # Make new dicts and resort them here
-                fID = search_for_title(try_this, title, list_var[idx])
+                fID = search_for_title(try_this, list_var[listID], playlist_name)
                 if fID >= 0:
-                    matched[idx][fID].append(plID)
+                    matched[listID][fID].append(plID)
                 findings.append(fID)
         order[plID] = findings
         # print('\t' + ',\t'.join(str(e) for e in findings), flush=True)
         title = episode['title']
+
     # handle Miss-Matches
+
+    multi_match = []
     # Case 1: Multi-matches
     print('Case 1: Multi-matches:')
     for idx, element in enumerate(list_var):
         if idx != longest:
             for fID, episode in enumerate(element):
                 if len(matched[idx][fID]) > 1:
+                    entry = {
+                        'listID'    :   idx,
+                        'eID'       :   fID,
+                        'matches'   :   matched[idx][fID]
+                    }
+                    multi_match.append(entry)
                     print(list_var[idx][fID]['title'])
                     print('[' + str(idx) + '][' + str(fID) + ']\t' + str(len(matched[idx][fID])) + ' matches:\t' + ',\t'.join(str(e) for e in matched[idx][fID]), flush=True)
                     for id in matched[idx][fID]:
                         print('\t\t\t\t' + list_var[longest][id]['title'])
                         
+    zero_match = []
     # Case 2: 0-Matches
     print('Case 2: 0-Matches:')
     for idx, element in enumerate(list_var):
         if idx != longest:
             for fID, episode in enumerate(element):
                 if len(matched[idx][fID]) == 0:
-                    print(list_var[idx][fID]['title'])
+                    entry = {
+                        'title'     :   list_var[idx][fID]['title'],
+                        'listID'    :   idx,
+                        'eID'       :   fID,
+                        'matches'   :   matched[idx][fID],
+                    }
+                    zero_match.append(entry)
+                    print(entry['title'])
                     print('[' + str(idx) + '][' + str(fID) + ']\t' + str(len(matched[idx][fID])) + ' matches:\t' + ',\t'.join(str(e) for e in matched[idx][fID]), flush=True)
     # TODO: Remove short term fix
+
+    # Case 1: Duplicate Upload:
+    # Status: Working!
+    deletes = []
+    for idx, missing_match in enumerate(zero_match):
+        # look if repetition:
+        eID = missing_match['eID']
+        listID = missing_match['listID']
+        title = missing_match['title']
+        try_this = title_mine(title, playlist_name)
+        clone_score = compare_titles(try_this, try_this, playlist_name)
+        for idy in range(1, 3+1):
+            try:
+                comp = title_mine(list_var[listID][eID-idy]['title'], playlist_name)
+                score = compare_titles(try_this, comp, playlist_name)
+                if score == clone_score:
+                    print('[' + str(listID) + '][' + str(eID) + ']' + ' is a copy of [' + str(listID) + '][' + str(eID-idy) + ']', flush=True)
+                    deletes.append(idx)
+                    break
+            except:
+                pass
+    for x in reversed(deletes):
+        del zero_match[x]
+
+    # Case 2: Ment for zero_match:
+    # Status: Working!
+    deletes = []
+    for mmID, entry in enumerate(multi_match):
+        delete_here = []
+        # entry eID from list listID has to many matches from list longest, namely matches
+        listID = entry['listID']
+        eID = entry['eID']
+        ep_prev = list_var[listID][eID-1]['title']
+        episode = list_var[listID][eID]['title']
+        ep_next = list_var[listID][eID+1]['title']
+        episode_triple = [ep_prev, episode, ep_next]
+        matched_ep_titles = []
+        for match in entry['matches']:
+            matched_ep_prev = list_var[longest][match-1]['title']
+            matched_episode = list_var[longest][match]['title']
+            matched_ep_next = list_var[longest][match+1]['title']
+            matched_ep_titles.append([matched_ep_prev, matched_episode, matched_ep_next])
+        # Case 1: 
+        match_score_list = []
+        for matched_triple in matched_ep_titles:
+            score = 0
+            for x in range(0, 3):
+                try_this = title_mine(episode_triple[x], playlist_name)
+                comp = title_mine(matched_triple[x], playlist_name)
+                score += compare_titles(try_this, comp, playlist_name)
+            match_score_list.append(score)
+        hightest = 0
+        for score in match_score_list:
+            if score > hightest:
+                hightest = score
+        for match_ID, score in enumerate(match_score_list):
+            if score != hightest:
+                main_eID = entry['matches'][match_ID]
+                for idy, missing_match in enumerate(zero_match):
+                    if missing_match['title'] != matched_ep_titles[match_ID][1]:
+                        continue
+                    if zero_match[idy]['listID'] != listID:
+                        continue
+                    pot_eID = zero_match[idy]['eID']
+                    pot_ep_prev = list_var[listID][pot_eID-1]['title']
+                    pot_episode = list_var[listID][pot_eID]['title']
+                    pot_ep_next = list_var[listID][pot_eID+1]['title']
+                    pot_title = [pot_ep_prev, pot_episode, pot_ep_next]
+                    score = 0
+                    for x in range(0, 3):
+                        try_this = title_mine(pot_title[x], playlist_name)
+                        comp = title_mine(matched_ep_titles[match_ID][x], playlist_name)
+                        score += compare_titles(try_this, comp, playlist_name)
+                    if score >= 2:
+                        # update order (!most important)
+                        order[main_eID][listID] = pot_eID
+                        # update matched (optional, for better overview)
+                        matched[listID][pot_eID].append(main_eID)
+                        del zero_match[idy]
+                        # mark for update here
+                        delete_here.append(match_ID)
+                        print('[' + str(listID) + '][' + str(pot_eID) + ']' + ' is matched to [' + str(main_eID) + '] instead of [' + str(listID) + '][' + str(eID) + ']', flush=True)
+                        break
+        for x in reversed(delete_here):
+            del entry['matches'][x]
+        if len(entry['matches']) == 1:
+            deletes.append(mmID)
+    for x in reversed(deletes):
+        del multi_match[x]
+
+    # Case 3: Completely missplaced duplicates
+    # Temp-Fix way to time consumative
+    deletes = []
+    for idx, missing_match in enumerate(zero_match):
+        # look if repetition:
+        eID = missing_match['eID']
+        listID = missing_match['listID']
+        title = missing_match['title']
+        try_this = title_mine(title, playlist_name)
+        clone_score = compare_titles(try_this, try_this, playlist_name)
+        for exID in list_var[listID]:
+            if exID != eID:
+                episode = list_var[listID][exID]
+                comp = title_mine(episode['title'], playlist_name)
+                score = compare_titles(try_this, comp, playlist_name)
+                if score == clone_score:
+                    print('[' + str(listID) + '][' + str(eID) + ']' + ' is a copy of [' + str(listID) + '][' + str(exID) + ']', flush=True)
+                    # This is way to time consumative, but at this point: just tell the spotify / whatever person to delete the duplicate.
+                    # lookaround: which fits better:
+                    # Done: Option to delete the existing one and place this one in its place:
+                    # eg 0 1 2 3 4 50 5 6 7 8 .. 48 49 50 51
+                    # currently first 50 would be kept
+                    # fixed
+
+                    # Check around existing
+                    start_ID = exID
+                    error_existing = 0
+                    pre_c = min([3, min([exID, int(eID)])])
+                    post_c = min([3, len(list_var[listID]) + 1 - max([exID, int(eID)])])
+                    for pre in range (1, pre_c+1):
+                        check2 = title_mine(list_var[listID][start_ID-pre]['title'], playlist_name)
+                        error_existing += (int(comp['eID']) + pre) - int(check2['eID'])
+                    for post in range (1, post_c+1):
+                        check2 = title_mine(list_var[listID][start_ID+post]['title'], playlist_name)
+                        error_existing += int(check2['eID']) - (int(comp['eID']) + post)
+                    
+                    # Check around missing
+                    start_ID = int(eID)
+                    error_missing = 0
+                    # previous: 3
+                    for pre in range (1, pre_c+1):
+                        check2 = title_mine(list_var[listID][start_ID-pre]['title'], playlist_name)
+                        error_existing += (int(try_this['eID']) + pre) - int(check2['eID'])
+                    # following: 3
+                    for post in range (1, post_c+1):
+                        check2 = title_mine(list_var[listID][start_ID+post]['title'], playlist_name)
+                        error_existing += int(check2['eID']) - (int(try_this['eID']) + post)
+                    if error_existing > error_missing:
+                        # existing was the faulty duplicate
+                        # matched[]
+                        print('[' + str(listID) + '][' + str(exID) + ']' + 'may be seriously missplaced. It\'s copy is better suited and will be kept.')
+                        existing_matches = matched[listID][exID]
+                        if len(existing_matches) != 1:
+                            print('unresolvable error at multi_match  [' + str(listID) + '][' + str(exID) + ']')
+                        order[existing_matches[0]][listID] = eID
+                        matched[listID][eID] = existing_matches
+                        matched[listID][exID] = []
+                    deletes.append(idx)
+                    
+                    break
+    for x in reversed(deletes):
+        del zero_match[x]
+
+
+    # Case 4: Newcomer -> die wollen wir behalten
+    deletes = []
+    inserted = 0
+    for idx, missing_match in enumerate(zero_match):
+        # Check if they had the missing one
+        eID = int(missing_match['eID'])
+        listID = missing_match['listID']
+        title = missing_match['title']
+        try_this = title_mine(title, playlist_name)
+    
+        # previous episode
+        prev_match = int(matched[listID][eID-1][0])
+        prev_ep = list_var[listID][eID-1]
+        prev_ep_title = prev_ep['title']
+        prev_split = title_mine(prev_ep_title, playlist_name)
+        prev_mined_ID = int(prev_split['eID'])
+
+        # next episode
+        next_match = int(matched[listID][eID+1][0])
+        next_ep = list_var[listID][eID+1]
+        next_ep_title = next_ep['title']
+        next_split = title_mine(next_ep_title, playlist_name)
+        next_mined_ID = int(next_split['eID'])
+        
+        this_is_it = False
+        if prev_mined_ID + 1 < next_mined_ID:
+            this_is_it = True
+        elif int(eID) == prev_mined_ID + 1:
+            this_is_it = True
+        elif int(eID) == next_mined_ID - 1:
+            this_is_it = True
+        
+        if this_is_it:
+            position = int(prev_match) + 1 + inserted
+
+        # See if thing has matches
+        findings = [-1]
+        cur_LID = listID
+        for listID, element in enumerate(list_var):
+            if listID != longest or listID == cur_LID:
+                fID = search_for_title(try_this, list_var[listID], playlist_name)
+                if fID >= 0:
+                    matched[listID][fID].append(plID)
+                findings.append(fID)
+        order.insert(position, findings)
+        deletes.append(idx)
+        inserted += 1
+
+    for x in reversed(deletes):
+        del zero_match[x]
+        
+
+    dict2json(order, "order")
+    dict2json(matched, "matched")
+    for idx, episode_infos in enumerate(list_var):
+        dict2json(list_var[idx], "episode_infos_" + str(idx))
+    dict2json(zero_match, "zero_match")
+    dict2json(multi_match, "multi_match")
+    
+    for row in order:
+        print('\t' + ',\t'.join(str(e) for e in row))
+
+    # TODO: Sort according to order
+
     temp = list_var[longest]
+    # pprint(matched)
     return temp
 
 def tie_break(key, found):
@@ -697,6 +932,7 @@ def extract_info(input_path, playlist_name):
     if 'episodes_info.json' in data_files:
         with open(input_path + 'episodes_info.json') as json_file:
             episodes_info = json.load(json_file)
+            episodes_info = {int(k):v for k,v in episodes_info.items()}
 
     for filename in data_files:
         if filename.split('.')[-1] == 'html':
@@ -720,23 +956,25 @@ def extract_info(input_path, playlist_name):
 
     tempList = [playlist_info]
     if 'YouTube.html' in data_files:
-        dict2json(playlist_info_YT, episodes_info_YT, input_path+"YT_", filename, playlist_name)
+        dict2json(playlist_info_YT, "playlist_info_YT", input_path)
         tempList.append(playlist_info_YT)
     if 'Spotify.html' in data_files:
-        dict2json(playlist_info_SF, episodes_info_SF, input_path+"SF_", filename, playlist_name)
+        dict2json(playlist_info_SF, "playlist_info_YT", input_path)
         tempList.append(playlist_info_SF)
     playlist_info = handle_diff(tempList)
 
     tempList = [episodes_info]
     if 'YouTube.html' in data_files:
+        dict2json(episodes_info_YT, "episodes_info_YT", input_path)
         tempList.append(episodes_info_YT)
     if 'Spotify.html' in data_files:
+        dict2json(episodes_info_SF, "episodes_info_SF", input_path)
         tempList.append(episodes_info_SF)
-    episodes_info = handle_diff_ep(tempList)
+    episodes_info = handle_diff_ep(tempList, playlist_name)
     del tempList
 
     # Read file
-    dict2json(playlist_info, episodes_info, input_path, filename, playlist_name)
+    infos2json(playlist_info, episodes_info, input_path, filename, playlist_name)
     
     json2csv(playlist_info, episodes_info, input_path, filename, playlist_name)
 
@@ -750,7 +988,7 @@ def main():
     data_path = os.path.dirname(my_path) + '\\data\\'
     playlist_names = [f for f in listdir(data_path) if not isfile(join(data_path, f))]
     playlist_names.remove('sample')
-    for pl_n in playlist_names:
+    for pl_n in playlist_names[:1]:
         data_pl_path = data_path + pl_n + '\\'
         extract_info(data_pl_path, pl_n)
 
