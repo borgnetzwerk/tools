@@ -19,12 +19,16 @@ audiofolder = 'mp3'
 # ---- Functions ---- #
 
 # Add digits until cap is reached
-def fill_digits(var_s, cap = 2):
+
+
+def fill_digits(var_s, cap=2):
     while len(var_s) < cap:
         var_s = "0" + var_s
     return var_s
 
 # Convert extracted time to readable time
+
+
 def time_converter(var_s):
     if "Std." in var_s or "Min." in var_s or "Sek." in var_s:
         # Time: HH:MM:SS
@@ -72,19 +76,21 @@ def time_converter(var_s):
             elif month == 'Dez.':
                 month = '12'
             else:
-                # If first entry is not a month: 
+                # If first entry is not a month:
                 #   redo check with second entry
                 #   and assume year is current year
                 just_once += 1
                 year = str(datetime.now().year)
                 month = list[1]
-                day = str(list[0].replace(".",""))
+                day = str(list[0].replace(".", ""))
                 day = "-" + fill_digits(day)
             just_once -= 1
         # reminder: day is either "" or "-DD"
-        return year + '-' + month + day 
+        return year + '-' + month + day
 
 # Remove leading and closing quotation marks
+
+
 def remove_quot(var_s):
     if var_s:
         if var_s[0] == '"':
@@ -94,6 +100,8 @@ def remove_quot(var_s):
     return var_s
 
 # Cut a string at the first hypen
+
+
 def cut_hypen(var_s):
     var_s = var_s.split(" -", 1)[0]
     var_s = var_s.split("-", 1)[0]
@@ -101,6 +109,8 @@ def cut_hypen(var_s):
     return var_s
 
 # Cut a string at predetermined marks
+
+
 def cut_out(var_s, dict):
     storage = {}
     for key, value in dict.items():
@@ -117,6 +127,8 @@ def cut_out(var_s, dict):
 
 # Sort a dict according to a list.
 # reminder: items not in the list won't be transferred.
+
+
 def sort_dict(dict, order_list):
     temp = {}
     for k in order_list:
@@ -124,11 +136,12 @@ def sort_dict(dict, order_list):
             temp[k] = dict[k]
     return temp
 
+
 def sort_episodes(episodes):
-    first = int(episodes[0]['date'].split('-',1)[0])
+    first = int(episodes[0]['date'].split('-', 1)[0])
     # reminder: we cannot fine-sort every entry, since the date is not stored precisely
     lid = len(episodes)-1
-    second = int(episodes[lid]['date'].split('-',1)[0])
+    second = int(episodes[lid]['date'].split('-', 1)[0])
     if second > first:
         return episodes
     else:
@@ -138,6 +151,8 @@ def sort_episodes(episodes):
         return temp
 
 # Prepare dict so it can be used for MediaWiki
+
+
 def clean_dict(dict, playlist_name):
     temp = {}
     for k in dict:
@@ -176,6 +191,7 @@ def clean_dict(dict, playlist_name):
             temp[k] = dict[k]
     return temp
 
+
 def wikify_dict(dict, playlist_name):
     temp = {}
     for k in dict:
@@ -191,8 +207,8 @@ def wikify_dict(dict, playlist_name):
         elif k == 'name':
             temp[k] = dict[k]
         elif k == 'title':
-            dict[k] = dict[k].replace('[','(')
-            dict[k] = dict[k].replace(']',')')
+            dict[k] = dict[k].replace('[', '(')
+            dict[k] = dict[k].replace(']', ')')
             fulltitle = '[[' + playlist_name + ':'
             fulltitle += dict[k] + '|' + dict[k] + ']]'
             temp[k] = fulltitle
@@ -219,6 +235,8 @@ def wikify_dict(dict, playlist_name):
     return temp
 
 # convert from Spotify index to dictionary
+
+
 def Spotify2dict(index, input_path, filename, playlist_name):
     # Cut in between episode and playlist info
     split_index = index.split("alt=")
@@ -231,13 +249,14 @@ def Spotify2dict(index, input_path, filename, playlist_name):
     split_index.pop(0)
 
     # cutting out "neue Folge"
-    episodes =  {}
+    episodes = {}
     for idx, episode in enumerate(split_index):
         sub = episode.split("Neue Folge\"></span>")
         if len(sub) > 1:
             episode = sub[1]
         episode_info = cut_out(episode, dict_episode)
-        episode_info["description"] = episode_info["description"].split("Werbung:", 1)[0]
+        episode_info["description"] = episode_info["description"].split("Werbung:", 1)[
+            0]
         episodes[idx] = episode_info
     # m = re.search('(?<=episodeTitle">).+?(?=<\/div>)', index)
     # m.group(0)
@@ -252,7 +271,7 @@ def Spotify2dict(index, input_path, filename, playlist_name):
     # Convert to Wiki page
     # Sortable
     # Kategorie
-    # Struktur 
+    # Struktur
     # URL von neue Folgeklappt noch nicht
 
     # ---- Clean ---- #
@@ -269,6 +288,7 @@ def Spotify2dict(index, input_path, filename, playlist_name):
     episodes = sort_episodes(episodes)
     return playlist_info, episodes
 
+
 def get_playlist_info_YT(var_str):
     temp = {}
     for key, value in dict_playlist_YT.items():
@@ -283,6 +303,8 @@ def get_playlist_info_YT(var_str):
     return temp
 
 # convert from youtube index to dictionary
+
+
 def YouTube2dict(index, input_path, filename, playlist_name):
     boxes = index.split(dict_episode_YT['make_boxes'])
     episode_info_YT = {}
@@ -301,7 +323,8 @@ def YouTube2dict(index, input_path, filename, playlist_name):
             episode_info_YT[idx] = episode
     return playlist_info_YT, episode_info_YT
 
-def dict2json(dict_var, name, path = os.getcwd()):
+
+def dict2json(dict_var, name, path=os.getcwd()):
     json_object = json.dumps(dict_var, indent=4)
     if path[-2:] != "//":
         path += "//"
@@ -309,6 +332,8 @@ def dict2json(dict_var, name, path = os.getcwd()):
         outfile.write(json_object)
 
 # convert from dictionary to json
+
+
 def infos2json(playlist_info, episodes_info, input_path, filename, playlist_name):
     # Serializing json
     dict2json(playlist_info, "playlist_info", input_path)
@@ -316,21 +341,25 @@ def infos2json(playlist_info, episodes_info, input_path, filename, playlist_name
     return
 
 # convert from json to csv
+
+
 def json2csv(playlist_info, episodes, input_path, filename, playlist_name):
     # ---- Write ---- #
     playlist_header = [] + list(playlist_info.keys())
     episode_header = ["#"] + list(episodes[0].keys())
     # output_path = input_path.replace('input','output')
-    with open(input_path + 'playlist.csv', 'w', newline='', encoding='ANSI') as f:  # You will need 'wb' mode in Python 2.x
-        writer = csv.writer(f, delimiter =';')
+    # You will need 'wb' mode in Python 2.x
+    with open(input_path + 'playlist.csv', 'w', newline='', encoding='ANSI') as f:
+        writer = csv.writer(f, delimiter=';')
         writer.writerow(playlist_header)
         values = []
         for key, value in playlist_info.items():
             values.append(value)
         writer.writerow(values)
 
-    with open(input_path + 'episodes.csv', 'w', newline='', encoding='ANSI') as f:  # You will need 'wb' mode in Python 2.x
-        writer = csv.writer(f, delimiter =';')
+    # You will need 'wb' mode in Python 2.x
+    with open(input_path + 'episodes.csv', 'w', newline='', encoding='ANSI') as f:
+        writer = csv.writer(f, delimiter=';')
         writer.writerow(episode_header)
         for key, value in episodes.items():
             values = [key+1]
@@ -340,37 +369,43 @@ def json2csv(playlist_info, episodes, input_path, filename, playlist_name):
     return
 
 # convert from csv to wiki
+
+
 def csv2wiki(playlist_info, episodes, input_path, filename, playlist_name):
     # Könnte man auch als Übersicht über alle podcast machen, die im Data.bnwiki sind
-    ## Sortierbar nach Sprache etc.
-    ## Kategorien ...
+    # Sortierbar nach Sprache etc.
+    # Kategorien ...
     mediaWiki.main(input_path)
     return
 
 # convert from json to wiki
+
+
 def json2wiki(playlist_info, episodes, input_path, filename, playlist_name):
     # Könnte man auch als Übersicht über alle podcast machen, die im Data.bnwiki sind
-    ## Sortierbar nach Sprache etc.
-    ## Kategorien ...
+    # Sortierbar nach Sprache etc.
+    # Kategorien ...
     # mediaWiki.main(input_path)
     return
 
+
 title_structure = {
-    'BMZ'   :   {
-        'playlist_name' :   [r'(^B+MZ)', 0],
-        'void1'     :   [r'([- ]{0,3})', 0],
-        'special'   :   [r'(\w*[- ]{0,3})', 0.1],
-        'void2'     :   [r'([ # ]{0,3})', 0],
-        'eID'       :   [r'(\d*)', 1],
-        'void3'     :   [r'([: ,]{0,2})', 0],
-        'title'     :   [r'(.*)', 1]
+    'BMZ':   {
+        'playlist_name':   [r'(^B+MZ)', 0],
+        'void1':   [r'([- ]{0,3})', 0],
+        'special':   [r'(\w*[- ]{0,3})', 0.1],
+        'void2':   [r'([ # ]{0,3})', 0],
+        'eID':   [r'(\d*)', 1],
+        'void3':   [r'([: ,]{0,2})', 0],
+        'title':   [r'(.*)', 1]
     },
-    'Hagrids Hütte' :   {
-        'eID'       :   [r'(^[\d\w]{1}\.[\d]{2})', 1],
-        'void1'     :   [r'[- ]{0,3}\w*[- ]{0,3}', 0],
-        'title'     :   [r'.*', 1]
+    'Hagrids Hütte':   {
+        'eID':   [r'(^[\d\w]{1}\.[\d]{2})', 1],
+        'void1':   [r'[- ]{0,3}\w*[- ]{0,3}', 0],
+        'title':   [r'.*', 1]
     }
 }
+
 
 def title_mine(title, playlist_name):
     temp = {}
@@ -385,8 +420,10 @@ def title_mine(title, playlist_name):
             title = found[2]
     return temp
 
-def similar(seq1, seq2, level = similar_enough):
+
+def similar(seq1, seq2, level=similar_enough):
     return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > similar_enough
+
 
 def compare_titles(try_this, comp, playlist_name):
     similarity_score = 0
@@ -396,6 +433,7 @@ def compare_titles(try_this, comp, playlist_name):
                 similarity_score += title_structure[playlist_name][struc][1]
                 # We have found the matching episode and it has the ID idx
     return similarity_score
+
 
 def search_for_title(try_this, episodes_infos, playlist_name):
     for idx, eID in enumerate(episodes_infos):
@@ -416,6 +454,8 @@ def search_for_title(try_this, episodes_infos, playlist_name):
 
 # handle the difference between all the different input sources
 # Todo: for example: add missing episodes, missing links, titles, add different links per source, ...
+
+
 def handle_diff_ep(list_var, playlist_name):
     temp = {}
     for element in list_var:
@@ -431,26 +471,25 @@ def handle_diff_ep(list_var, playlist_name):
     # possible results:
     # fID >= 0
     #       wir haben ein Match gefunden und es ist an der Stelle fID
-    # nachher prüfen, ob alle fIDs verwendet wurden -> 
-    #       sonst haben die kürzeren eine folge, die die längere nicht hat 
+    # nachher prüfen, ob alle fIDs verwendet wurden ->
+    #       sonst haben die kürzeren eine folge, die die längere nicht hat
     #       Dann die nachbarn checken und herausfinden, wo diese Folge in longest eingefügt werden muss
     # fID == -1
     #       wir haben kein Match gefunden
     #           diese folge existiert nur in longest
 
-
     # Phase 1: alle plID ausprobieren
-    #       Ergebnis: 
+    #       Ergebnis:
     # input: playlist_ID, eID, specials
     # output: fID
 
     # Phase 2: alle playlist_ID_shorter prüfen, die keine fID haben
     # input: fID, shorter_playlist
     # output: missing_pl_id = [prior_neighbor, later_neighbor]
-    
-    # 
-    # Wenn eID Sprung macht, aber kein Special dabei war: ring a bell 
-    # 
+
+    #
+    # Wenn eID Sprung macht, aber kein Special dabei war: ring a bell
+    #
     order = [0] * len(list_var[longest])
     matched = []
     for episode_infos in list_var:
@@ -467,7 +506,7 @@ def handle_diff_ep(list_var, playlist_name):
         try_this = title_mine(title, playlist_name)
         try_this['plID'] = str(plID)
         # try_this['plID'] = plID
-        #if the ID is missing from the main Episode
+        # if the ID is missing from the main Episode
         if 'eID' in try_this:
             last_eID = int(try_this['eID'])
         elif 'special' not in try_this:
@@ -479,7 +518,8 @@ def handle_diff_ep(list_var, playlist_name):
         for listID, element in enumerate(list_var):
             if listID != longest:
                 # Make new dicts and resort them here
-                fID = search_for_title(try_this, list_var[listID], playlist_name)
+                fID = search_for_title(
+                    try_this, list_var[listID], playlist_name)
                 if fID >= 0:
                     matched[listID][fID].append(plID)
                 findings.append(fID)
@@ -497,16 +537,17 @@ def handle_diff_ep(list_var, playlist_name):
             for fID, episode in enumerate(element):
                 if len(matched[idx][fID]) > 1:
                     entry = {
-                        'listID'    :   idx,
-                        'eID'       :   fID,
-                        'matches'   :   matched[idx][fID]
+                        'listID':   idx,
+                        'eID':   fID,
+                        'matches':   matched[idx][fID]
                     }
                     multi_match.append(entry)
                     print(list_var[idx][fID]['title'])
-                    print('[' + str(idx) + '][' + str(fID) + ']\t' + str(len(matched[idx][fID])) + ' matches:\t' + ',\t'.join(str(e) for e in matched[idx][fID]), flush=True)
+                    print('[' + str(idx) + '][' + str(fID) + ']\t' + str(len(matched[idx][fID])) +
+                          ' matches:\t' + ',\t'.join(str(e) for e in matched[idx][fID]), flush=True)
                     for id in matched[idx][fID]:
                         print('\t\t\t\t' + list_var[longest][id]['title'])
-                        
+
     zero_match = []
     # Case 2: 0-Matches
     print('Case 2: 0-Matches:')
@@ -515,14 +556,15 @@ def handle_diff_ep(list_var, playlist_name):
             for fID, episode in enumerate(element):
                 if len(matched[idx][fID]) == 0:
                     entry = {
-                        'title'     :   list_var[idx][fID]['title'],
-                        'listID'    :   idx,
-                        'eID'       :   fID,
-                        'matches'   :   matched[idx][fID],
+                        'title':   list_var[idx][fID]['title'],
+                        'listID':   idx,
+                        'eID':   fID,
+                        'matches':   matched[idx][fID],
                     }
                     zero_match.append(entry)
                     print(entry['title'])
-                    print('[' + str(idx) + '][' + str(fID) + ']\t' + str(len(matched[idx][fID])) + ' matches:\t' + ',\t'.join(str(e) for e in matched[idx][fID]), flush=True)
+                    print('[' + str(idx) + '][' + str(fID) + ']\t' + str(len(matched[idx][fID])) +
+                          ' matches:\t' + ',\t'.join(str(e) for e in matched[idx][fID]), flush=True)
     # TODO: Remove short term fix
 
     # Case 1: Duplicate Upload:
@@ -537,10 +579,12 @@ def handle_diff_ep(list_var, playlist_name):
         clone_score = compare_titles(try_this, try_this, playlist_name)
         for idy in range(1, 3+1):
             try:
-                comp = title_mine(list_var[listID][eID-idy]['title'], playlist_name)
+                comp = title_mine(
+                    list_var[listID][eID-idy]['title'], playlist_name)
                 score = compare_titles(try_this, comp, playlist_name)
                 if score == clone_score:
-                    print('[' + str(listID) + '][' + str(eID) + ']' + ' is a copy of [' + str(listID) + '][' + str(eID-idy) + ']', flush=True)
+                    print('[' + str(listID) + '][' + str(eID) + ']' +
+                          ' is a copy of [' + str(listID) + '][' + str(eID-idy) + ']', flush=True)
                     deletes.append(idx)
                     break
             except:
@@ -565,8 +609,9 @@ def handle_diff_ep(list_var, playlist_name):
             matched_ep_prev = list_var[longest][match-1]['title']
             matched_episode = list_var[longest][match]['title']
             matched_ep_next = list_var[longest][match+1]['title']
-            matched_ep_titles.append([matched_ep_prev, matched_episode, matched_ep_next])
-        # Case 1: 
+            matched_ep_titles.append(
+                [matched_ep_prev, matched_episode, matched_ep_next])
+        # Case 1:
         match_score_list = []
         for matched_triple in matched_ep_titles:
             score = 0
@@ -595,7 +640,8 @@ def handle_diff_ep(list_var, playlist_name):
                     score = 0
                     for x in range(0, 3):
                         try_this = title_mine(pot_title[x], playlist_name)
-                        comp = title_mine(matched_ep_titles[match_ID][x], playlist_name)
+                        comp = title_mine(
+                            matched_ep_titles[match_ID][x], playlist_name)
                         score += compare_titles(try_this, comp, playlist_name)
                     if score >= 2:
                         # update order (!most important)
@@ -605,7 +651,8 @@ def handle_diff_ep(list_var, playlist_name):
                         del zero_match[idy]
                         # mark for update here
                         delete_here.append(match_ID)
-                        print('[' + str(listID) + '][' + str(pot_eID) + ']' + ' is matched to [' + str(main_eID) + '] instead of [' + str(listID) + '][' + str(eID) + ']', flush=True)
+                        print('[' + str(listID) + '][' + str(pot_eID) + ']' + ' is matched to [' + str(
+                            main_eID) + '] instead of [' + str(listID) + '][' + str(eID) + ']', flush=True)
                         break
         for x in reversed(delete_here):
             del entry['matches'][x]
@@ -630,7 +677,8 @@ def handle_diff_ep(list_var, playlist_name):
                 comp = title_mine(episode['title'], playlist_name)
                 score = compare_titles(try_this, comp, playlist_name)
                 if score == clone_score:
-                    print('[' + str(listID) + '][' + str(eID) + ']' + ' is a copy of [' + str(listID) + '][' + str(exID) + ']', flush=True)
+                    print('[' + str(listID) + '][' + str(eID) + ']' +
+                          ' is a copy of [' + str(listID) + '][' + str(exID) + ']', flush=True)
                     # This is way to time consumative, but at this point: just tell the spotify / whatever person to delete the duplicate.
                     # lookaround: which fits better:
                     # Done: Option to delete the existing one and place this one in its place:
@@ -642,41 +690,51 @@ def handle_diff_ep(list_var, playlist_name):
                     start_ID = exID
                     error_existing = 0
                     pre_c = min([3, min([exID, int(eID)])])
-                    post_c = min([3, len(list_var[listID]) + 1 - max([exID, int(eID)])])
-                    for pre in range (1, pre_c+1):
-                        check2 = title_mine(list_var[listID][start_ID-pre]['title'], playlist_name)
-                        error_existing += (int(comp['eID']) + pre) - int(check2['eID'])
-                    for post in range (1, post_c+1):
-                        check2 = title_mine(list_var[listID][start_ID+post]['title'], playlist_name)
-                        error_existing += int(check2['eID']) - (int(comp['eID']) + post)
-                    
+                    post_c = min([3, len(list_var[listID]) +
+                                 1 - max([exID, int(eID)])])
+                    for pre in range(1, pre_c+1):
+                        check2 = title_mine(
+                            list_var[listID][start_ID-pre]['title'], playlist_name)
+                        error_existing += (int(comp['eID']) +
+                                           pre) - int(check2['eID'])
+                    for post in range(1, post_c+1):
+                        check2 = title_mine(
+                            list_var[listID][start_ID+post]['title'], playlist_name)
+                        error_existing += int(check2['eID']) - \
+                            (int(comp['eID']) + post)
+
                     # Check around missing
                     start_ID = int(eID)
                     error_missing = 0
                     # previous: 3
-                    for pre in range (1, pre_c+1):
-                        check2 = title_mine(list_var[listID][start_ID-pre]['title'], playlist_name)
-                        error_existing += (int(try_this['eID']) + pre) - int(check2['eID'])
+                    for pre in range(1, pre_c+1):
+                        check2 = title_mine(
+                            list_var[listID][start_ID-pre]['title'], playlist_name)
+                        error_existing += (int(try_this['eID']) +
+                                           pre) - int(check2['eID'])
                     # following: 3
-                    for post in range (1, post_c+1):
-                        check2 = title_mine(list_var[listID][start_ID+post]['title'], playlist_name)
-                        error_existing += int(check2['eID']) - (int(try_this['eID']) + post)
+                    for post in range(1, post_c+1):
+                        check2 = title_mine(
+                            list_var[listID][start_ID+post]['title'], playlist_name)
+                        error_existing += int(check2['eID']) - \
+                            (int(try_this['eID']) + post)
                     if error_existing > error_missing:
                         # existing was the faulty duplicate
                         # matched[]
-                        print('[' + str(listID) + '][' + str(exID) + ']' + 'may be seriously missplaced. It\'s copy is better suited and will be kept.')
+                        print('[' + str(listID) + '][' + str(exID) + ']' +
+                              'may be seriously missplaced. It\'s copy is better suited and will be kept.')
                         existing_matches = matched[listID][exID]
                         if len(existing_matches) != 1:
-                            print('unresolvable error at multi_match  [' + str(listID) + '][' + str(exID) + ']')
+                            print(
+                                'unresolvable error at multi_match  [' + str(listID) + '][' + str(exID) + ']')
                         order[existing_matches[0]][listID] = eID
                         matched[listID][eID] = existing_matches
                         matched[listID][exID] = []
                     deletes.append(idx)
-                    
+
                     break
     for x in reversed(deletes):
         del zero_match[x]
-
 
     # Case 4: Newcomer -> die wollen wir behalten
     deletes = []
@@ -687,7 +745,7 @@ def handle_diff_ep(list_var, playlist_name):
         listID = missing_match['listID']
         title = missing_match['title']
         try_this = title_mine(title, playlist_name)
-    
+
         # previous episode
         prev_match = int(matched[listID][eID-1][0])
         prev_ep = list_var[listID][eID-1]
@@ -701,7 +759,7 @@ def handle_diff_ep(list_var, playlist_name):
         next_ep_title = next_ep['title']
         next_split = title_mine(next_ep_title, playlist_name)
         next_mined_ID = int(next_split['eID'])
-        
+
         this_is_it = False
         if prev_mined_ID + 1 < next_mined_ID:
             this_is_it = True
@@ -709,7 +767,7 @@ def handle_diff_ep(list_var, playlist_name):
             this_is_it = True
         elif int(eID) == next_mined_ID - 1:
             this_is_it = True
-        
+
         if this_is_it:
             position = int(prev_match) + 1 + inserted
 
@@ -718,7 +776,8 @@ def handle_diff_ep(list_var, playlist_name):
         cur_LID = listID
         for listID, element in enumerate(list_var):
             if listID != longest or listID == cur_LID:
-                fID = search_for_title(try_this, list_var[listID], playlist_name)
+                fID = search_for_title(
+                    try_this, list_var[listID], playlist_name)
                 if fID >= 0:
                     matched[listID][fID].append(plID)
                 findings.append(fID)
@@ -728,7 +787,6 @@ def handle_diff_ep(list_var, playlist_name):
 
     for x in reversed(deletes):
         del zero_match[x]
-        
 
     dict2json(order, "order")
     dict2json(matched, "matched")
@@ -736,7 +794,7 @@ def handle_diff_ep(list_var, playlist_name):
         dict2json(list_var[idx], "episode_infos_" + str(idx))
     dict2json(zero_match, "zero_match")
     dict2json(multi_match, "multi_match")
-    
+
     for row in order:
         print('\t' + ',\t'.join(str(e) for e in row))
 
@@ -745,6 +803,7 @@ def handle_diff_ep(list_var, playlist_name):
     temp = list_var[longest]
     # pprint(matched)
     return temp
+
 
 def tie_break(key, found):
     winner = ""
@@ -770,7 +829,8 @@ def tie_break(key, found):
             if len(candidate) > len(winner):
                 winner = candidate
     return winner
-    
+
+
 def handle_diff(list_var):
     keys = []
     res = {}
@@ -788,18 +848,19 @@ def handle_diff(list_var):
 
 # ---- Globals ---- #
 
+
 # --- 1. general --- #
 # Replacements to be done from HTML to readable text
 replace_dict = {
-    "&nbsp;"    :   "",
-    "&lt;"      :   "<",
-    "&gt;"      :   ">",
-    "&amp;"     :   "&",
-    "&euro;"     :   "€",
-    "&pound;"     :   "£",
-    "&quot;"     :   "“",
-    "&apos;"     :   "‘",
-    "\\u00FC"   :   "ü"
+    "&nbsp;":   "",
+    "&lt;":   "<",
+    "&gt;":   ">",
+    "&amp;":   "&",
+    "&euro;":   "€",
+    "&pound;":   "£",
+    "&quot;":   "“",
+    "&apos;":   "‘",
+    "\\u00FC":   "ü"
     # TODO: further äö and others should be added
 }
 
@@ -824,57 +885,58 @@ key_order = (
 )
 
 dict_playlist_YT = {
-    "make_boxes"    :   '</yt-formatted-string></h3><div id="publisher-container" class="style-scope ytd-playlist-panel-renderer"><yt-formatted-string class="byline-title style-scope ytd-playlist-panel-renderer complex-string" ellipsis-truncate="" hidden="" ellipsis-truncate-styling="" title="',
-    "box_begin"  :   'omplex-string" ellipsis-truncate="" hidden="" ellipsis-truncate-styling="" title="',
-    "box_end"   :   '</a></yt-formatted-string><div class="index-message-wrapper style-scope ytd-playlist-panel-renderer"><span class="index-message style-scope ytd-playlist-panel-renderer" hidden="">',
-    "title" :   '" has-link-only_=""><a class="yt-simple-endpoint style-scope yt-formatted-string" spellcheck="false" href="',
-    "url"  :   '" dir="auto">',
-    "void"    :   '</a></yt-formatted-string><ytd-badge-supported-renderer class="style-scope ytd-playlist-panel-renderer" disable-upgrade="" hidden=""></ytd-badge-supported-renderer><yt-formatted-string class="publisher style-scope ytd-playlist-panel-renderer complex-string" ellipsis-truncate="" link-inherit-color="" ellipsis-truncate-styling="" title="',
-    "author_name"   :   '" has-link-only_=""><a class="yt-simple-endpoint style-scope yt-formatted-string" spellcheck="false" href="',
-    "author_url"  :   '" dir="auto">',
+    "make_boxes":   '</yt-formatted-string></h3><div id="publisher-container" class="style-scope ytd-playlist-panel-renderer"><yt-formatted-string class="byline-title style-scope ytd-playlist-panel-renderer complex-string" ellipsis-truncate="" hidden="" ellipsis-truncate-styling="" title="',
+    "box_begin":   'omplex-string" ellipsis-truncate="" hidden="" ellipsis-truncate-styling="" title="',
+    "box_end":   '</a></yt-formatted-string><div class="index-message-wrapper style-scope ytd-playlist-panel-renderer"><span class="index-message style-scope ytd-playlist-panel-renderer" hidden="">',
+    "title":   '" has-link-only_=""><a class="yt-simple-endpoint style-scope yt-formatted-string" spellcheck="false" href="',
+    "url":   '" dir="auto">',
+    "void":   '</a></yt-formatted-string><ytd-badge-supported-renderer class="style-scope ytd-playlist-panel-renderer" disable-upgrade="" hidden=""></ytd-badge-supported-renderer><yt-formatted-string class="publisher style-scope ytd-playlist-panel-renderer complex-string" ellipsis-truncate="" link-inherit-color="" ellipsis-truncate-styling="" title="',
+    "author_name":   '" has-link-only_=""><a class="yt-simple-endpoint style-scope yt-formatted-string" spellcheck="false" href="',
+    "author_url":   '" dir="auto">',
 }
 
 dict_episode_YT = {
-    "make_boxes" : '<ytd-video-meta-block class="playlist',
-    "box_begin"  :   '<a id="video-title" class="yt-simple-endpoint style-scope ytd-playlist-video-renderer" href=',
-    "box_end"  :   '">\n',
-    "title"  :   ' title=',
-    "url"  :   ''
+    "make_boxes": '<ytd-video-meta-block class="playlist',
+    "box_begin":   '<a id="video-title" class="yt-simple-endpoint style-scope ytd-playlist-video-renderer" href=',
+    "box_end":   '">\n',
+    "title":   ' title=',
+    "url":   ''
 }
 
 # Dict with episode keys to be found and values as extraction markers (for cut_out function)
 dict_episode = {
-    "final_destination" : "</span></p></div></div>",
-    "runtime"   :   '</p><p class="Type__TypeElement-sc-goli3j-0 hGXzYa _q93agegdE655O5zPz6l"><span class="UyzJidwrGk3awngSGIwv">',
-    "date"  :   '</div><div class="qfYkuLpETFW3axnfMntO"><p class="Type__TypeElement-sc-goli3j-0 hGXzYa _q93agegdE655O5zPz6l">',
-    "void"  :   '</p></div><div',
-    "description" : "</div></a></div></div><div class=\"upo8sAflD1byxWObSkgn\"><p class=\"Type__TypeElement-sc-goli3j-0 hGXzYa LbePDApGej12_NyRphHu\">",
-    "title"  :   '><div class="Type__TypeElement-sc-goli3j-0 kUtbWF bG5fSAAS6rRL8xxU5iyG" data-testid="episodeTitle\">',
-    "url"  :   'href='
+    "final_destination": "</span></p></div></div>",
+    "runtime":   '</p><p class="Type__TypeElement-sc-goli3j-0 hGXzYa _q93agegdE655O5zPz6l"><span class="UyzJidwrGk3awngSGIwv">',
+    "date":   '</div><div class="qfYkuLpETFW3axnfMntO"><p class="Type__TypeElement-sc-goli3j-0 hGXzYa _q93agegdE655O5zPz6l">',
+    "void":   '</p></div><div',
+    "description": "</div></a></div></div><div class=\"upo8sAflD1byxWObSkgn\"><p class=\"Type__TypeElement-sc-goli3j-0 hGXzYa LbePDApGej12_NyRphHu\">",
+    "title":   '><div class="Type__TypeElement-sc-goli3j-0 kUtbWF bG5fSAAS6rRL8xxU5iyG" data-testid="episodeTitle\">',
+    "url":   'href='
 }
 
 # Dict with playlist keys to be found and values as extraction markers (for cut_out function)
 dict_playlist = {
-    "final_destination" : "}</script><link rel=",
-    "language"  :   ',"inLanguage":',
-    "accessMode"  :   ',"accessMode":',
-    "image"  :   ',"image":',
-    "author"  :   ',"author":',
-    "publisher"  :   ',"publisher":',
-    "description"  :   ',"description":',
-    "name"  :   ',"name":',
-    "url"  :   ',"url":',
-    "@type"  :   ',"@type":'
+    "final_destination": "}</script><link rel=",
+    "language":   ',"inLanguage":',
+    "accessMode":   ',"accessMode":',
+    "image":   ',"image":',
+    "author":   ',"author":',
+    "publisher":   ',"publisher":',
+    "description":   ',"description":',
+    "name":   ',"name":',
+    "url":   ',"url":',
+    "@type":   ',"@type":'
 }
 
 # Author_name and _type is nested in author, so they have to be extracted as well (for cut_out function)
 dict_author = {
-    "final_destination" : "}",
-    'author_name' : ',"name":',
-    'author_type' : '{"@type":'
+    "final_destination": "}",
+    'author_name': ',"name":',
+    'author_type': '{"@type":'
 }
 
 # ---- Main ---- #
+
 
 def extract_file_folder(input_path):
     data_all = [f for f in listdir(input_path)]
@@ -887,9 +949,11 @@ def extract_file_folder(input_path):
             data_folders.append(elm)
     return data_files, data_folders
 
+
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
+
 
 def clean_filenames():
     #! not foolproof yet
@@ -912,11 +976,12 @@ def clean_filenames():
     #             file_exists = exists(path_new)
     #         os.rename(path_old, path_new)
 
+
 def extract_info(input_path, playlist_name):
     # --- 1. Setup --- #
     # Log file
     old_stdout = sys.stdout
-    log_file = open("logfile.log","w", encoding='utf8')
+    log_file = open("logfile.log", "w", encoding='utf8')
     sys.stdout = log_file
 
     # check what info is available
@@ -932,7 +997,7 @@ def extract_info(input_path, playlist_name):
     if 'episodes_info.json' in data_files:
         with open(input_path + 'episodes_info.json') as json_file:
             episodes_info = json.load(json_file)
-            episodes_info = {int(k):v for k,v in episodes_info.items()}
+            episodes_info = {int(k): v for k, v in episodes_info.items()}
 
     for filename in data_files:
         if filename.split('.')[-1] == 'html':
@@ -945,13 +1010,16 @@ def extract_info(input_path, playlist_name):
             # handle different sources
             if filename == "YouTube.html":
                 pass
-                playlist_info_YT, episodes_info_YT = YouTube2dict(index, input_path, filename, playlist_name)
+                playlist_info_YT, episodes_info_YT = YouTube2dict(
+                    index, input_path, filename, playlist_name)
             elif filename == "Spotify.html":
-                playlist_info_SF, episodes_info_SF = Spotify2dict(index, input_path, filename, playlist_name)
-    
+                playlist_info_SF, episodes_info_SF = Spotify2dict(
+                    index, input_path, filename, playlist_name)
+
     for foldername in data_folders:
         if foldername == audiofolder:
-            data_files_audio, data_folders_audio = extract_file_folder(input_path + '\\' + foldername)
+            data_files_audio, data_folders_audio = extract_file_folder(
+                input_path + '\\' + foldername)
             # clean_filenames(data_files_audio)
 
     tempList = [playlist_info]
@@ -974,8 +1042,9 @@ def extract_info(input_path, playlist_name):
     del tempList
 
     # Read file
-    infos2json(playlist_info, episodes_info, input_path, filename, playlist_name)
-    
+    infos2json(playlist_info, episodes_info,
+               input_path, filename, playlist_name)
+
     json2csv(playlist_info, episodes_info, input_path, filename, playlist_name)
 
     csv2wiki(playlist_info, episodes_info, input_path, filename, playlist_name)
@@ -983,14 +1052,17 @@ def extract_info(input_path, playlist_name):
     sys.stdout = old_stdout
     log_file.close()
 
+
 def main():
     my_path = os.getcwd()
     data_path = os.path.dirname(my_path) + '\\data\\'
-    playlist_names = [f for f in listdir(data_path) if not isfile(join(data_path, f))]
+    playlist_names = [f for f in listdir(
+        data_path) if not isfile(join(data_path, f))]
     playlist_names.remove('sample')
     for pl_n in playlist_names[:1]:
         data_pl_path = data_path + pl_n + '\\'
         extract_info(data_pl_path, pl_n)
+
 
 if __name__ == '__main__':
     main()
