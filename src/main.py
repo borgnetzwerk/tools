@@ -15,6 +15,8 @@ from os.path import exists
 # Define
 similar_enough = 0.9
 audiofolder = 'mp3'
+# If major changes have been made: Flush out these old ones
+flush_out_relics = True
 
 # ---- Functions ---- #
 
@@ -115,14 +117,14 @@ def cut_out(var_s, dict):
     storage = {}
     for key, value in dict.items():
         temp = var_s.split(value, 1)
+        canidate = ""
         if len(temp) > 1:
-            storage[key] = temp[1]
             var_s = temp[0]
+            canidate = temp[1]
         else:
-            storage[key] = temp[0]
-    del storage["final_destination"]
-    if "void" in storage:
-        del storage["void"]
+            canidate = temp[0]
+        if 'void' not in canidate and len(canidate) > 0:
+            storage[key] = canidate
     return storage
 
 # Sort a dict according to a list.
@@ -255,8 +257,9 @@ def Spotify2dict(index, input_path, filename, playlist_name):
         if len(sub) > 1:
             episode = sub[1]
         episode_info = cut_out(episode, dict_episode)
-        episode_info["description"] = episode_info["description"].split("Werbung:", 1)[
-            0]
+        if 'description' in episode_info:
+            episode_info["description"] = episode_info["description"].split("Werbung:", 1)[
+                0]
         episodes[idx] = episode_info
     # m = re.search('(?<=episodeTitle">).+?(?=<\/div>)', index)
     # m.group(0)
@@ -298,7 +301,8 @@ def get_playlist_info_YT(var_str):
             var_str = var_str.split(value, 1)[0]
         else:
             group = var_str.split(value, 1)
-            temp[key] = group[0]
+            if 'void' not in group[0] and len(group[0]) > 0:
+                temp[key] = group[0]
             var_str = group[1]
     return temp
 
@@ -457,7 +461,6 @@ def search_for_title(try_this, episodes_infos, playlist_name):
 
 
 def handle_diff_ep(list_var, playlist_name):
-    temp = {}
     for element in list_var:
         if not element:
             list_var.remove(element)
@@ -498,7 +501,7 @@ def handle_diff_ep(list_var, playlist_name):
             matched_counters.append([])
         matched.append(matched_counters)
     # print('order:')
-    last_eID = 1
+    last_eID = 0
     for plID, episode in list_var[longest].items():
         # TODO: find out why suddenly read as string -> saved in dict -> find out why
         plID = int(plID)
@@ -508,7 +511,10 @@ def handle_diff_ep(list_var, playlist_name):
         # try_this['plID'] = plID
         # if the ID is missing from the main Episode
         if 'eID' in try_this:
-            last_eID = int(try_this['eID'])
+            try:
+                last_eID = int(try_this['eID'])
+            except:
+                last_eID += 1
         elif 'special' not in try_this:
             last_eID += 1
             try_this['eID'] = str(last_eID)
@@ -662,7 +668,6 @@ def handle_diff_ep(list_var, playlist_name):
         del multi_match[x]
 
     # Case 3: Completely missplaced duplicates
-    # Temp-Fix way to time consumative
     deletes = []
     for idx, missing_match in enumerate(zero_match):
         # look if repetition:
@@ -751,16 +756,19 @@ def handle_diff_ep(list_var, playlist_name):
         prev_ep = list_var[listID][eID-1]
         prev_ep_title = prev_ep['title']
         prev_split = title_mine(prev_ep_title, playlist_name)
-        prev_mined_ID = int(prev_split['eID'])
+        if 'eID' in prev_split:
+            prev_mined_ID = int(prev_split['eID'])
 
         # next episode
         next_match = int(matched[listID][eID+1][0])
         next_ep = list_var[listID][eID+1]
         next_ep_title = next_ep['title']
         next_split = title_mine(next_ep_title, playlist_name)
-        next_mined_ID = int(next_split['eID'])
+        if 'eID' in next_split:
+            next_mined_ID = int(next_split['eID'])
 
         this_is_it = False
+        # Todo: handle exception if no ['eID'] in prev_split or next_split
         if prev_mined_ID + 1 < next_mined_ID:
             this_is_it = True
         elif int(eID) == prev_mined_ID + 1:
@@ -784,6 +792,8 @@ def handle_diff_ep(list_var, playlist_name):
         order.insert(position, findings)
         deletes.append(idx)
         inserted += 1
+        print('[' + str(cur_LID) + '][' + str(eID) +
+              '] has been inserted at order[' + str(position) + '].')
 
     for x in reversed(deletes):
         del zero_match[x]
@@ -795,56 +805,78 @@ def handle_diff_ep(list_var, playlist_name):
     dict2json(zero_match, "zero_match")
     dict2json(multi_match, "multi_match")
 
-    for row in order:
-        print('\t' + ',\t'.join(str(e) for e in row))
+    # for row in order:
+    #     print('\t' + ',\t'.join(str(e) for e in row))
 
     # TODO: Sort according to order
+    episode_info = {}
+    for main_ID, element in enumerate(order):
+        temp_episode = {}
+        episode_info_parts = []
+        for listID, id_in_list in enumerate(element):
+            if id_in_list >= 0:
+                episode_info_parts.append(list_var[listID][id_in_list])
+        episode = handle_diff(episode_info_parts)
+        episode_info[main_ID] = episode
+    return episode_info
 
-    temp = list_var[longest]
-    # pprint(matched)
-    return temp
-
-
-def tie_break(key, found):
-    winner = ""
-    if key == "url":
-        Spotify = False
-        YouTube = False
-        winners = []
-        for candidate in found:
-            if "spotify.com" in candidate:
-                if not Spotify:
-                    Spotify = True
-                    winners.append(candidate)
-            elif "youtube.com" in candidate:
-                if not YouTube:
-                    YouTube = True
-                    winners.append(candidate)
-            else:
-                winners += candidate
-        winner = ' ; '.join(winners)
-    # elif key == "title":
-    else:
-        for candidate in found:
-            if len(candidate) > len(winner):
-                winner = candidate
-    return winner
-
-
-def handle_diff(list_var):
-    keys = []
-    res = {}
-    for element in list_var:
-        keys += element.keys()
-    for key in keys:
-        # Todo: make a decision which to take
-        found = []
-        for element in list_var:
+def handle_diff(pieces):
+    unified = {}
+    used = []
+    for key in key_order:
+        candidates = []
+        for main_ID, element in enumerate(pieces):
             if key in element:
-                found.append(element[key])
-        if len(found) > 0:
-            res[key] = tie_break(key, found)
-    return res
+                candidates.append(element[key])
+        if len(candidates) > 0:
+            used.append(key)
+            if len(candidates) == 1:
+                unified[key] = candidates[0]
+
+            elif key == 'url':
+                # TODO: Handle Spotify+Youtube URL
+                Spotify = False
+                YouTube = False
+                # flush out multi-entries
+                temp = []
+                for candidate in candidates:
+                    temp_list = candidate.split(' ; ')
+                    for e in temp_list:
+                        temp.append(e)
+                candidates = temp
+                winners = []
+                for candidate in candidates:
+                    if "spotify.com" in candidate:
+                        if not Spotify:
+                            Spotify = True
+                            winners.append(candidate)
+                    elif "youtube.com" in candidate:
+                        if not YouTube:
+                            YouTube = True
+                            winners.append(candidate)
+                    else:
+                        winners.append(candidate)
+                winner = ' ; '.join(winners)
+                unified[key] = winner
+            else:
+                winner = ""
+                print(
+                    str(main_ID) + ':\t' + '\tor\t'.join(str(e) for e in candidates), flush=True)
+                # just pick the longest
+                for candidate in candidates:
+                    if len(candidate) > len(winner):
+                        winner = candidate
+                unified[key] = winner
+
+    for main_ID, element in enumerate(pieces):
+        unused = []
+        for key in element:
+            if key not in used:
+                unused.append(key)
+        if len(unused) > 0:
+            print('unused: ' ', '.join(unused), flush=True)
+    return unified
+
 
 # ---- Globals ---- #
 
@@ -860,8 +892,12 @@ replace_dict = {
     "&pound;":   "£",
     "&quot;":   "“",
     "&apos;":   "‘",
-    "\\u00FC":   "ü"
+    "\\u00FC":   "ü",
     # TODO: further äö and others should be added
+    # https://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html
+    "”":    '"',
+    "“":    '"',
+    "&#39;": "'",
 }
 
 # --- 2. specific --- #
@@ -905,7 +941,7 @@ dict_episode_YT = {
 
 # Dict with episode keys to be found and values as extraction markers (for cut_out function)
 dict_episode = {
-    "final_destination": "</span></p></div></div>",
+    "final_destination_void": "</span></p></div></div>",
     "runtime":   '</p><p class="Type__TypeElement-sc-goli3j-0 hGXzYa _q93agegdE655O5zPz6l"><span class="UyzJidwrGk3awngSGIwv">',
     "date":   '</div><div class="qfYkuLpETFW3axnfMntO"><p class="Type__TypeElement-sc-goli3j-0 hGXzYa _q93agegdE655O5zPz6l">',
     "void":   '</p></div><div',
@@ -916,21 +952,21 @@ dict_episode = {
 
 # Dict with playlist keys to be found and values as extraction markers (for cut_out function)
 dict_playlist = {
-    "final_destination": "}</script><link rel=",
+    "final_destination_void": "}</script><link rel=",
     "language":   ',"inLanguage":',
     "accessMode":   ',"accessMode":',
     "image":   ',"image":',
     "author":   ',"author":',
     "publisher":   ',"publisher":',
     "description":   ',"description":',
-    "name":   ',"name":',
+    "title":   ',"name":',
     "url":   ',"url":',
     "@type":   ',"@type":'
 }
 
 # Author_name and _type is nested in author, so they have to be extracted as well (for cut_out function)
 dict_author = {
-    "final_destination": "}",
+    "final_destination_void": "}",
     'author_name': ',"name":',
     'author_type': '{"@type":'
 }
@@ -989,15 +1025,20 @@ def extract_info(input_path, playlist_name):
 
     # Read existing info
     playlist_info = {}
-    if 'playlist_info.json' in data_files:
-        with open(input_path + 'playlist_info.json') as json_file:
-            playlist_info = json.load(json_file)
-
     episodes_info = {}
-    if 'episodes_info.json' in data_files:
-        with open(input_path + 'episodes_info.json') as json_file:
-            episodes_info = json.load(json_file)
-            episodes_info = {int(k): v for k, v in episodes_info.items()}
+
+    # If major changes are made:
+    if not flush_out_relics:
+        if 'playlist_info.json' in data_files:
+            with open(input_path + 'playlist_info.json') as json_file:
+                playlist_info = json.load(json_file)
+                # Todo: if an "old replacement" 
+                # index = index.replace(key, replace_dict[key])
+        if 'episodes_info.json' in data_files:
+            with open(input_path + 'episodes_info.json') as json_file:
+                episodes_info = json.load(json_file)
+                # index = index.replace(key, replace_dict[key])
+                episodes_info = {int(k): v for k, v in episodes_info.items()}
 
     for filename in data_files:
         if filename.split('.')[-1] == 'html':
@@ -1009,7 +1050,6 @@ def extract_info(input_path, playlist_name):
                 index = index.replace(key, replace_dict[key])
             # handle different sources
             if filename == "YouTube.html":
-                pass
                 playlist_info_YT, episodes_info_YT = YouTube2dict(
                     index, input_path, filename, playlist_name)
             elif filename == "Spotify.html":
@@ -1059,7 +1099,7 @@ def main():
     playlist_names = [f for f in listdir(
         data_path) if not isfile(join(data_path, f))]
     playlist_names.remove('sample')
-    for pl_n in playlist_names[:1]:
+    for pl_n in playlist_names:
         data_pl_path = data_path + pl_n + '\\'
         extract_info(data_pl_path, pl_n)
 
