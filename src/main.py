@@ -90,6 +90,7 @@ def extract_info(input_path, playlist_name):
                     print('Skipping ' + str(skipped) + ' until including ' + last_skipped + '.\n', flush=True)
                     skipped = 0
                 grab(input_path, filename)
+                print(str(datetime.now()), flush=True)
                 print(filename + ': ' + str(round(time.time()-checkpoint, 2)) + " Sek." + '\n', flush=True)
             else:
                 last_skipped = filename
@@ -104,14 +105,9 @@ def main():
     for pl_n in playlist_names:
         data_pl_path = data_path + pl_n + '\\mp3'
         extract_info(data_pl_path, pl_n)
-    
-
-        
         
 if __name__ == '__main__':
     main()
-
-
 
 #file formats
 # vtt
