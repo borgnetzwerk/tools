@@ -53,6 +53,8 @@ def csv2table(input_path, filenames):
                 "title"  : -1,
                 "url"  : -1
             }
+            if filename == "episodes.csv":
+                f.write('=== Episoden ===\n')
             f.write('{| class="wikitable sortable"' + '\n')
             f.write('|+ ' + filename.replace(".csv", "") + '\n')
             for idx, row in enumerate(freader):

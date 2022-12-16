@@ -5,6 +5,7 @@ import mediaWiki
 import json
 import os
 import time
+import numpy
 import difflib
 from pprint import pprint
 from os import listdir
@@ -24,6 +25,7 @@ flush_out_relics = True
 
 
 def fill_digits(var_s, cap=2):
+    var_s = str(var_s)
     while len(var_s) < cap:
         var_s = "0" + var_s
     return var_s
@@ -47,6 +49,9 @@ def time_converter(var_s):
     else:
         # Date: YYYY-MM-DD
         list = var_s.split(' ')
+        if len(list) == 1:
+            # TODO: catch if date is already (somewhat) formatted
+            return var_s
         day = ""
         month = list[0]
         year = list[1]
@@ -229,7 +234,16 @@ def wikify_dict(dict, playlist_name):
         elif k == 'accessMode':
             temp[k] = dict[k]
         elif k == 'url':
-            temp[k] = '[' + dict[k] + ' Spotify]'
+            tokens = dict[k].split(' ; ')
+            winner = ""
+            for t in tokens:
+                url_var = 'Link'
+                if "spotify.com" in t:
+                    url_var = " Spotify"
+                elif "youtube.com" in t:
+                    url_var = " YouTube"
+                winner += '[' + t + url_var + ']'
+            temp[k] = winner
         elif k == 'image':
             temp[k] = '[' + dict[k] + ' image]'
         else:
@@ -347,10 +361,11 @@ def infos2json(playlist_info, episodes_info, input_path, filename, playlist_name
 # convert from json to csv
 
 
-def json2csv(playlist_info, episodes, input_path, filename, playlist_name):
+def json2csv(playlist_info, episodes, input_path, playlist_name):
     # ---- Write ---- #
     playlist_header = [] + list(playlist_info.keys())
     episode_header = ["#"] + list(episodes[0].keys())
+    # TODO: make sure to catch all, if first hasnt got all
     # output_path = input_path.replace('input','output')
     # You will need 'wb' mode in Python 2.x
     with open(input_path + 'playlist.csv', 'w', newline='', encoding='ANSI') as f:
@@ -368,6 +383,10 @@ def json2csv(playlist_info, episodes, input_path, filename, playlist_name):
         for key, value in episodes.items():
             values = [key+1]
             for ekey, evalue in value.items():
+                actual_key = len(values)
+                while ekey != episode_header[actual_key]:
+                    values.append('')
+                    actual_key += 1
                 values.append(evalue)
             writer.writerow(values)
     return
@@ -375,7 +394,7 @@ def json2csv(playlist_info, episodes, input_path, filename, playlist_name):
 # convert from csv to wiki
 
 
-def csv2wiki(playlist_info, episodes, input_path, filename, playlist_name):
+def csv2wiki(playlist_info, episodes, input_path, playlist_name):
     # Könnte man auch als Übersicht über alle podcast machen, die im Data.bnwiki sind
     # Sortierbar nach Sprache etc.
     # Kategorien ...
@@ -439,9 +458,9 @@ def compare_titles(try_this, comp, playlist_name):
     return similarity_score
 
 
-def search_for_title(try_this, episodes_infos, playlist_name):
-    for idx, eID in enumerate(episodes_infos):
-        comp = title_mine(episodes_infos[eID]['title'], playlist_name)
+def search_for_title(try_this, episodes_info, playlist_name):
+    for idx, eID in enumerate(episodes_info):
+        comp = title_mine(episodes_info[eID]['title'], playlist_name)
         is_match = compare_titles(try_this, comp, playlist_name)
         if is_match >= 1:
             return idx
@@ -449,9 +468,9 @@ def search_for_title(try_this, episodes_infos, playlist_name):
     # Currently limited to only compare longer titles, otherwise may be unprecise
     #! Very time expensive
     # if len(title.lower()) > 10:
-    #     for idx, eID in enumerate(episodes_infos):
-    #         comp = title_mine(episodes_infos[eID]['title'])
-    #         sim = similar(title, episodes_infos[eID]['title'])
+    #     for idx, eID in enumerate(episodes_info):
+    #         comp = title_mine(episodes_info[eID]['title'])
+    #         sim = similar(title, episodes_info[eID]['title'])
     #         if sim:
     #             return idx
     return -1
@@ -820,6 +839,7 @@ def handle_diff_ep(list_var, playlist_name):
         episode_info[main_ID] = episode
     return episode_info
 
+
 def handle_diff(pieces):
     unified = {}
     used = []
@@ -899,6 +919,8 @@ replace_dict = {
     "“":    '"',
     "&#39;": "'",
 }
+
+noFileChars = '":\<>*?/'
 
 # --- 2. specific --- #
 # order keys should be read in (for sort_dict function)
@@ -1013,7 +1035,28 @@ def clean_filenames():
     #         os.rename(path_old, path_new)
 
 
-def extract_info(input_path, playlist_name):
+def show_newest_files(input_path, files):
+    dates = []
+    for file in files:
+        date = os.path.getmtime(input_path+'\\'+file)
+        dates.append(date)
+    order = numpy.argsort(dates)
+    files_sorted = []
+    for position in reversed(order):
+        files_sorted.append(files[position])
+    return files_sorted
+
+
+def extract_html_info(input_path, playlist_name):
+    data_files, data_folders = extract_file_folder(input_path)
+    data_files = show_newest_files(input_path, data_files)
+    for file in data_files:
+        if ".html" in file:
+            break
+        if "episodes_info.json" == file:
+            # We are up to date
+            return
+
     # --- 1. Setup --- #
     # Log file
     old_stdout = sys.stdout
@@ -1021,7 +1064,6 @@ def extract_info(input_path, playlist_name):
     sys.stdout = log_file
 
     # check what info is available
-    data_files, data_folders = extract_file_folder(input_path)
 
     # Read existing info
     playlist_info = {}
@@ -1030,12 +1072,12 @@ def extract_info(input_path, playlist_name):
     # If major changes are made:
     if not flush_out_relics:
         if 'playlist_info.json' in data_files:
-            with open(input_path + 'playlist_info.json') as json_file:
+            with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
                 playlist_info = json.load(json_file)
-                # Todo: if an "old replacement" 
+                # Todo: if an "old replacement"
                 # index = index.replace(key, replace_dict[key])
         if 'episodes_info.json' in data_files:
-            with open(input_path + 'episodes_info.json') as json_file:
+            with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
                 episodes_info = json.load(json_file)
                 # index = index.replace(key, replace_dict[key])
                 episodes_info = {int(k): v for k, v in episodes_info.items()}
@@ -1056,20 +1098,18 @@ def extract_info(input_path, playlist_name):
                 playlist_info_SF, episodes_info_SF = Spotify2dict(
                     index, input_path, filename, playlist_name)
 
-    for foldername in data_folders:
-        if foldername == audiofolder:
-            data_files_audio, data_folders_audio = extract_file_folder(
-                input_path + '\\' + foldername)
-            # clean_filenames(data_files_audio)
 
     tempList = [playlist_info]
     if 'YouTube.html' in data_files:
         dict2json(playlist_info_YT, "playlist_info_YT", input_path)
         tempList.append(playlist_info_YT)
     if 'Spotify.html' in data_files:
-        dict2json(playlist_info_SF, "playlist_info_YT", input_path)
+        dict2json(playlist_info_SF, "playlist_info_SF", input_path)
         tempList.append(playlist_info_SF)
-    playlist_info = handle_diff(tempList)
+    if len(tempList) > 1:
+        playlist_info = handle_diff(tempList)
+    else:
+        playlist_info = tempList[0]
 
     tempList = [episodes_info]
     if 'YouTube.html' in data_files:
@@ -1078,19 +1118,118 @@ def extract_info(input_path, playlist_name):
     if 'Spotify.html' in data_files:
         dict2json(episodes_info_SF, "episodes_info_SF", input_path)
         tempList.append(episodes_info_SF)
-    episodes_info = handle_diff_ep(tempList, playlist_name)
+    
+    if len(tempList) > 1:
+        episodes_info = handle_diff_ep(tempList, playlist_name)
+    else:
+        episodes_info = tempList[0]
     del tempList
 
     # Read file
     infos2json(playlist_info, episodes_info,
                input_path, filename, playlist_name)
 
-    json2csv(playlist_info, episodes_info, input_path, filename, playlist_name)
-
-    csv2wiki(playlist_info, episodes_info, input_path, filename, playlist_name)
 
     sys.stdout = old_stdout
     log_file.close()
+
+    return (playlist_info, episodes_info)
+
+def add_transcript(input_path, playlist_name):
+    data_files, data_folders = extract_file_folder(input_path)
+    data_files = show_newest_files(input_path, data_files)
+    # --- 1. Setup --- #
+    # Log file
+    old_stdout = sys.stdout
+    log_file = open("logfile.log", "w", encoding='utf8')
+    sys.stdout = log_file
+
+    # check what info is available
+
+    # Read existing info
+    playlist_info = {}
+    episodes_info = {}
+
+    # If major changes are made:
+    with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
+        playlist_info = json.load(json_file)
+    with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
+        episodes_info = json.load(json_file)
+        episodes_info = {int(k): v for k, v in episodes_info.items()}
+
+    if len(data_folders) == 0 or audiofolder not in data_folders:
+        return
+    
+    for foldername in data_folders:
+        if foldername == audiofolder:
+            data_files_audio, data_folders_audio = extract_file_folder(
+                input_path + foldername + '\\')
+    
+    jsons = []
+    audios = []
+    
+    for filename in data_files_audio:
+        split_tup = os.path.splitext(input_path + foldername + '\\' + filename)
+        file_name = split_tup[0]
+        file_extension = split_tup[1]
+        if file_extension == '.json':
+            jsons.append(filename)
+        elif file_extension == '.mp3':
+            audios.append(filename)
+            jsons.append(filename.replace('.mp3', '.json'))
+        else:
+            print(filename)
+
+    for filename in jsons:
+        entry = filename[:4]
+        if "BMZ" not in entry:
+            continue
+        title = filename.replace('.json', '')
+        try_this = title_mine(title, playlist_name)
+        for idx, eID in enumerate(episodes_info):
+            new_title = episodes_info[eID]['title']
+            for each in noFileChars:
+                new_title = new_title.replace(each, '')
+            comp = title_mine(new_title, playlist_name)
+            is_match = compare_titles(try_this, comp, playlist_name)
+            matched = False
+            if is_match >= 1:
+                matched = True
+            else:
+                matched = similar(title, new_title)
+            if matched:
+                clean_name = fill_digits(idx, 3) + '_' + new_title
+                path_old = input_path + audiofolder + '\\' + filename
+                path_new = input_path + audiofolder + '\\' + clean_name + '.json'
+                # if exists(path_old):
+                #     if exists(path_new):
+                #         continue
+                #     os.rename(path_old, path_new)
+                filename = filename.replace('.json', '.mp3')
+                path_old = input_path + audiofolder + '\\' + filename
+                path_new = input_path + audiofolder + '\\' + clean_name + '.mp3'
+                if filename in audios:
+                    if exists(path_old) and not exists(path_new):
+                        if not exists(path_new):
+                            os.rename(path_old, path_new)
+
+    episodes_info
+
+
+def convert_to_wiki(input_path, playlist_name, playlist_info, episodes_info):
+    if len(playlist_info) == 0:
+        with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
+            playlist_info = json.load(json_file)
+    if len(episodes_info) == 0:
+        with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
+            episodes_info = json.load(json_file)
+            episodes_info = {int(k): v for k, v in episodes_info.items()}
+    playlist_info = wikify_dict(playlist_info, playlist_name)
+    for e_key in episodes_info:
+        episodes_info[e_key] = wikify_dict(episodes_info[e_key], playlist_name)
+    json2csv(playlist_info, episodes_info, input_path, playlist_name)
+
+    csv2wiki(playlist_info, episodes_info, input_path, playlist_name)
 
 
 def main():
@@ -1101,7 +1240,13 @@ def main():
     playlist_names.remove('sample')
     for pl_n in playlist_names:
         data_pl_path = data_path + pl_n + '\\'
-        extract_info(data_pl_path, pl_n)
+        playlist_info = {}
+        episodes_info = {}
+        # TODO: Find out why this doesnt work
+        # playlist_info, episodes_info = extract_html_info(data_pl_path, pl_n)
+        extract_html_info(data_pl_path, pl_n)
+        # add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
+        convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
 
 
 if __name__ == '__main__':
