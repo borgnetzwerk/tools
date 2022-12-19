@@ -7,15 +7,18 @@ import os
 import time
 import numpy
 import difflib
+import shutil
 from pprint import pprint
 from os import listdir
 from os.path import isfile, join
 from datetime import datetime
 from os.path import exists
+import os.path as path
 
 # Define
 similar_enough = 0.9
 audiofolder = 'mp3'
+tokenfolder = 'token'
 # If major changes have been made: Flush out these old ones
 flush_out_relics = True
 
@@ -197,6 +200,21 @@ def clean_dict(dict, playlist_name):
         else:
             temp[k] = dict[k]
     return temp
+
+
+def texify(var_s, k):
+    if k == 'url':
+        tokens = var_s.split(' ; ')
+        winner = ""
+        for t in tokens:
+            url_var = 'Link'
+            if "spotify.com" in t:
+                url_var = "Spotify"
+            elif "youtube.com" in t:
+                url_var = "YouTube"
+            winner += ' \href{' + t + '}{' + url_var + '}'
+        var_s = winner
+    return var_s
 
 
 def wikify_dict(dict, playlist_name):
@@ -1071,16 +1089,7 @@ def extract_html_info(input_path, playlist_name):
 
     # If major changes are made:
     if not flush_out_relics:
-        if 'playlist_info.json' in data_files:
-            with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
-                playlist_info = json.load(json_file)
-                # Todo: if an "old replacement"
-                # index = index.replace(key, replace_dict[key])
-        if 'episodes_info.json' in data_files:
-            with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
-                episodes_info = json.load(json_file)
-                # index = index.replace(key, replace_dict[key])
-                episodes_info = {int(k): v for k, v in episodes_info.items()}
+        playlist_info, episodes_info = setup_infos(playlist_info, episodes_info, input_path)
 
     for filename in data_files:
         if filename.split('.')[-1] == 'html':
@@ -1097,7 +1106,6 @@ def extract_html_info(input_path, playlist_name):
             elif filename == "Spotify.html":
                 playlist_info_SF, episodes_info_SF = Spotify2dict(
                     index, input_path, filename, playlist_name)
-
 
     tempList = [playlist_info]
     if 'YouTube.html' in data_files:
@@ -1118,7 +1126,7 @@ def extract_html_info(input_path, playlist_name):
     if 'Spotify.html' in data_files:
         dict2json(episodes_info_SF, "episodes_info_SF", input_path)
         tempList.append(episodes_info_SF)
-    
+
     if len(tempList) > 1:
         episodes_info = handle_diff_ep(tempList, playlist_name)
     else:
@@ -1129,13 +1137,55 @@ def extract_html_info(input_path, playlist_name):
     infos2json(playlist_info, episodes_info,
                input_path, filename, playlist_name)
 
-
     sys.stdout = old_stdout
     log_file.close()
 
     return (playlist_info, episodes_info)
 
-def add_transcript(input_path, playlist_name):
+
+token_puncs = {
+    '...'  :   r'(?<!\d)...$',
+    ','  :   r'(?<!\d),$',
+    '.'  :   r'(?<!\d)\.$',
+    '!'  :   r'(?<!\d)!$',
+    '?'  :   r'(?<!\d)\?$',
+}
+
+
+def split_punctuation(token):
+    res = []
+    for find, finder in token_puncs.items():
+        if find in token:
+            token_parts = re.split(finder, token, 1)
+            # token_parts = token.split(x)
+            if '' in token_parts:
+                token_parts.remove('')
+            if len(token_parts) > 1:
+                print('We foud a new character in split_punctuation: ' + token_parts[1], flush = True)
+            res.append(find)
+            token = token_parts[0]
+    ret = [token]
+    for x in res:
+        ret.append(x)
+    return ret
+
+
+def dictify_tokens(token, token_text, var_int, var_dict):
+    if token in var_dict:
+        if token_text in var_dict[token]:
+            if var_int in var_dict[token][token_text]:
+                var_dict[token][token_text][var_int] += 1
+            else:
+                var_dict[token][token_text].update({var_int: 1})
+        else:
+            var_dict[token][token_text] = {var_int : 1}
+    else:
+        var_dict[token] = {token_text : {var_int : 1}}
+
+
+
+def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
+    #Phase 0: Setup
     data_files, data_folders = extract_file_folder(input_path)
     data_files = show_newest_files(input_path, data_files)
     # --- 1. Setup --- #
@@ -1143,7 +1193,6 @@ def add_transcript(input_path, playlist_name):
     old_stdout = sys.stdout
     log_file = open("logfile.log", "w", encoding='utf8')
     sys.stdout = log_file
-
     # check what info is available
 
     # Read existing info
@@ -1151,23 +1200,19 @@ def add_transcript(input_path, playlist_name):
     episodes_info = {}
 
     # If major changes are made:
-    with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
-        playlist_info = json.load(json_file)
-    with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
-        episodes_info = json.load(json_file)
-        episodes_info = {int(k): v for k, v in episodes_info.items()}
+    playlist_info, episodes_info = setup_infos(playlist_info, episodes_info, input_path)
 
     if len(data_folders) == 0 or audiofolder not in data_folders:
         return
-    
+
     for foldername in data_folders:
         if foldername == audiofolder:
             data_files_audio, data_folders_audio = extract_file_folder(
                 input_path + foldername + '\\')
-    
+
     jsons = []
     audios = []
-    
+
     for filename in data_files_audio:
         split_tup = os.path.splitext(input_path + foldername + '\\' + filename)
         file_name = split_tup[0]
@@ -1176,60 +1221,316 @@ def add_transcript(input_path, playlist_name):
             jsons.append(filename)
         elif file_extension == '.mp3':
             audios.append(filename)
-            jsons.append(filename.replace('.mp3', '.json'))
+            # jsons.append(filename.replace('.mp3', '.json'))
         else:
             print(filename)
+    # phase 1: Addapt names
+    phase_1 = False
+    if phase_1:
+        # TODO: generalize this 
+        for filename in jsons:
+            entry = filename[:4]
+            if "BMZ" not in entry:
+                continue
+            title = filename.replace('.json', '')
+            try_this = title_mine(title, playlist_name)
+            for idx, eID in enumerate(episodes_info):
+                new_title = episodes_info[eID]['title']
+                for each in noFileChars:
+                    new_title = new_title.replace(each, '')
+                comp = title_mine(new_title, playlist_name)
+                is_match = compare_titles(try_this, comp, playlist_name)
+                matched = False
+                if is_match >= 1:
+                    matched = True
+                else:
+                    matched = similar(title, new_title)
+                if matched:
+                    clean_name = fill_digits(idx, 3) + '_' + new_title
+                    path_old = input_path + audiofolder + '\\' + filename
+                    path_new = input_path + audiofolder + '\\' + clean_name + '.json'
+                    if exists(path_old):
+                        if exists(path_new):
+                            continue
+                        os.rename(path_old, path_new)
+                    filename = filename.replace('.json', '.mp3')
+                    path_old = input_path + audiofolder + '\\' + filename
+                    path_new = input_path + audiofolder + '\\' + clean_name + '.mp3'
+                    if filename in audios:
+                        if exists(path_old) and not exists(path_new):
+                            if not exists(path_new):
+                                os.rename(path_old, path_new)
+    
+    # phase 1: Addapt names
+    detected_nothing = "detected_nothing!!!"
+    detected_occurence = 'detected_occurence!!!'
+    tokenpath = input_path + tokenfolder + '\\'
 
-    for filename in jsons:
-        entry = filename[:4]
-        if "BMZ" not in entry:
-            continue
-        title = filename.replace('.json', '')
-        try_this = title_mine(title, playlist_name)
-        for idx, eID in enumerate(episodes_info):
-            new_title = episodes_info[eID]['title']
-            for each in noFileChars:
-                new_title = new_title.replace(each, '')
-            comp = title_mine(new_title, playlist_name)
-            is_match = compare_titles(try_this, comp, playlist_name)
-            matched = False
-            if is_match >= 1:
-                matched = True
-            else:
-                matched = similar(title, new_title)
-            if matched:
-                clean_name = fill_digits(idx, 3) + '_' + new_title
-                path_old = input_path + audiofolder + '\\' + filename
-                path_new = input_path + audiofolder + '\\' + clean_name + '.json'
-                # if exists(path_old):
-                #     if exists(path_new):
-                #         continue
-                #     os.rename(path_old, path_new)
-                filename = filename.replace('.json', '.mp3')
-                path_old = input_path + audiofolder + '\\' + filename
-                path_new = input_path + audiofolder + '\\' + clean_name + '.mp3'
-                if filename in audios:
-                    if exists(path_old) and not exists(path_new):
-                        if not exists(path_new):
-                            os.rename(path_old, path_new)
+    phase_2 = True
+    if phase_2:
+        # Todo: Build a Dict with { Token : Word or ,.!? }
+        # Status: Currently on hold due to it Tokens not alligning 100% with words
+        full_dict = {}
+        wrong_dict = {}
+        list_wrong_matches = []
+        counter_match = 0
+        counter_no_match = 0
+        for filename in jsons: 
+            path_json = input_path + audiofolder + '\\' + filename
+            with open(path_json, encoding='utf-8') as json_file:
+                transcript = json.load(json_file)
+            for segment in transcript['segments']:
+                tokens = segment['tokens']
+                text = segment['text']
+                tokens_text = text.split()
+                if len(tokens) != len(tokens_text):
+                    better_tokens_text = []
+                    for token in tokens_text:
+                        temp = split_punctuation(token)
+                        for x in temp:
+                            better_tokens_text.append(x)
+                    tokens_text = better_tokens_text
+                if len(tokens) != len(tokens_text):
+                    counter_no_match += 1
+                    list_wrong_matches.append([tokens, tokens_text])
+                else:
+                    token_translation = {}
+                    for idx, token in enumerate(tokens):
+                        # dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), token_translation)
+                        dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), full_dict)
+                    counter_match += 1
+                # ['Hallo', 'und', 'herzlich', 'willkommen', 'hier', 'ist', 'Bardo', 'mit', 'einem', 'neuen', 'Video', 'zu', 'WoW', 'zu', ...]
+                # ' Hallo und herzlich willkommen 
+                # [21242, 674, 45919, 46439, 
+                # hier ist Bardo mit 
+                # 3296, 1418, 363, 12850, 
+                # einem neuen Video zu 
+                # 2194, 6827, 21387, 9777, 
+                # WoW zu Legion heute'
+                # 2164, 6622, 54 2164
+                # ?? ??
+                # 33024 9801
+            if not os.path.exists(tokenpath):
+                os.makedirs(tokenpath)
+            # dict2json(token_translation, filename.replace('.json', '') + "_tokens", tokenpath)
+            
+            # print('Match rate: ' + str(round(counter_match/counter_no_match, 2)), flush=True)
+            # print('While ' + str(counter_match) + ' could be matched, ' + str(counter_no_match) + ' could not.', flush=True)
+        dict2json(full_dict, "_tokens", tokenpath)
+        occurs_with = {}
 
-    episodes_info
+        for tokens, tokens_text in list_wrong_matches:
+            for token in tokens:
+                if token in full_dict:
+                    text = list(full_dict[token])[0]
+                    if text in tokens_text:
+                        tokens_text.remove(text)
+                        tokens.remove(token)
+            print(',\t'.join(str(e) for e in tokens))
+            print(',\t'.join(str(e) for e in tokens_text), flush=True)
+            while len(tokens) > len(tokens_text):
+                tokens_text.append(detected_nothing)
+            while len(tokens) < len(tokens_text):
+                tokens.append(-1)
+            for idx, token in enumerate(tokens):
+                dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), wrong_dict)
+                dictify_tokens(token, token, detected_occurence, occurs_with)
+                for text in tokens_text:
+                    dictify_tokens(token, token, text, occurs_with)
+    else:
+        with open(tokenpath + '_tokens_occurs_with.json', encoding='utf-8') as json_file:
+            occurs_with = json.load(json_file) 
+    
+    phase_3 = True
+    if phase_3:
+        # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
+        determined_tokens = {}
+        progress_made = True
+        while progress_made:
+            progress_made = False
+            blacklist = []
+            occurs_with_filtered = {}
+            # TODO: remove soon:
+            for token in list(occurs_with):
+                if detected_occurence in occurs_with[token][token]:
+                    del occurs_with[token][token][detected_occurence]
+                if detected_nothing in occurs_with[token][token]:
+                    del occurs_with[token][token][detected_nothing]
+                # make that work later on
+                # if detected_occurence in occurs_with[token][token]:
+                #     det_count = occurs_with[token][token][detected_occurence]
+                # else:
+                max_v = 0
+                for key, value in occurs_with[token][token].items():
+                    max_v = max(max_v, value)
+                det_count = max_v
+                occurs_with_filtered[token] = {}
+                
+                for text in occurs_with[token][token]:
+                    fin_count = occurs_with[token][token][text]
+                    if fin_count >= 0.5 * det_count:
+                        occurs_with_filtered[token][text] = fin_count
+                if len(occurs_with_filtered[token]) == 1:
+                    text = list(occurs_with_filtered[token])[0]
+                    determined_tokens[token] = text
+                    blacklist.append([token, text])
+                    progress_made = True
+            for token, text in blacklist:
+                if token in occurs_with:
+                    del occurs_with[token]
+                for token in list(occurs_with):
+                    if text in occurs_with[token][token]:
+                        del occurs_with[token][token][text]
+            blacklist = []
 
+        dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
+        dict2json(determined_tokens, "_tokens_determined", tokenpath)
+        
+    phase_4 = True
+    if phase_4:
+        pass
+    # dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
+    # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
+    # dict2json(wrong_dict, "_tokens_wrong", tokenpath)
 
-def convert_to_wiki(input_path, playlist_name, playlist_info, episodes_info):
+def setup_infos(playlist_info, episodes_info, input_path):
     if len(playlist_info) == 0:
         with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
+            # Todo: if an "old replacement"
             playlist_info = json.load(json_file)
     if len(episodes_info) == 0:
         with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
             episodes_info = json.load(json_file)
             episodes_info = {int(k): v for k, v in episodes_info.items()}
+    return [playlist_info, episodes_info]
+
+def convert_to_wiki(input_path, playlist_name, playlist_info, episodes_info):
+    playlist_info, episodes_info = setup_infos(playlist_info, episodes_info, input_path)
+
     playlist_info = wikify_dict(playlist_info, playlist_name)
     for e_key in episodes_info:
         episodes_info[e_key] = wikify_dict(episodes_info[e_key], playlist_name)
     json2csv(playlist_info, episodes_info, input_path, playlist_name)
 
     csv2wiki(playlist_info, episodes_info, input_path, playlist_name)
+
+tex_esc = {
+    '\\' :   '\\textbackslash',
+    '^'  :   '\\textasciicircum',
+    '~'  :   '\\textasciitilde',
+    '&'  :   '\\&',
+    '%'  :   '\\%',
+    '$'  :   '\\$',
+    '#'  :   '\\#',
+    '_'  :   '\\_',
+    '{'  :   '\\{',
+    '}'  :   '\\}',
+}
+
+
+def latex_escape(title, skip = False):
+    # https://tex.stackexchange.com/questions/34580/escape-character-in-latex
+    for key, value in tex_esc.items():
+        if key == '#' and skip:
+            continue
+        if key == '&' and skip:
+            continue
+        title = title.replace(key, value)
+    return title
+
+
+def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
+    playlist_info, episodes_info = setup_infos(playlist_info, episodes_info, input_path)
+    language = 'de'
+    if 'language' in playlist_info:
+        language = playlist_info['language']
+    # https://stackoverflow.com/questions/27844088/python-get-directory-two-levels-up
+    two_up = path.abspath(path.join(input_path, ".."))
+    tex_path_sample = two_up + '\\sample\\' + language + '\\LaTeX\\'
+    tex_path = input_path + 'LaTeX\\'
+    if not os.path.exists(tex_path):
+        os.makedirs(tex_path)
+    data_files, data_folders = extract_file_folder(tex_path_sample)
+    tex_filenames = []
+    for filename in data_files:
+        split_tup = os.path.splitext(tex_path_sample + filename)
+        file_name = split_tup[0]
+        file_extension = split_tup[1]
+        if file_extension == '.tex':
+            tex_filenames.append(filename)
+    data_files = tex_filenames
+    for filename in data_files:
+        filename
+        src = tex_path_sample + '\\' + filename
+        dst = tex_path + '\\' + filename
+        shutil.copyfile(src, dst)
+
+    if 'raw' in data_folders:
+        data_folders.remove('raw')
+    for foldername in data_folders:
+        if not os.path.exists(tex_path + '\\' + foldername):
+            os.makedirs(tex_path + '\\' + foldername)
+    
+    # make changes according to podcast_info
+
+    # Fill input
+    index_lines = []
+    author = ''
+    if 'author_name' in playlist_info:
+        author = playlist_info['author_name']
+    for e_key in episodes_info:
+        min = 0
+        max = 0
+        if e_key < min:
+            continue
+        if e_key > max:
+            break
+        episode = episodes_info[e_key]
+        title = episode['title']
+        title_file = title
+        for each in noFileChars:
+            title_file = title_file.replace(each, '')
+        clean_name = fill_digits(e_key, 3) + '_' + title_file
+        json_path = input_path + '\\' + audiofolder + '\\' + clean_name + '.json'
+        if exists(json_path):
+
+            with open(json_path, encoding='utf-8') as json_file:
+                info = json.load(json_file)
+            
+            author_here = author
+            # Todo: Make this read and differentiate the episodes author
+            # Currently this is not even extracted from YouTube 
+            if 'author' in episode:
+                author_here = episode['author']
+            # YouTube and Spotify
+            if 'url' in episode:
+                author_here += texify(episode['url'], 'url')
+            # Wiki
+                # author_here += texify(episode['url'], 'url')
+            title_tex = latex_escape(title)
+            line = '\\newchapter{' + title_tex + '}{' + author_here + '}'
+            index_lines.append(line)
+
+            # Todo: find out why double space is a no-go
+            clean_name_tex = latex_escape(clean_name, True).replace("  ", " ")
+
+            line = '\\input{' + 'input/' + clean_name_tex + '.tex' + '}'
+            index_lines.append(line)
+
+            # Todo: find out why double space is a no-go
+            tex_path_episode = tex_path + 'input\\' + clean_name.replace("  ", " ") + '.tex'
+            with open(tex_path_episode, "w", encoding='utf8') as f:
+                f.write(latex_escape(info['text']))
+            
+            index_lines.append('\clearpage')
+            # \newchapter{Story One}{Author One}
+
+    if len(index_lines) > 0:
+        with open(tex_path + 'input\\index.tex', "w", encoding='utf8') as f:
+            line = '\part{' + playlist_name + '}'
+            f.write(line + '\n')
+            for line in index_lines:
+                f.write(line + '\n')
 
 
 def main():
@@ -1238,15 +1539,17 @@ def main():
     playlist_names = [f for f in listdir(
         data_path) if not isfile(join(data_path, f))]
     playlist_names.remove('sample')
-    for pl_n in playlist_names:
+    # for pl_n in playlist_names:
+    for pl_n in playlist_names[:1]:
         data_pl_path = data_path + pl_n + '\\'
         playlist_info = {}
         episodes_info = {}
         # TODO: Find out why this doesnt work
         # playlist_info, episodes_info = extract_html_info(data_pl_path, pl_n)
         extract_html_info(data_pl_path, pl_n)
-        # add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
-        convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
+        add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
+        # convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
+        # convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info)
 
 
 if __name__ == '__main__':
