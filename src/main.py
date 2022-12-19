@@ -19,6 +19,7 @@ import os.path as path
 similar_enough = 0.9
 audiofolder = 'mp3'
 tokenfolder = 'token'
+editfolder = 'edited'
 # If major changes have been made: Flush out these old ones
 flush_out_relics = True
 
@@ -1144,30 +1145,36 @@ def extract_html_info(input_path, playlist_name):
 
 
 token_puncs = {
-    '...'  :   r'(?<!\d)...$',
-    ','  :   r'(?<!\d),$',
-    '.'  :   r'(?<!\d)\.$',
-    '!'  :   r'(?<!\d)!$',
-    '?'  :   r'(?<!\d)\?$',
+    '......'    :   r'(......)',
+    '...'  :   r'(...$)',
+    ','  :   r'(,$)',
+    '.'  :   r'((?<!\d)\.$)',
+    '!'  :   r'(!$)',
+    '?'  :   r'(\?$)',
+}
+
+token_puncs_ok = {
+    '.'  :   r'\d\.$',
 }
 
 
 def split_punctuation(token):
-    res = []
+    found = []
     for find, finder in token_puncs.items():
         if find in token:
             token_parts = re.split(finder, token, 1)
-            # token_parts = token.split(x)
-            if '' in token_parts:
-                token_parts.remove('')
-            if len(token_parts) > 1:
-                print('We foud a new character in split_punctuation: ' + token_parts[1], flush = True)
-            res.append(find)
-            token = token_parts[0]
-    ret = [token]
-    for x in res:
-        ret.append(x)
-    return ret
+            for part in token_parts:
+                if part == '':
+                    continue
+                if part == find:
+                    found.append(part)
+                if part == token:
+                    continue
+                else:
+                    found += split_punctuation(part)
+    if len(found) == 0:
+        found = [token]
+    return found
 
 
 def dictify_tokens(token, token_text, var_int, var_dict):
@@ -1181,6 +1188,224 @@ def dictify_tokens(token, token_text, var_int, var_dict):
             var_dict[token][token_text] = {var_int : 1}
     else:
         var_dict[token] = {token_text : {var_int : 1}}
+
+
+def get_transcript(input_path, filename):
+    path_json = input_path + audiofolder + '\\' + filename
+    with open(path_json, encoding='utf-8') as json_file:
+        transcript = json.load(json_file)
+    return transcript
+
+
+def do_token_stuff(input_path, jsons):
+        # phase 1: Addapt names
+    detected_nothing = "detected_nothing!!!"
+    detected_occurence = 'detected_occurence!!!'
+    tokenpath = input_path + tokenfolder + '\\'
+
+    token2string_dict = {}
+
+    # Read in all the transcribts
+    phase_2 = True
+    if phase_2:
+        # Todo: Build a Dict with { Token : Word or ,.!? }
+        # Status: Currently on hold due to it Tokens not alligning 100% with words
+        full_dict = {}
+        wrong_dict = {}
+        list_wrong_matches = []
+        counter_match = 0
+        counter_no_match = 0
+        for filename in jsons: 
+            transcript = get_transcript(input_path, filename)
+            for segment in transcript['segments']:
+                tokens = segment['tokens']
+                text = segment['text']
+                tokens_text = text.split()
+                if len(tokens) != len(tokens_text):
+                    better_tokens_text = []
+                    for token in tokens_text:
+                        temp = split_punctuation(token)
+                        for x in temp:
+                            better_tokens_text.append(x)
+                    tokens_text = better_tokens_text
+                if len(tokens) != len(tokens_text):
+                    counter_no_match += 1
+                    list_wrong_matches.append([tokens, tokens_text])
+                else:
+                    token_translation = {}
+                    for idx, token in enumerate(tokens):
+                        # dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), token_translation)
+                        dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), full_dict)
+                    counter_match += 1
+                # ['Hallo', 'und', 'herzlich', 'willkommen', 'hier', 'ist', 'Bardo', 'mit', 'einem', 'neuen', 'Video', 'zu', 'WoW', 'zu', ...]
+                # ' Hallo und herzlich willkommen 
+                # [21242, 674, 45919, 46439, 
+                # hier ist Bardo mit 
+                # 3296, 1418, 363, 12850, 
+                # einem neuen Video zu 
+                # 2194, 6827, 21387, 9777, 
+                # WoW zu Legion heute'
+                # 2164, 6622, 54 2164
+                # ?? ??
+                # 33024 9801
+            if not os.path.exists(tokenpath):
+                os.makedirs(tokenpath)
+            # dict2json(token_translation, filename.replace('.json', '') + "_tokens", tokenpath)
+            
+            print('Match rate: ' + str(round(counter_match/counter_no_match, 2)), flush=True)
+            # print('While ' + str(counter_match) + ' could be matched, ' + str(counter_no_match) + ' could not.', flush=True)
+        for token in full_dict:
+            if len(full_dict[token]) == 1:
+                token2string_dict.update({token:list(full_dict[token])[0]})
+        token2string_dict = dict(sorted(token2string_dict.items()))
+        dict2json(token2string_dict, "_token2string", tokenpath)
+        dict2json(full_dict, "_tokens", tokenpath)
+        occurs_with = {}
+
+        for tokens, tokens_text in list_wrong_matches:
+            for token in tokens:
+                if token in full_dict:
+                    text = list(full_dict[token])[0]
+                    if text in tokens_text:
+                        tokens_text.remove(text)
+                        tokens.remove(token)
+            print(',\t'.join(str(e) for e in tokens))
+            print(',\t'.join(str(e) for e in tokens_text), flush=True)
+            while len(tokens) > len(tokens_text):
+                tokens_text.append(detected_nothing)
+            while len(tokens) < len(tokens_text):
+                tokens.append(-1)
+            for idx, token in enumerate(tokens):
+                dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), wrong_dict)
+                dictify_tokens(token, token, detected_occurence, occurs_with)
+                for text in tokens_text:
+                    dictify_tokens(token, token, text, occurs_with)
+    else:
+        with open(tokenpath + '_tokens_occurs_with.json', encoding='utf-8') as json_file:
+            occurs_with = json.load(json_file) 
+    
+    phase_3 = True
+    if phase_3:
+        # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
+        determined_tokens = {}
+        progress_made = True
+        while progress_made:
+            progress_made = False
+            blacklist = []
+            occurs_with_filtered = {}
+            # TODO: remove soon:
+            for token in list(occurs_with):
+                if detected_occurence in occurs_with[token][token]:
+                    del occurs_with[token][token][detected_occurence]
+                if detected_nothing in occurs_with[token][token]:
+                    del occurs_with[token][token][detected_nothing]
+                # make that work later on
+                # if detected_occurence in occurs_with[token][token]:
+                #     det_count = occurs_with[token][token][detected_occurence]
+                # else:
+                max_v = 0
+                for key, value in occurs_with[token][token].items():
+                    max_v = max(max_v, value)
+                det_count = max_v
+                occurs_with_filtered[token] = {}
+                
+                for text in occurs_with[token][token]:
+                    fin_count = occurs_with[token][token][text]
+                    if fin_count >= 0.5 * det_count:
+                        occurs_with_filtered[token][text] = fin_count
+                if len(occurs_with_filtered[token]) == 1:
+                    text = list(occurs_with_filtered[token])[0]
+                    determined_tokens[token] = text
+                    blacklist.append([token, text])
+                    progress_made = True
+            for token, text in blacklist:
+                if token in occurs_with:
+                    del occurs_with[token]
+                for token in list(occurs_with):
+                    if text in occurs_with[token][token]:
+                        del occurs_with[token][token][text]
+            blacklist = []
+
+        dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
+        dict2json(determined_tokens, "_tokens_determined", tokenpath)
+        
+    phase_4 = True
+    if phase_4:
+        pass
+    # dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
+    # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
+    # dict2json(wrong_dict, "_tokens_wrong", tokenpath)
+
+
+spellcheck_dict = {
+    'regular'   :   {
+        r'Nr\.*(?= \d)' : 'Nummer',
+        r'(?<=\d)%ig' : '-prozentig',
+        r'(?<=\d)%' : ' Prozent',
+    },
+    'BMZ'   :   {
+        # Nummer im Titel ggf. shiften
+        # Groß und kleinschreibung
+        'onkel Campus' : 'Onkel Barlow',
+        'Onkel Manu' : 'Onkel Barlow',
+        'onkel war lo' : 'Onkel Barlow',
+        'onkel war' : 'Onkel Barlow',
+        # Todo: make this less suceptible to errors:
+        # Barlowr
+        # Barlowng
+        'Bardo' : 'Barlow',
+        'Balo' : 'Barlow',
+        'Bano' : 'Barlow',
+        'Bado' : 'Barlow',
+        'Pano' : 'Barlow',
+        'Vado' : 'Barlow',
+        # 'Valo' : 'Barlow', # conflict with valor
+        'Wadl' : 'Barlow',
+        'Walow' : 'Barlow',
+        # 'Warlo' : 'Barlow', # conflict with Warlock
+        'Wano' : 'Barlow',
+        'Barloww' : 'Barlow',
+        'D.O.T.L.K.' : 'WOTLK',
+        'Olof Goldcap' : 'Null auf Goldcap',
+        'Addon' : 'Add-on',
+        'Amount' : 'Mount',
+        # 'gemopper' : 'gemopper', # dafuq?
+        'ccs' : 'CCs',
+        # 'baff' : 'Buff', # nicht immer
+        # '......' : ' ', # Gedankenpause
+        # '...' : ' ', # auslaufende Gedanken
+        'älter Scrolls' : 'Elder Scrolls',
+        'WMZ ' : 'BMZ',
+        'Cell-Run' : 'Sellrun'
+    }
+}
+
+def spellcheck_string(text, playlist_name):
+    for dict_s in spellcheck_dict:
+        if dict_s == 'regular':
+            for x, y in spellcheck_dict[dict_s].items():
+                text = re.sub(x, y, text)
+        elif dict_s == playlist_name:
+            for x, y in spellcheck_dict[dict_s].items():
+                text = text.replace(x, y)
+    return text
+
+
+def spellcheck(input_path, playlist_name, jsons):
+    edited_path = input_path + editfolder + '\\'
+    with open(edited_path + "text.txt", "w", encoding='utf8') as f:
+        for filename in jsons:
+            transcript = get_transcript(input_path, filename)
+            transcript['text'] = spellcheck_string(transcript['text'], playlist_name)
+            for segment in transcript['segments']:
+                segment['text'] = spellcheck_string(segment['text'], playlist_name)
+
+            f.write(transcript['text'] + '\n')
+
+            if not os.path.exists(edited_path):
+                os.makedirs(edited_path)
+
+            dict2json(transcript, filename, edited_path)
 
 
 
@@ -1260,138 +1485,9 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
                         if exists(path_old) and not exists(path_new):
                             if not exists(path_new):
                                 os.rename(path_old, path_new)
-    
-    # phase 1: Addapt names
-    detected_nothing = "detected_nothing!!!"
-    detected_occurence = 'detected_occurence!!!'
-    tokenpath = input_path + tokenfolder + '\\'
-
-    phase_2 = True
-    if phase_2:
-        # Todo: Build a Dict with { Token : Word or ,.!? }
-        # Status: Currently on hold due to it Tokens not alligning 100% with words
-        full_dict = {}
-        wrong_dict = {}
-        list_wrong_matches = []
-        counter_match = 0
-        counter_no_match = 0
-        for filename in jsons: 
-            path_json = input_path + audiofolder + '\\' + filename
-            with open(path_json, encoding='utf-8') as json_file:
-                transcript = json.load(json_file)
-            for segment in transcript['segments']:
-                tokens = segment['tokens']
-                text = segment['text']
-                tokens_text = text.split()
-                if len(tokens) != len(tokens_text):
-                    better_tokens_text = []
-                    for token in tokens_text:
-                        temp = split_punctuation(token)
-                        for x in temp:
-                            better_tokens_text.append(x)
-                    tokens_text = better_tokens_text
-                if len(tokens) != len(tokens_text):
-                    counter_no_match += 1
-                    list_wrong_matches.append([tokens, tokens_text])
-                else:
-                    token_translation = {}
-                    for idx, token in enumerate(tokens):
-                        # dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), token_translation)
-                        dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), full_dict)
-                    counter_match += 1
-                # ['Hallo', 'und', 'herzlich', 'willkommen', 'hier', 'ist', 'Bardo', 'mit', 'einem', 'neuen', 'Video', 'zu', 'WoW', 'zu', ...]
-                # ' Hallo und herzlich willkommen 
-                # [21242, 674, 45919, 46439, 
-                # hier ist Bardo mit 
-                # 3296, 1418, 363, 12850, 
-                # einem neuen Video zu 
-                # 2194, 6827, 21387, 9777, 
-                # WoW zu Legion heute'
-                # 2164, 6622, 54 2164
-                # ?? ??
-                # 33024 9801
-            if not os.path.exists(tokenpath):
-                os.makedirs(tokenpath)
-            # dict2json(token_translation, filename.replace('.json', '') + "_tokens", tokenpath)
-            
-            # print('Match rate: ' + str(round(counter_match/counter_no_match, 2)), flush=True)
-            # print('While ' + str(counter_match) + ' could be matched, ' + str(counter_no_match) + ' could not.', flush=True)
-        dict2json(full_dict, "_tokens", tokenpath)
-        occurs_with = {}
-
-        for tokens, tokens_text in list_wrong_matches:
-            for token in tokens:
-                if token in full_dict:
-                    text = list(full_dict[token])[0]
-                    if text in tokens_text:
-                        tokens_text.remove(text)
-                        tokens.remove(token)
-            print(',\t'.join(str(e) for e in tokens))
-            print(',\t'.join(str(e) for e in tokens_text), flush=True)
-            while len(tokens) > len(tokens_text):
-                tokens_text.append(detected_nothing)
-            while len(tokens) < len(tokens_text):
-                tokens.append(-1)
-            for idx, token in enumerate(tokens):
-                dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), wrong_dict)
-                dictify_tokens(token, token, detected_occurence, occurs_with)
-                for text in tokens_text:
-                    dictify_tokens(token, token, text, occurs_with)
-    else:
-        with open(tokenpath + '_tokens_occurs_with.json', encoding='utf-8') as json_file:
-            occurs_with = json.load(json_file) 
-    
-    phase_3 = True
-    if phase_3:
-        # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
-        determined_tokens = {}
-        progress_made = True
-        while progress_made:
-            progress_made = False
-            blacklist = []
-            occurs_with_filtered = {}
-            # TODO: remove soon:
-            for token in list(occurs_with):
-                if detected_occurence in occurs_with[token][token]:
-                    del occurs_with[token][token][detected_occurence]
-                if detected_nothing in occurs_with[token][token]:
-                    del occurs_with[token][token][detected_nothing]
-                # make that work later on
-                # if detected_occurence in occurs_with[token][token]:
-                #     det_count = occurs_with[token][token][detected_occurence]
-                # else:
-                max_v = 0
-                for key, value in occurs_with[token][token].items():
-                    max_v = max(max_v, value)
-                det_count = max_v
-                occurs_with_filtered[token] = {}
-                
-                for text in occurs_with[token][token]:
-                    fin_count = occurs_with[token][token][text]
-                    if fin_count >= 0.5 * det_count:
-                        occurs_with_filtered[token][text] = fin_count
-                if len(occurs_with_filtered[token]) == 1:
-                    text = list(occurs_with_filtered[token])[0]
-                    determined_tokens[token] = text
-                    blacklist.append([token, text])
-                    progress_made = True
-            for token, text in blacklist:
-                if token in occurs_with:
-                    del occurs_with[token]
-                for token in list(occurs_with):
-                    if text in occurs_with[token][token]:
-                        del occurs_with[token][token][text]
-            blacklist = []
-
-        dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
-        dict2json(determined_tokens, "_tokens_determined", tokenpath)
-        
-    phase_4 = True
-    if phase_4:
-        pass
-    # dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
-    # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
-    # dict2json(wrong_dict, "_tokens_wrong", tokenpath)
+    spellcheck(input_path, playlist_name, jsons)
+    # do_token_stuff(input_path, jsons)
+    # Todo: make every subsequential call look for transcripts in edited
 
 def setup_infos(playlist_info, episodes_info, input_path):
     if len(playlist_info) == 0:
