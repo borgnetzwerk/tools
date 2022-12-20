@@ -362,10 +362,13 @@ def YouTube2dict(index, input_path, filename, playlist_name):
 
 
 def dict2json(dict_var, name, path=os.getcwd()):
+    json_pos = name.find(".json")
+    if json_pos != len(name)-5:
+        name += '.json'
     json_object = json.dumps(dict_var, indent=4)
     if path[-2:] != "//":
         path += "//"
-    with open(path + name + ".json", "w", encoding='utf8') as outfile:
+    with open(path + name, "w", encoding='utf8') as outfile:
         outfile.write(json_object)
 
 # convert from dictionary to json
@@ -1090,7 +1093,8 @@ def extract_html_info(input_path, playlist_name):
 
     # If major changes are made:
     if not flush_out_relics:
-        playlist_info, episodes_info = setup_infos(playlist_info, episodes_info, input_path)
+        playlist_info, episodes_info = setup_infos(
+            playlist_info, episodes_info, input_path)
 
     for filename in data_files:
         if filename.split('.')[-1] == 'html':
@@ -1145,16 +1149,16 @@ def extract_html_info(input_path, playlist_name):
 
 
 token_puncs = {
-    '......'    :   r'(......)',
-    '...'  :   r'(...$)',
-    ','  :   r'(,$)',
-    '.'  :   r'((?<!\d)\.$)',
-    '!'  :   r'(!$)',
-    '?'  :   r'(\?$)',
+    '......':   r'(......)',
+    '...':   r'(...$)',
+    ',':   r'(,$)',
+    '.':   r'((?<!\d)\.$)',
+    '!':   r'(!$)',
+    '?':   r'(\?$)',
 }
 
 token_puncs_ok = {
-    '.'  :   r'\d\.$',
+    '.':   r'\d\.$',
 }
 
 
@@ -1185,9 +1189,9 @@ def dictify_tokens(token, token_text, var_int, var_dict):
             else:
                 var_dict[token][token_text].update({var_int: 1})
         else:
-            var_dict[token][token_text] = {var_int : 1}
+            var_dict[token][token_text] = {var_int: 1}
     else:
-        var_dict[token] = {token_text : {var_int : 1}}
+        var_dict[token] = {token_text: {var_int: 1}}
 
 
 def get_transcript(input_path, filename):
@@ -1198,7 +1202,7 @@ def get_transcript(input_path, filename):
 
 
 def do_token_stuff(input_path, jsons):
-        # phase 1: Addapt names
+    # phase 1: Addapt names
     detected_nothing = "detected_nothing!!!"
     detected_occurence = 'detected_occurence!!!'
     tokenpath = input_path + tokenfolder + '\\'
@@ -1215,7 +1219,7 @@ def do_token_stuff(input_path, jsons):
         list_wrong_matches = []
         counter_match = 0
         counter_no_match = 0
-        for filename in jsons: 
+        for filename in jsons:
             transcript = get_transcript(input_path, filename)
             for segment in transcript['segments']:
                 tokens = segment['tokens']
@@ -1235,15 +1239,16 @@ def do_token_stuff(input_path, jsons):
                     token_translation = {}
                     for idx, token in enumerate(tokens):
                         # dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), token_translation)
-                        dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), full_dict)
+                        dictify_tokens(token, tokens_text[idx], int(
+                            filename.split('_')[0]), full_dict)
                     counter_match += 1
                 # ['Hallo', 'und', 'herzlich', 'willkommen', 'hier', 'ist', 'Bardo', 'mit', 'einem', 'neuen', 'Video', 'zu', 'WoW', 'zu', ...]
-                # ' Hallo und herzlich willkommen 
-                # [21242, 674, 45919, 46439, 
-                # hier ist Bardo mit 
-                # 3296, 1418, 363, 12850, 
-                # einem neuen Video zu 
-                # 2194, 6827, 21387, 9777, 
+                # ' Hallo und herzlich willkommen
+                # [21242, 674, 45919, 46439,
+                # hier ist Bardo mit
+                # 3296, 1418, 363, 12850,
+                # einem neuen Video zu
+                # 2194, 6827, 21387, 9777,
                 # WoW zu Legion heute'
                 # 2164, 6622, 54 2164
                 # ?? ??
@@ -1251,12 +1256,13 @@ def do_token_stuff(input_path, jsons):
             if not os.path.exists(tokenpath):
                 os.makedirs(tokenpath)
             # dict2json(token_translation, filename.replace('.json', '') + "_tokens", tokenpath)
-            
-            print('Match rate: ' + str(round(counter_match/counter_no_match, 2)), flush=True)
+
+            print('Match rate: ' +
+                  str(round(counter_match/counter_no_match, 2)), flush=True)
             # print('While ' + str(counter_match) + ' could be matched, ' + str(counter_no_match) + ' could not.', flush=True)
         for token in full_dict:
             if len(full_dict[token]) == 1:
-                token2string_dict.update({token:list(full_dict[token])[0]})
+                token2string_dict.update({token: list(full_dict[token])[0]})
         token2string_dict = dict(sorted(token2string_dict.items()))
         dict2json(token2string_dict, "_token2string", tokenpath)
         dict2json(full_dict, "_tokens", tokenpath)
@@ -1269,21 +1275,22 @@ def do_token_stuff(input_path, jsons):
                     if text in tokens_text:
                         tokens_text.remove(text)
                         tokens.remove(token)
-            print(',\t'.join(str(e) for e in tokens))
-            print(',\t'.join(str(e) for e in tokens_text), flush=True)
+            # print(',\t'.join(str(e) for e in tokens))
+            # print(',\t'.join(str(e) for e in tokens_text), flush=True)
             while len(tokens) > len(tokens_text):
                 tokens_text.append(detected_nothing)
             while len(tokens) < len(tokens_text):
                 tokens.append(-1)
             for idx, token in enumerate(tokens):
-                dictify_tokens(token, tokens_text[idx], int(filename.split('_')[0]), wrong_dict)
+                dictify_tokens(token, tokens_text[idx], int(
+                    filename.split('_')[0]), wrong_dict)
                 dictify_tokens(token, token, detected_occurence, occurs_with)
                 for text in tokens_text:
                     dictify_tokens(token, token, text, occurs_with)
     else:
         with open(tokenpath + '_tokens_occurs_with.json', encoding='utf-8') as json_file:
-            occurs_with = json.load(json_file) 
-    
+            occurs_with = json.load(json_file)
+
     phase_3 = True
     if phase_3:
         # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
@@ -1308,7 +1315,7 @@ def do_token_stuff(input_path, jsons):
                     max_v = max(max_v, value)
                 det_count = max_v
                 occurs_with_filtered[token] = {}
-                
+
                 for text in occurs_with[token][token]:
                     fin_count = occurs_with[token][token][text]
                     if fin_count >= 0.5 * det_count:
@@ -1326,9 +1333,10 @@ def do_token_stuff(input_path, jsons):
                         del occurs_with[token][token][text]
             blacklist = []
 
-        dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
+        dict2json(occurs_with_filtered,
+                  "_tokens_occurs_with_filtered", tokenpath)
         dict2json(determined_tokens, "_tokens_determined", tokenpath)
-        
+
     phase_4 = True
     if phase_4:
         pass
@@ -1338,59 +1346,60 @@ def do_token_stuff(input_path, jsons):
 
 
 spellcheck_dict = {
-    'regular'   :   {
-        r'Nr\.*(?= \d)' : 'Nummer',
-        r'(?<=\d)%ig' : '-prozentig',
-        r'(?<=\d)%' : ' Prozent',
-    },
-    'BMZ'   :   {
-        # Nummer im Titel ggf. shiften
-        # Groß und kleinschreibung
-        'onkel Campus' : 'Onkel Barlow',
-        'Onkel Manu' : 'Onkel Barlow',
-        'onkel war lo' : 'Onkel Barlow',
-        'onkel war' : 'Onkel Barlow',
-        # Todo: make this less suceptible to errors:
-        # Barlowr
-        # Barlowng
-        # Barlowu
-        # heel, self hier : 'heal', 'self heal
-        r'(?<!\w)[pP][rRoO]{0,2}t[ -][pP][aA][rR]{0,1}[lA][aAoP][rR]{0,1}' : 'Prot Pala',
-        r'[pP]arlor' : 'Pala',
-        r'(?<!\w)unkel{0,1}(?!\w)' :   'Onkel',
-        r'(?<!\w)[pPbBvVwW][aA]{1,2}[rR]{0,1}[nNdDlL]{0,2}[oO]{1,2}[uU]{0,1}[wW]{0,1}(?!\w)'    :   'Barlow',
-        r'(?<!\w)[pPbB][aA]{1,2}[rR]{0,1}[nNdDlL]{0,2}[oO]{1,2}[uU]{0,1}[wW]{0,1}[rR]{0,1}(?!\w)'    :   'Barlow',
-        r'(?<!\w)[vVwWmM][aA]{1,2}[nNdDlL]{1,2}[oOuU]{1,2}[mMwW]{0,1}(?!\w)'    :   'Barlow',
-        r'(?<!\w)[vVwWbB][aAhH]{1,2}[nNdDlL]{1,2}[oOuU]{1,2}[mMwW]{0,1}(ng){0,1}(?!\w)' :   'Barlow',
-        'herzlich willkommen hier ist war noch' : 'herzlich willkommen hier ist Barlow',
-        # r'willkommen,* hier ist [^(Barlow)] mit '   :   'willkommen, hier ist Barlow mit ', # nicht mehr notwendig
-        # 'war noch' : 'Barlow', to many errors
-        'D.O.T.L.K.' : 'WOTLK',
-        'Olof Goldcap' : 'Null auf Goldcap',
-        'Addon' : 'Add-on',
-        'Amount' : 'Mount',
-        'ccs' : 'CCs',
-        'älter Scrolls' : 'Elder Scrolls',
-        r'[WD]MZ ' : 'BMZ',
-        'Cell-Run' : 'Sellrun',
-        # 'gemopper' : 'gemopper', # dafuq?
-        # 'baff' : 'Buff', # nicht immer
+    'regular':   {
+        r'Nr\.*(?= \d)': 'Nummer',
+        r'(?<=\d)%ig': '-prozentig',
+        r'(?<=\d)%': ' Prozent',
         # '......' : ' ', # Gedankenpause
         # '...' : ' ', # auslaufende Gedanken
+    },
+    'BMZ':   {
+        # Nummer im Titel ggf. shiften
+        # Groß und kleinschreibung
+        'onkel Campus': 'Onkel Barlow',
+        'Onkel Manu': 'Onkel Barlow',
+        'onkel war lo': 'Onkel Barlow',
+        'onkel war': 'Onkel Barlow',
+        #  onkel anime # nope, das war intentional
+        # Todo: make this less suceptible to errors:
+        # heel, self hier : 'heal', 'self heal
+        r'(?<!\w)[pP][rRoO]{0,2}t[ -][pP][aA][rR]{0,1}[lA][aAoP][rR]{0,1}': 'Prot Pala',
+        r'[pP]arlor': 'Pala',
+        r'(?<!\w)unkel{0,1}(?!\w)':   'Onkel',
+        # pENNIS? WTF Whisper? WTF Trainingssatz...
+        r'(?<!\w)[oO]nkel{0,1} (pENNIS)*(Wadl)*(pa am)*(?!\w)':   'Onkel Barlow',
+        r'(?<!\w)[pPbBvVwW][aA]{1,2}[rR]{0,1}[nNdDlL]{0,2}[oO]{1,2}[uU]{0,1}[wW]{0,1}(?!\w)':   'Barlow',
+        r'(?<!\w)[pPbB][aA]{1,2}[rR]{0,1}[nNdDlL]{0,2}[oO]{1,2}[uU]{0,1}[wW]{0,1}[rR]{0,1}(?!\w)':   'Barlow',
+        r'(?<!\w)[vVwWmM][aA]{1,2}[nNdDlL]{1,2}[oOuU]{1,2}[mMwW]{0,1}(?!\w)':   'Barlow',
+        r'(?<!\w)[vVwWbB][aAhH]{1,2}[nNdDlL]{1,2}[oOuU]{1,2}[mMwW]{0,1}(ng){0,1}(?!\w)':   'Barlow',
+        'herzlich willkommen hier ist war noch': 'herzlich willkommen hier ist Barlow',
+        # r'willkommen,* hier ist [^(Barlow)] mit '   :   'willkommen, hier ist Barlow mit ', # nicht mehr notwendig
+        # 'war noch' : 'Barlow', to many errors
+        'D.O.T.L.K.': 'WOTLK',
+        'Olof Goldcap': 'Null auf Goldcap',
+        'Addon': 'Add-on',
+        'Amount': 'Mount',
+        'ccs': 'CCs',
+        'älter Scrolls': 'Elder Scrolls',
+        r'[WD]MZ ': 'BMZ',
+        'Cell-Run': 'Sellrun',
+        # 'gemopper' : 'gemopper', # dafuq?
+        # 'baff' : 'Buff', # nicht immer
     }
 }
+
 
 def spellcheck_string(text, playlist_name):
     for dict_s in spellcheck_dict:
         if dict_s == 'regular':
             for x, y in spellcheck_dict[dict_s].items():
-                try: 
+                try:
                     text = re.sub(x, y, text)
                 except:
                     text = text.replace(x, y)
         elif dict_s == playlist_name:
             for x, y in spellcheck_dict[dict_s].items():
-                try: 
+                try:
                     text = re.sub(x, y, text)
                 except:
                     text = text.replace(x, y)
@@ -1402,12 +1411,21 @@ def spellcheck(input_path, playlist_name, jsons):
     with open(edited_path + "text.txt", "w", encoding='utf8') as f:
         for filename in jsons:
             transcript = get_transcript(input_path, filename)
-            transcript['text'] = spellcheck_string(transcript['text'], playlist_name)
+            temp = transcript['text']
+            found = re.search(r'[^,.!\?]{2000}', transcript['text'])
+            if found is not None:
+                print('stuck in no-punctuation mode: ' + filename)
+            # https://github.com/openai/whisper/discussions/194
+            # TODO: redo translation or sth
+            # Status: Yet to be fixed
+            transcript['text'] = spellcheck_string(
+                transcript['text'], playlist_name)
             # TODO: Improve segment checks if correction happens in text, but is split in segment:
             # Port Pala -> "... Pot", "Pala ..."
             for segment in transcript['segments']:
-                segment['text'] = spellcheck_string(segment['text'], playlist_name)
-
+                segment['text'] = spellcheck_string(
+                    segment['text'], playlist_name)
+            # TODO: make a check if no need to write to file again
             f.write(transcript['text'] + '\n')
 
             if not os.path.exists(edited_path):
@@ -1416,9 +1434,8 @@ def spellcheck(input_path, playlist_name, jsons):
             dict2json(transcript, filename, edited_path)
 
 
-
 def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
-    #Phase 0: Setup
+    # Phase 0: Setup
     data_files, data_folders = extract_file_folder(input_path)
     data_files = show_newest_files(input_path, data_files)
     # --- 1. Setup --- #
@@ -1433,7 +1450,8 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     episodes_info = {}
 
     # If major changes are made:
-    playlist_info, episodes_info = setup_infos(playlist_info, episodes_info, input_path)
+    playlist_info, episodes_info = setup_infos(
+        playlist_info, episodes_info, input_path)
 
     if len(data_folders) == 0 or audiofolder not in data_folders:
         return
@@ -1460,7 +1478,7 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     # phase 1: Addapt names
     phase_1 = False
     if phase_1:
-        # TODO: generalize this 
+        # TODO: generalize this
         for filename in jsons:
             entry = filename[:4]
             if "BMZ" not in entry:
@@ -1497,6 +1515,7 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     # do_token_stuff(input_path, jsons)
     # Todo: make every subsequential call look for transcripts in edited
 
+
 def setup_infos(playlist_info, episodes_info, input_path):
     if len(playlist_info) == 0:
         with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
@@ -1508,8 +1527,10 @@ def setup_infos(playlist_info, episodes_info, input_path):
             episodes_info = {int(k): v for k, v in episodes_info.items()}
     return [playlist_info, episodes_info]
 
+
 def convert_to_wiki(input_path, playlist_name, playlist_info, episodes_info):
-    playlist_info, episodes_info = setup_infos(playlist_info, episodes_info, input_path)
+    playlist_info, episodes_info = setup_infos(
+        playlist_info, episodes_info, input_path)
 
     playlist_info = wikify_dict(playlist_info, playlist_name)
     for e_key in episodes_info:
@@ -1518,21 +1539,22 @@ def convert_to_wiki(input_path, playlist_name, playlist_info, episodes_info):
 
     csv2wiki(playlist_info, episodes_info, input_path, playlist_name)
 
+
 tex_esc = {
-    '\\' :   '\\textbackslash',
-    '^'  :   '\\textasciicircum',
-    '~'  :   '\\textasciitilde',
-    '&'  :   '\\&',
-    '%'  :   '\\%',
-    '$'  :   '\\$',
-    '#'  :   '\\#',
-    '_'  :   '\\_',
-    '{'  :   '\\{',
-    '}'  :   '\\}',
+    '\\':   '\\textbackslash',
+    '^':   '\\textasciicircum',
+    '~':   '\\textasciitilde',
+    '&':   '\\&',
+    '%':   '\\%',
+    '$':   '\\$',
+    '#':   '\\#',
+    '_':   '\\_',
+    '{':   '\\{',
+    '}':   '\\}',
 }
 
 
-def latex_escape(title, skip = False):
+def latex_escape(title, skip=False):
     # https://tex.stackexchange.com/questions/34580/escape-character-in-latex
     for key, value in tex_esc.items():
         if key == '#' and skip:
@@ -1544,7 +1566,8 @@ def latex_escape(title, skip = False):
 
 
 def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
-    playlist_info, episodes_info = setup_infos(playlist_info, episodes_info, input_path)
+    playlist_info, episodes_info = setup_infos(
+        playlist_info, episodes_info, input_path)
     language = 'de'
     if 'language' in playlist_info:
         language = playlist_info['language']
@@ -1574,7 +1597,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
     for foldername in data_folders:
         if not os.path.exists(tex_path + '\\' + foldername):
             os.makedirs(tex_path + '\\' + foldername)
-    
+
     # make changes according to podcast_info
 
     # Fill input
@@ -1595,15 +1618,15 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
         for each in noFileChars:
             title_file = title_file.replace(each, '')
         clean_name = fill_digits(e_key, 3) + '_' + title_file
-        json_path = input_path + '\\' + audiofolder + '\\' + clean_name + '.json'
+        json_path = input_path + '\\' + editfolder + '\\' + clean_name + '.json'
         if exists(json_path):
 
             with open(json_path, encoding='utf-8') as json_file:
                 info = json.load(json_file)
-            
+
             author_here = author
             # Todo: Make this read and differentiate the episodes author
-            # Currently this is not even extracted from YouTube 
+            # Currently this is not even extracted from YouTube
             if 'author' in episode:
                 author_here = episode['author']
             # YouTube and Spotify
@@ -1622,10 +1645,11 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
             index_lines.append(line)
 
             # Todo: find out why double space is a no-go
-            tex_path_episode = tex_path + 'input\\' + clean_name.replace("  ", " ") + '.tex'
+            tex_path_episode = tex_path + 'input\\' + \
+                clean_name.replace("  ", " ") + '.tex'
             with open(tex_path_episode, "w", encoding='utf8') as f:
                 f.write(latex_escape(info['text']))
-            
+
             index_lines.append('\clearpage')
             # \newchapter{Story One}{Author One}
 
@@ -1653,7 +1677,7 @@ def main():
         extract_html_info(data_pl_path, pl_n)
         add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
         # convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
-        # convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info)
+        convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info)
 
 
 if __name__ == '__main__':
