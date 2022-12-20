@@ -2,6 +2,7 @@ import re
 import csv
 import sys
 import mediaWiki
+import nlp
 import json
 import os
 import time
@@ -213,7 +214,7 @@ def texify(var_s, k):
                 url_var = "Spotify"
             elif "youtube.com" in t:
                 url_var = "YouTube"
-            winner += ' \href{' + t + '}{' + url_var + '}'
+            winner += ' \href{' + t + '}{\includegraphics[height=11pt]{gfx/' + url_var + '.png}}'
         var_s = winner
     return var_s
 
@@ -1069,7 +1070,7 @@ def show_newest_files(input_path, files):
     return files_sorted
 
 
-def extract_html_info(input_path, playlist_name):
+def extract_html_info(input_path, playlist_name, playlist_info, episodes_info):
     data_files, data_folders = extract_file_folder(input_path)
     data_files = show_newest_files(input_path, data_files)
     for file in data_files:
@@ -1081,15 +1082,10 @@ def extract_html_info(input_path, playlist_name):
 
     # --- 1. Setup --- #
     # Log file
-    old_stdout = sys.stdout
-    log_file = open("logfile.log", "w", encoding='utf8')
-    sys.stdout = log_file
 
     # check what info is available
 
     # Read existing info
-    playlist_info = {}
-    episodes_info = {}
 
     # If major changes are made:
     if not flush_out_relics:
@@ -1141,9 +1137,6 @@ def extract_html_info(input_path, playlist_name):
     # Read file
     infos2json(playlist_info, episodes_info,
                input_path, filename, playlist_name)
-
-    sys.stdout = old_stdout
-    log_file.close()
 
     return (playlist_info, episodes_info)
 
@@ -1440,9 +1433,6 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     data_files = show_newest_files(input_path, data_files)
     # --- 1. Setup --- #
     # Log file
-    old_stdout = sys.stdout
-    log_file = open("logfile.log", "w", encoding='utf8')
-    sys.stdout = log_file
     # check what info is available
 
     # Read existing info
@@ -1564,6 +1554,18 @@ def latex_escape(title, skip=False):
         title = title.replace(key, value)
     return title
 
+def forge_title(title, eID, playlist_name):
+    pieces = title_mine(title, playlist_name)
+    if 'eID' in pieces:
+        eID = pieces['eID']
+    # Make Episode 128 disappear, so that 165 allignes
+    elif eID > 128:
+        eID += 1
+    title = ''
+    if 'title' in pieces:
+        title = pieces['title']
+    title = '#' + str(eID) + ": " + title
+    return title
 
 def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
     playlist_info, episodes_info = setup_infos(
@@ -1607,7 +1609,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
         author = playlist_info['author_name']
     for e_key in episodes_info:
         min = 0
-        max = 0
+        max = 5
         if e_key < min:
             continue
         if e_key > max:
@@ -1619,8 +1621,8 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
             title_file = title_file.replace(each, '')
         clean_name = fill_digits(e_key, 3) + '_' + title_file
         json_path = input_path + '\\' + editfolder + '\\' + clean_name + '.json'
+        # reminder: Episodes that have no mp3 (i.E. Spotify exclusives) cannot be found
         if exists(json_path):
-
             with open(json_path, encoding='utf-8') as json_file:
                 info = json.load(json_file)
 
@@ -1631,11 +1633,18 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
                 author_here = episode['author']
             # YouTube and Spotify
             if 'url' in episode:
-                author_here += texify(episode['url'], 'url')
+                # author_here += texify(episode['url'], 'url')
+                # Wenn Icons dort sind, brauchen wir das "Onkel Barlow" vielleicht nicht
+                author_here = texify(episode['url'], 'url')
             # Wiki
                 # author_here += texify(episode['url'], 'url')
-            title_tex = latex_escape(title)
+            title_forged = forge_title(title, e_key+1, playlist_name)
+            title_tex = latex_escape(title_forged)
+            # No BMZ in title:
+            title_tex = re.sub(r'BMZ *:*', '', title_tex, 1)
+
             line = '\\newchapter{' + title_tex + '}{' + author_here + '}'
+            # line = '\\newchapter{' + title_tex + '}{' + author_here + '}'
             index_lines.append(line)
 
             # Todo: find out why double space is a no-go
@@ -1661,6 +1670,10 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
                 f.write(line + '\n')
 
 
+def NLP(input_path, playlist_name, playlist_info, episodes_info):
+    nlp.main(input_path, playlist_name, playlist_info, episodes_info)        
+
+
 def main():
     my_path = os.getcwd()
     data_path = os.path.dirname(my_path) + '\\data\\'
@@ -1669,15 +1682,23 @@ def main():
     playlist_names.remove('sample')
     # for pl_n in playlist_names:
     for pl_n in playlist_names[:1]:
+        old_stdout = sys.stdout
+        log_file = open("logfile_" + pl_n + ".log", "w", encoding='utf8')
+        sys.stdout = log_file
+        
         data_pl_path = data_path + pl_n + '\\'
         playlist_info = {}
         episodes_info = {}
         # TODO: Find out why this doesnt work
         # playlist_info, episodes_info = extract_html_info(data_pl_path, pl_n)
-        extract_html_info(data_pl_path, pl_n)
-        add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
+        extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
+        # add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
+        NLP(data_pl_path, pl_n, playlist_info, episodes_info)
         # convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
         convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info)
+
+        sys.stdout = old_stdout
+        log_file.close()
 
 
 if __name__ == '__main__':
