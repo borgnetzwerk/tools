@@ -1353,30 +1353,30 @@ spellcheck_dict = {
         # Todo: make this less suceptible to errors:
         # Barlowr
         # Barlowng
-        'Bardo' : 'Barlow',
-        'Balo' : 'Barlow',
-        'Bano' : 'Barlow',
-        'Bado' : 'Barlow',
-        'Pano' : 'Barlow',
-        'Vado' : 'Barlow',
-        # 'Valo' : 'Barlow', # conflict with valor
-        'Wadl' : 'Barlow',
-        'Walow' : 'Barlow',
-        # 'Warlo' : 'Barlow', # conflict with Warlock
-        'Wano' : 'Barlow',
-        'Barloww' : 'Barlow',
+        # Barlowu
+        # heel, self hier : 'heal', 'self heal
+        r'(?<!\w)[pP][rRoO]{0,2}t[ -][pP][aA][rR]{0,1}[lA][aAoP][rR]{0,1}' : 'Prot Pala',
+        r'[pP]arlor' : 'Pala',
+        r'(?<!\w)unkel{0,1}(?!\w)' :   'Onkel',
+        r'(?<!\w)[pPbBvVwW][aA]{1,2}[rR]{0,1}[nNdDlL]{0,2}[oO]{1,2}[uU]{0,1}[wW]{0,1}(?!\w)'    :   'Barlow',
+        r'(?<!\w)[pPbB][aA]{1,2}[rR]{0,1}[nNdDlL]{0,2}[oO]{1,2}[uU]{0,1}[wW]{0,1}[rR]{0,1}(?!\w)'    :   'Barlow',
+        r'(?<!\w)[vVwWmM][aA]{1,2}[nNdDlL]{1,2}[oOuU]{1,2}[mMwW]{0,1}(?!\w)'    :   'Barlow',
+        r'(?<!\w)[vVwWbB][aAhH]{1,2}[nNdDlL]{1,2}[oOuU]{1,2}[mMwW]{0,1}(ng){0,1}(?!\w)' :   'Barlow',
+        'herzlich willkommen hier ist war noch' : 'herzlich willkommen hier ist Barlow',
+        # r'willkommen,* hier ist [^(Barlow)] mit '   :   'willkommen, hier ist Barlow mit ', # nicht mehr notwendig
+        # 'war noch' : 'Barlow', to many errors
         'D.O.T.L.K.' : 'WOTLK',
         'Olof Goldcap' : 'Null auf Goldcap',
         'Addon' : 'Add-on',
         'Amount' : 'Mount',
-        # 'gemopper' : 'gemopper', # dafuq?
         'ccs' : 'CCs',
+        'älter Scrolls' : 'Elder Scrolls',
+        r'[WD]MZ ' : 'BMZ',
+        'Cell-Run' : 'Sellrun',
+        # 'gemopper' : 'gemopper', # dafuq?
         # 'baff' : 'Buff', # nicht immer
         # '......' : ' ', # Gedankenpause
         # '...' : ' ', # auslaufende Gedanken
-        'älter Scrolls' : 'Elder Scrolls',
-        'WMZ ' : 'BMZ',
-        'Cell-Run' : 'Sellrun'
     }
 }
 
@@ -1384,10 +1384,16 @@ def spellcheck_string(text, playlist_name):
     for dict_s in spellcheck_dict:
         if dict_s == 'regular':
             for x, y in spellcheck_dict[dict_s].items():
-                text = re.sub(x, y, text)
+                try: 
+                    text = re.sub(x, y, text)
+                except:
+                    text = text.replace(x, y)
         elif dict_s == playlist_name:
             for x, y in spellcheck_dict[dict_s].items():
-                text = text.replace(x, y)
+                try: 
+                    text = re.sub(x, y, text)
+                except:
+                    text = text.replace(x, y)
     return text
 
 
@@ -1397,6 +1403,8 @@ def spellcheck(input_path, playlist_name, jsons):
         for filename in jsons:
             transcript = get_transcript(input_path, filename)
             transcript['text'] = spellcheck_string(transcript['text'], playlist_name)
+            # TODO: Improve segment checks if correction happens in text, but is split in segment:
+            # Port Pala -> "... Pot", "Pala ..."
             for segment in transcript['segments']:
                 segment['text'] = spellcheck_string(segment['text'], playlist_name)
 
