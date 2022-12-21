@@ -1,3 +1,5 @@
+import helper
+
 import re
 import csv
 import sys
@@ -9,11 +11,11 @@ import time
 import numpy
 import difflib
 import shutil
-from pprint import pprint
+from pprint import PrettyPrinter
 from os import listdir
 from os.path import isfile, join
-from datetime import datetime
 from os.path import exists
+from datetime import datetime
 import os.path as path
 
 # Define
@@ -362,23 +364,15 @@ def YouTube2dict(index, input_path, filename, playlist_name):
     return playlist_info_YT, episode_info_YT
 
 
-def dict2json(dict_var, name, path=os.getcwd()):
-    json_pos = name.find(".json")
-    if json_pos != len(name)-5:
-        name += '.json'
-    json_object = json.dumps(dict_var, indent=4)
-    if path[-2:] != "//":
-        path += "//"
-    with open(path + name, "w", encoding='utf8') as outfile:
-        outfile.write(json_object)
+
 
 # convert from dictionary to json
 
 
 def infos2json(playlist_info, episodes_info, input_path, filename, playlist_name):
     # Serializing json
-    dict2json(playlist_info, "playlist_info", input_path)
-    dict2json(episodes_info, "episodes_info", input_path)
+    helper.dict2json(playlist_info, "playlist_info", input_path)
+    helper.dict2json(episodes_info, "episodes_info", input_path)
     return
 
 # convert from json to csv
@@ -840,12 +834,12 @@ def handle_diff_ep(list_var, playlist_name):
     for x in reversed(deletes):
         del zero_match[x]
 
-    dict2json(order, "order")
-    dict2json(matched, "matched")
+    helper.dict2json(order, "order")
+    helper.dict2json(matched, "matched")
     for idx, episode_infos in enumerate(list_var):
-        dict2json(list_var[idx], "episode_infos_" + str(idx))
-    dict2json(zero_match, "zero_match")
-    dict2json(multi_match, "multi_match")
+        helper.dict2json(list_var[idx], "episode_infos_" + str(idx))
+    helper.dict2json(zero_match, "zero_match")
+    helper.dict2json(multi_match, "multi_match")
 
     # for row in order:
     #     print('\t' + ',\t'.join(str(e) for e in row))
@@ -1019,16 +1013,7 @@ dict_author = {
 # ---- Main ---- #
 
 
-def extract_file_folder(input_path):
-    data_all = [f for f in listdir(input_path)]
-    data_files = []
-    data_folders = []
-    for elm in data_all:
-        if isfile(join(input_path, elm)):
-            data_files.append(elm)
-        else:
-            data_folders.append(elm)
-    return data_files, data_folders
+
 
 
 def rreplace(s, old, new, occurrence):
@@ -1071,7 +1056,7 @@ def show_newest_files(input_path, files):
 
 
 def extract_html_info(input_path, playlist_name, playlist_info, episodes_info):
-    data_files, data_folders = extract_file_folder(input_path)
+    data_files, data_folders = helper.extract_file_folder(input_path)
     data_files = show_newest_files(input_path, data_files)
     for file in data_files:
         if ".html" in file:
@@ -1110,10 +1095,10 @@ def extract_html_info(input_path, playlist_name, playlist_info, episodes_info):
 
     tempList = [playlist_info]
     if 'YouTube.html' in data_files:
-        dict2json(playlist_info_YT, "playlist_info_YT", input_path)
+        helper.dict2json(playlist_info_YT, "playlist_info_YT", input_path)
         tempList.append(playlist_info_YT)
     if 'Spotify.html' in data_files:
-        dict2json(playlist_info_SF, "playlist_info_SF", input_path)
+        helper.dict2json(playlist_info_SF, "playlist_info_SF", input_path)
         tempList.append(playlist_info_SF)
     if len(tempList) > 1:
         playlist_info = handle_diff(tempList)
@@ -1122,10 +1107,10 @@ def extract_html_info(input_path, playlist_name, playlist_info, episodes_info):
 
     tempList = [episodes_info]
     if 'YouTube.html' in data_files:
-        dict2json(episodes_info_YT, "episodes_info_YT", input_path)
+        helper.dict2json(episodes_info_YT, "episodes_info_YT", input_path)
         tempList.append(episodes_info_YT)
     if 'Spotify.html' in data_files:
-        dict2json(episodes_info_SF, "episodes_info_SF", input_path)
+        helper.dict2json(episodes_info_SF, "episodes_info_SF", input_path)
         tempList.append(episodes_info_SF)
 
     if len(tempList) > 1:
@@ -1248,7 +1233,7 @@ def do_token_stuff(input_path, jsons):
                 # 33024 9801
             if not os.path.exists(tokenpath):
                 os.makedirs(tokenpath)
-            # dict2json(token_translation, filename.replace('.json', '') + "_tokens", tokenpath)
+            # helper.dict2json(token_translation, filename.replace('.json', '') + "_tokens", tokenpath)
 
             print('Match rate: ' +
                   str(round(counter_match/counter_no_match, 2)), flush=True)
@@ -1257,8 +1242,8 @@ def do_token_stuff(input_path, jsons):
             if len(full_dict[token]) == 1:
                 token2string_dict.update({token: list(full_dict[token])[0]})
         token2string_dict = dict(sorted(token2string_dict.items()))
-        dict2json(token2string_dict, "_token2string", tokenpath)
-        dict2json(full_dict, "_tokens", tokenpath)
+        helper.dict2json(token2string_dict, "_token2string", tokenpath)
+        helper.dict2json(full_dict, "_tokens", tokenpath)
         occurs_with = {}
 
         for tokens, tokens_text in list_wrong_matches:
@@ -1286,7 +1271,7 @@ def do_token_stuff(input_path, jsons):
 
     phase_3 = True
     if phase_3:
-        # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
+        # helper.dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
         determined_tokens = {}
         progress_made = True
         while progress_made:
@@ -1326,16 +1311,16 @@ def do_token_stuff(input_path, jsons):
                         del occurs_with[token][token][text]
             blacklist = []
 
-        dict2json(occurs_with_filtered,
+        helper.dict2json(occurs_with_filtered,
                   "_tokens_occurs_with_filtered", tokenpath)
-        dict2json(determined_tokens, "_tokens_determined", tokenpath)
+        helper.dict2json(determined_tokens, "_tokens_determined", tokenpath)
 
     phase_4 = True
     if phase_4:
         pass
-    # dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
-    # dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
-    # dict2json(wrong_dict, "_tokens_wrong", tokenpath)
+    # helper.dict2json(occurs_with_filtered, "_tokens_occurs_with_filtered", tokenpath)
+    # helper.dict2json(occurs_with, "_tokens_occurs_with", tokenpath)
+    # helper.dict2json(wrong_dict, "_tokens_wrong", tokenpath)
 
 
 spellcheck_dict = {
@@ -1401,7 +1386,7 @@ def spellcheck_string(text, playlist_name):
 
 def spellcheck(input_path, playlist_name, jsons):
     edited_path = input_path + editfolder + '\\'
-    with open(edited_path + "text.txt", "w", encoding='utf8') as f:
+    with open(edited_path + "_text.txt", "w", encoding='utf8') as f:
         for filename in jsons:
             transcript = get_transcript(input_path, filename)
             temp = transcript['text']
@@ -1424,12 +1409,12 @@ def spellcheck(input_path, playlist_name, jsons):
             if not os.path.exists(edited_path):
                 os.makedirs(edited_path)
 
-            dict2json(transcript, filename, edited_path)
+            helper.dict2json(transcript, filename, edited_path)
 
 
 def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     # Phase 0: Setup
-    data_files, data_folders = extract_file_folder(input_path)
+    data_files, data_folders = helper.extract_file_folder(input_path)
     data_files = show_newest_files(input_path, data_files)
     # --- 1. Setup --- #
     # Log file
@@ -1448,7 +1433,7 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
 
     for foldername in data_folders:
         if foldername == audiofolder:
-            data_files_audio, data_folders_audio = extract_file_folder(
+            data_files_audio, data_folders_audio = helper.extract_file_folder(
                 input_path + foldername + '\\')
 
     jsons = []
@@ -1579,7 +1564,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
     tex_path = input_path + 'LaTeX\\'
     if not os.path.exists(tex_path):
         os.makedirs(tex_path)
-    data_files, data_folders = extract_file_folder(tex_path_sample)
+    data_files, data_folders = helper.extract_file_folder(tex_path_sample)
     tex_filenames = []
     for filename in data_files:
         split_tup = os.path.splitext(tex_path_sample + filename)
@@ -1671,7 +1656,9 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
 
 
 def NLP(input_path, playlist_name, playlist_info, episodes_info):
+    # print('vor NPL')
     nlp.main(input_path, playlist_name, playlist_info, episodes_info)        
+    # print('nach NPL')
 
 
 def main():
@@ -1685,7 +1672,7 @@ def main():
         old_stdout = sys.stdout
         log_file = open("logfile_" + pl_n + ".log", "w", encoding='utf8')
         sys.stdout = log_file
-        
+
         data_pl_path = data_path + pl_n + '\\'
         playlist_info = {}
         episodes_info = {}
