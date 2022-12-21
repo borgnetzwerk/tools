@@ -11,6 +11,7 @@ import time
 import numpy
 import difflib
 import shutil
+import spacy
 from pprint import pprint
 from os import listdir
 from os.path import isfile, join
@@ -23,47 +24,9 @@ from flair.models import SequenceTagger
 editfolder = 'edited'
 
 
-def split_layers(string, characters=" ", keep_char=False, layer=0):
-    if layer == len(characters):
-        return [string]
-    x = characters[layer]
-    pieces = []
-    if x in string:
-        layer_pieces = string.split(x)
-        for piece in layer_pieces:
-            if piece == '':
-                continue
-            inner_results = split_layers(piece, characters, keep_char, 1+layer)
-            if len(inner_results) == 0:
-                continue
-            for s in inner_results[:-1]:
-                pieces.append(s)
-            last_piece = inner_results[-1]
-            if keep_char:
-                last_piece += x
-            pieces.append(last_piece)
-    else:
-        pieces = split_layers(string, characters, keep_char, 1+layer)
-    return pieces
 
 
-def wordify(string):
-    candidates = split_layers(string, ' ,.!?\n')
-    res = []
-    for candidate in candidates:
-        found = re.search(r'\D', candidate)
-        if found != None:
-            found = re.search(r'\w', candidate)
-            if found != None:
-                res.append(candidate)
-    return res
-
-
-def sentencify(string):
-    return split_layers(string, '.!?', True)
-
-
-def test(input_path, playlist_name, playlist_info, episodes_info, tagger):
+def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     # make a sentence
     # sentence = Sentence('I love Berlin .')
 
@@ -101,63 +64,116 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger):
 
     # Dictionary block:
     lexicon = {}
+    lexicon_episodes = {}
     lexicon_episode = {}
     lexicon_full = {}
     lexicon_ner = {}
     lexicon_ner_episode = {}
     lexicon_ner_full = {}
+    lexicon_ranked = {}
 
     with open(edit_path + '\\' + '_text.txt', "r", encoding="utf8") as f:
         lines = f.readlines()
-    for idx, line in enumerate(lines):
-        lexicon_episode = {}
-        filename = jsons[idx]
-        fileID = int(filename[:3])
-        words = wordify(line)
-        for word in words:
-            helper.nested_add(lexicon_episode, [word], 1)
-            helper.nested_add(lexicon_full, [word, fileID], 1)
-        for key, value in lexicon_episode.items():
-            helper.nested_add(lexicon, [key], value)
-        if idx % 50 == 0 or idx == len(lines)-1:
-            lexicon = dict(sorted(lexicon.items()))
-            lexicon_full = dict(sorted(lexicon_full.items()))
-            helper.dict2json(lexicon, '_lexicon', edit_path)
-            helper.dict2json(lexicon_full, '_lexicon_full', edit_path)
-            lexicon_ranked = {k: v for k, v in sorted(lexicon.items(), reverse=True, key=lambda item: item[1])}
-            lexicon_full_ranked = sorted(lexicon_full_ranked, reverse=True, key=lambda k: len(lexicon_full_ranked[k]))
-            helper.dict2json(lexicon_ranked, "_lexicon_ranked", edit_path)
-            helper.dict2json(lexicon_full_ranked, "_lexicon_full_ranked", edit_path)
 
-    for idx, line in enumerate(lines):
-        lexicon_episode = {}
-        filename = jsons[idx]
-        fileID = int(filename[:3])
-        print(filename + ':')
-        sentences = sentencify(line)
-        for s in sentences:
-            sentence = Sentence(s)
+    do_words = True
+    # do_words = False
+    if do_words:
+        for idx, line in enumerate(lines):
+            lexicon_episode = {}
+            filename = jsons[idx]
+            fileID = int(filename[:3])
+            # words = helper.wordify(line)
+            # Now working with lemma
+            words = helper.lemmatize(line, nlp)
+            for word in words:
+                helper.nested_add(lexicon_episode, [word], 1)
+                helper.nested_add(lexicon_full, [word, fileID], 1)
+            for key, value in lexicon_episode.items():
+                helper.nested_add(lexicon, [key], value)
+            helper.nested_add(lexicon_episodes, [fileID], lexicon_episode)
+            print(str(words) + ' words in ' + filename, flush=True)
+            # if idx % 50 == 0 or idx == len(lines)-1:
+            if idx == len(lines)-1:
+                lexicon = dict(sorted(lexicon.items()))
+                lexicon_full = dict(sorted(lexicon_full.items()))
+                # helper.dict2json(lexicon, '_lexicon', edit_path)
+                # helper.dict2json(lexicon_full, '_lexicon_full', edit_path)
+                lexicon_ranked = {k: v for k, v in sorted(
+                    lexicon.items(), reverse=True, key=lambda item: item[1])}
+                lexicon_full_ranked = sorted(
+                    lexicon_full, reverse=True, key=lambda k: len(lexicon_full[k]))
+                helper.dict2json(lexicon_episodes,
+                                 "_lexicon_episodes", edit_path)
+                helper.dict2json(lexicon_ranked, "_lexicon_ranked", edit_path)
+                helper.dict2json(lexicon_full_ranked,
+                                 "_lexicon_full_ranked", edit_path)
 
-            # run NER over sentence
-            tagger.predict(sentence)
+    else:
+        lexicon_ranked = helper.json2dict("_lexicon_ranked", edit_path)
 
-            # iterate over entities and print each
-            sentence.get_token
-            for entity in sentence.get_spans('ner'):
-                text = entity.text
-                helper.nested_add(lexicon_ner_episode, [text, fileID], 1)
-                helper.nested_add(lexicon_ner_full, [
-                                  text, fileID, entity.tag], [entity.score])
-        for text, dict_var in lexicon_ner_episode.items():
-            for fileID, value in dict_var.items():
-                helper.nested_add(lexicon_ner, [text, fileID], value)
-        if idx % 50 == 0 or idx == len(lines)-1:
-            lexicon_ner = dict(sorted(lexicon_ner.items()))
-            lexicon_ner_full = dict(sorted(lexicon_ner_full.items()))
-            helper.dict2json(lexicon_ner, '_lexicon_ner', edit_path)
-            helper.dict2json(lexicon_ner_full, '_lexicon_ner_full', edit_path)
+    # Stemming
+    # https://medium.com/@tusharsri/nlp-a-quick-guide-to-stemming-60f1ca5db49e
+    # Cutting words down till the same for alle declinations remains
+    # Lemmatization
+    # Link
+    # Wir können von allen wörter auf das gleiche kern-wort mappen
+    # https://github.com/wartaal/HanTa
+    # https://pypi.org/project/spacy/
+    # https://stackoverflow.com/questions/57857240/ho-to-do-lemmatization-on-german-text
 
-        print('', flush=True)
+    lexicon_similar = {}
+    upper_range = 2000
+    max = len(lexicon_ranked)
+    counter = 0
+    for idx, word in enumerate(lexicon_ranked):
+        for idy, comp in enumerate(lexicon_ranked):
+            if idy <= idx:
+                continue
+            are_sim = helper.similar(word, comp)
+            if are_sim:
+                if word in lexicon_similar:
+                    lexicon_similar[word] += [comp]
+                else:
+                    lexicon_similar[word] = [comp]
+        # if upper_range + 1 < max:
+        #     upper_range+=1
+        if idx % 10 == 0:
+            print(str(counter) + ' words checked.')
+            counter += 10
+            helper.dict2json(lexicon_similar, "_lexicon_similar", edit_path)
+
+    do_ner = False
+    if do_ner:
+        for idx, line in enumerate(lines):
+            lexicon_ner_episode = {}
+            filename = jsons[idx]
+            fileID = int(filename[:3])
+            print(filename + ':')
+            sentences = helper.sentencify(line)
+            for s in sentences:
+                sentence = Sentence(s)
+
+                # run NER over sentence
+                tagger.predict(sentence)
+
+                # iterate over entities and print each
+                sentence.get_token
+                for entity in sentence.get_spans('ner'):
+                    text = entity.text
+                    helper.nested_add(lexicon_ner_episode, [text, fileID], 1)
+                    helper.nested_add(lexicon_ner_full, [
+                        text, fileID, entity.tag], [entity.score])
+            for text, dict_var in lexicon_ner_episode.items():
+                for fileID, value in dict_var.items():
+                    helper.nested_add(lexicon_ner, [text, fileID], value)
+            if idx % 50 == 0 or idx == len(lines)-1:
+                lexicon_ner = dict(sorted(lexicon_ner.items()))
+                lexicon_ner_full = dict(sorted(lexicon_ner_full.items()))
+                helper.dict2json(lexicon_ner, '_lexicon_ner', edit_path)
+                helper.dict2json(lexicon_ner_full,
+                                 '_lexicon_ner_full', edit_path)
+
+            print('', flush=True)
 
 
 def main(input_path=os.getcwd(), playlist_name='BMZ', playlist_info={}, episodes_info={}):
@@ -168,8 +184,10 @@ def main(input_path=os.getcwd(), playlist_name='BMZ', playlist_info={}, episodes
     # # sys.stdout = log_file
     # print('nachher', flush=True)
     # load the NER tagger
-    tagger = SequenceTagger.load('ner-multi-fast')
-    test(input_path, playlist_name, playlist_info, episodes_info, tagger)
+    # tagger = SequenceTagger.load('ner-multi-fast')
+    tagger = False
+    nlp = spacy.load('de_core_news_md')
+    test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp)
 
 
 if __name__ == '__main__':

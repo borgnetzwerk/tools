@@ -9,7 +9,6 @@ import json
 import os
 import time
 import numpy
-import difflib
 import shutil
 from pprint import PrettyPrinter
 from os import listdir
@@ -19,7 +18,6 @@ from datetime import datetime
 import os.path as path
 
 # Define
-similar_enough = 0.9
 audiofolder = 'mp3'
 tokenfolder = 'token'
 editfolder = 'edited'
@@ -461,8 +459,6 @@ def title_mine(title, playlist_name):
     return temp
 
 
-def similar(seq1, seq2, level=similar_enough):
-    return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > similar_enough
 
 
 def compare_titles(try_this, comp, playlist_name):
@@ -1353,6 +1349,7 @@ spellcheck_dict = {
         'herzlich willkommen hier ist war noch': 'herzlich willkommen hier ist Barlow',
         # r'willkommen,* hier ist [^(Barlow)] mit '   :   'willkommen, hier ist Barlow mit ', # nicht mehr notwendig
         # 'war noch' : 'Barlow', to many errors
+        r'\beinfacht\b': "einfällt",
         'D.O.T.L.K.': 'WOTLK',
         'Olof Goldcap': 'Null auf Goldcap',
         'Addon': 'Add-on',
