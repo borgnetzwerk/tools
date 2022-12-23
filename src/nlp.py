@@ -24,8 +24,6 @@ from flair.models import SequenceTagger
 editfolder = 'edited'
 
 
-
-
 def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     # make a sentence
     # sentence = Sentence('I love Berlin .')
@@ -65,52 +63,56 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     # Dictionary block:
     lexicon = {}
     lexicon_episodes = {}
-    lexicon_episode = {}
-    lexicon_full = {}
+    lexicon_ep_count = {}
     lexicon_ner = {}
     lexicon_ner_episode = {}
     lexicon_ner_full = {}
-    lexicon_ranked = {}
 
     with open(edit_path + '\\' + '_text.txt', "r", encoding="utf8") as f:
         lines = f.readlines()
 
     do_words = True
-    # do_words = False
+    do_words = False
     if do_words:
         for idx, line in enumerate(lines):
             lexicon_episode = {}
             filename = jsons[idx]
             fileID = int(filename[:3])
-            # words = helper.wordify(line)
-            # Now working with lemma
-            words = helper.lemmatize(line, nlp)
+            words = helper.wordify(line)
             for word in words:
                 helper.nested_add(lexicon_episode, [word], 1)
-                helper.nested_add(lexicon_full, [word, fileID], 1)
+                helper.nested_add(lexicon_ep_count, [word, fileID], 1)
             for key, value in lexicon_episode.items():
                 helper.nested_add(lexicon, [key], value)
-            helper.nested_add(lexicon_episodes, [fileID], lexicon_episode)
-            print(str(words) + ' words in ' + filename, flush=True)
+            helper.nested_add(lexicon_episodes, [fileID], sorted(
+                lexicon_episode.items(), reverse=True, key=lambda item: item[1]))
+            print(str(len(words)) + ' words in ' + filename, flush=True)
             # if idx % 50 == 0 or idx == len(lines)-1:
             if idx == len(lines)-1:
                 lexicon = dict(sorted(lexicon.items()))
-                lexicon_full = dict(sorted(lexicon_full.items()))
-                # helper.dict2json(lexicon, '_lexicon', edit_path)
-                # helper.dict2json(lexicon_full, '_lexicon_full', edit_path)
-                lexicon_ranked = {k: v for k, v in sorted(
+                helper.dict2json(lexicon, '_lexicon_alphabetical', edit_path)
+                lexicon = {k: v for k, v in sorted(
                     lexicon.items(), reverse=True, key=lambda item: item[1])}
-                lexicon_full_ranked = sorted(
-                    lexicon_full, reverse=True, key=lambda k: len(lexicon_full[k]))
-                helper.dict2json(lexicon_episodes,
-                                 "_lexicon_episodes", edit_path)
-                helper.dict2json(lexicon_ranked, "_lexicon_ranked", edit_path)
-                helper.dict2json(lexicon_full_ranked,
-                                 "_lexicon_full_ranked", edit_path)
+                helper.dict2json(lexicon,
+                                 "_lexicon", edit_path)
+                lexicon_ep_count = sorted(
+                    lexicon_ep_count, reverse=True, key=lambda k: len(lexicon_ep_count[k]))
+                helper.dict2json(lexicon_ep_count,
+                                 "_lexicon_ep_count", edit_path)
 
     else:
-        lexicon_ranked = helper.json2dict("_lexicon_ranked", edit_path)
+        helper.json2dict(lexicon, "_lexicon", edit_path)
 
+    if nlp:
+        do_lemma = True
+    else:
+        do_lemma = False
+    if do_lemma:
+        lemmacon = helper.lemmatize(lexicon, nlp)
+        lemmacon = {k: v for k, v in sorted(
+            lemmacon.items(), reverse=True, key=lambda item: sum(list(item[1].values())))}
+        helper.dict2json(lemmacon,
+                         "_lemmacon", edit_path)
     # Stemming
     # https://medium.com/@tusharsri/nlp-a-quick-guide-to-stemming-60f1ca5db49e
     # Cutting words down till the same for alle declinations remains
@@ -121,28 +123,37 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     # https://pypi.org/project/spacy/
     # https://stackoverflow.com/questions/57857240/ho-to-do-lemmatization-on-german-text
 
-    lexicon_similar = {}
-    upper_range = 2000
-    max = len(lexicon_ranked)
-    counter = 0
-    for idx, word in enumerate(lexicon_ranked):
-        for idy, comp in enumerate(lexicon_ranked):
-            if idy <= idx:
-                continue
-            are_sim = helper.similar(word, comp)
-            if are_sim:
-                if word in lexicon_similar:
-                    lexicon_similar[word] += [comp]
-                else:
-                    lexicon_similar[word] = [comp]
-        # if upper_range + 1 < max:
-        #     upper_range+=1
-        if idx % 10 == 0:
-            print(str(counter) + ' words checked.')
-            counter += 10
-            helper.dict2json(lexicon_similar, "_lexicon_similar", edit_path)
+    do_sim = True
+    # do_sim = False
+    if do_sim:
+        lexicon_similar = {}
+        upper_range = 2000
+        max = len(lexicon)/2
+        counter = 0
+        for idx, word in enumerate(lexicon):
+            for idy, comp in enumerate(lexicon):
+                if idy <= idx:
+                    continue
+                if idy > max:
+                    break
+                are_sim = helper.similar(word, comp)
+                if are_sim:
+                    if word in lexicon_similar:
+                        lexicon_similar[word] += [comp]
+                    else:
+                        lexicon_similar[word] = [comp]
+            # if upper_range + 1 < max:
+            #     upper_range+=1
+            if idx % 10 == 0:
+                print(str(counter) + ' words checked.')
+                counter += 10
+                helper.dict2json(
+                    lexicon_similar, "_lexicon_similar", edit_path)
 
-    do_ner = False
+    if tagger:
+        do_ner = True
+    else:
+        do_ner = False
     if do_ner:
         for idx, line in enumerate(lines):
             lexicon_ner_episode = {}
@@ -184,9 +195,10 @@ def main(input_path=os.getcwd(), playlist_name='BMZ', playlist_info={}, episodes
     # # sys.stdout = log_file
     # print('nachher', flush=True)
     # load the NER tagger
-    # tagger = SequenceTagger.load('ner-multi-fast')
     tagger = False
-    nlp = spacy.load('de_core_news_md')
+    nlp = False
+    tagger = SequenceTagger.load('ner-multi-fast')
+    # nlp = spacy.load('de_core_news_md')
     test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp)
 
 

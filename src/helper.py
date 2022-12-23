@@ -24,24 +24,35 @@ def extract_file_folder(input_path):
             data_folders.append(elm)
     return data_files, data_folders
 
-def json2dict(name, path=os.getcwd()):
+
+def json2dict(dict_var, name, path=os.getcwd()):
     json_pos = name.find(".json")
     if json_pos != len(name)-5:
         name += '.json'
     if path[-2:] != "\\":
         path += "\\"
     with open(path + name, encoding='utf-8') as json_file:
-        dict_var = json.load(json_file)
-    # return temp
-        # dict_var = temp
-    return dict_var
+        dict_var.update(json.load(json_file))
 
 
-def lemmatize(string, nlp):
+def lemmatize(var_dict, nlp):
     # this might change the reslts
-    doc = nlp(string)
-    result = [x.lemma_.lower() for x in doc if re.search(r'\b[\w]+(?<!\d)-*\w*\b', x.lemma_)]
-    return result
+    print('lemmatizing ' + str(len(var_dict)) + ' words', flush=True)
+    lemma_dict = {}
+    lemmas = nlp(' '.join(list(var_dict.keys())))
+    for idx, [word, value] in enumerate(var_dict.items()):
+        # lemma = nlp(word)[0]
+        lemma = lemmas[idx].lemma_
+        # Due to lexicon being sorted, lemma elements should be automatically sorted
+        # sort = False
+        # if lemma in lemma_dict:
+        #     sort = True
+        nested_add(lemma_dict, [lemma], {word: value})
+        # if sort:
+        #     lemma_dict[lemma] = {k: v for k, v in sorted(
+        #         lemma_dict[lemma].items(), reverse=True, key=lambda item: item[1])}
+    print('reduced to  ' + str(len(lemma_dict)) + ' words', flush=True)
+    return lemma_dict
 
 
 def dict2json(dict_var, name, path=os.getcwd()):
@@ -72,7 +83,11 @@ def nested_add(dic, keys, value):
             dic[key] = {}
         dic = dic.setdefault(key, {})
     if keys[-1] in dic:
-        dic[keys[-1]] += value
+        if type(value) == dict:
+            for key_i, value_i in value.items():
+                nested_add(dic, keys + [key_i], value_i)
+        else:
+            dic[keys[-1]] += value
     else:
         dic[keys[-1]] = value
 

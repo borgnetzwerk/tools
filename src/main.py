@@ -16,7 +16,7 @@ from os.path import isfile, join
 from os.path import exists
 from datetime import datetime
 import os.path as path
-
+import spellcheck.main as s_check
 # Define
 audiofolder = 'mp3'
 tokenfolder = 'token'
@@ -214,7 +214,8 @@ def texify(var_s, k):
                 url_var = "Spotify"
             elif "youtube.com" in t:
                 url_var = "YouTube"
-            winner += ' \href{' + t + '}{\includegraphics[height=11pt]{gfx/' + url_var + '.png}}'
+            winner += ' \href{' + t + \
+                '}{\includegraphics[height=11pt]{gfx/' + url_var + '.png}}'
         var_s = winner
     return var_s
 
@@ -362,8 +363,6 @@ def YouTube2dict(index, input_path, filename, playlist_name):
     return playlist_info_YT, episode_info_YT
 
 
-
-
 # convert from dictionary to json
 
 
@@ -457,8 +456,6 @@ def title_mine(title, playlist_name):
                 # temp[split] = str(found[1])
             title = found[2]
     return temp
-
-
 
 
 def compare_titles(try_this, comp, playlist_name):
@@ -1009,9 +1006,6 @@ dict_author = {
 # ---- Main ---- #
 
 
-
-
-
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
@@ -1308,7 +1302,7 @@ def do_token_stuff(input_path, jsons):
             blacklist = []
 
         helper.dict2json(occurs_with_filtered,
-                  "_tokens_occurs_with_filtered", tokenpath)
+                         "_tokens_occurs_with_filtered", tokenpath)
         helper.dict2json(determined_tokens, "_tokens_determined", tokenpath)
 
     phase_4 = True
@@ -1319,49 +1313,7 @@ def do_token_stuff(input_path, jsons):
     # helper.dict2json(wrong_dict, "_tokens_wrong", tokenpath)
 
 
-spellcheck_dict = {
-    'regular':   {
-        r'Nr\.*(?= \d)': 'Nummer',
-        r'(?<=\d)%ig': '-prozentig',
-        r'(?<=\d)%': ' Prozent',
-        # '......' : ' ', # Gedankenpause
-        # '...' : ' ', # auslaufende Gedanken
-    },
-    'BMZ':   {
-        # Nummer im Titel ggf. shiften
-        # Groß und kleinschreibung
-        'onkel Campus': 'Onkel Barlow',
-        'Onkel Manu': 'Onkel Barlow',
-        'onkel war lo': 'Onkel Barlow',
-        'onkel war': 'Onkel Barlow',
-        #  onkel anime # nope, das war intentional
-        # Todo: make this less suceptible to errors:
-        # heel, self hier : 'heal', 'self heal
-        r'(?<!\w)[pP][rRoO]{0,2}t[ -][pP][aA][rR]{0,1}[lA][aAoP][rR]{0,1}': 'Prot Pala',
-        r'[pP]arlor': 'Pala',
-        r'(?<!\w)unkel{0,1}(?!\w)':   'Onkel',
-        # pENNIS? WTF Whisper? WTF Trainingssatz...
-        r'(?<!\w)[oO]nkel{0,1} (pENNIS)*(Wadl)*(pa am)*(?!\w)':   'Onkel Barlow',
-        r'(?<!\w)[pPbBvVwW][aA]{1,2}[rR]{0,1}[nNdDlL]{0,2}[oO]{1,2}[uU]{0,1}[wW]{0,1}(?!\w)':   'Barlow',
-        r'(?<!\w)[pPbB][aA]{1,2}[rR]{0,1}[nNdDlL]{0,2}[oO]{1,2}[uU]{0,1}[wW]{0,1}[rR]{0,1}(?!\w)':   'Barlow',
-        r'(?<!\w)[vVwWmM][aA]{1,2}[nNdDlL]{1,2}[oOuU]{1,2}[mMwW]{0,1}(?!\w)':   'Barlow',
-        r'(?<!\w)[vVwWbB][aAhH]{1,2}[nNdDlL]{1,2}[oOuU]{1,2}[mMwW]{0,1}(ng){0,1}(?!\w)':   'Barlow',
-        'herzlich willkommen hier ist war noch': 'herzlich willkommen hier ist Barlow',
-        # r'willkommen,* hier ist [^(Barlow)] mit '   :   'willkommen, hier ist Barlow mit ', # nicht mehr notwendig
-        # 'war noch' : 'Barlow', to many errors
-        r'\beinfacht\b': "einfällt",
-        'D.O.T.L.K.': 'WOTLK',
-        'Olof Goldcap': 'Null auf Goldcap',
-        'Addon': 'Add-on',
-        'Amount': 'Mount',
-        'ccs': 'CCs',
-        'älter Scrolls': 'Elder Scrolls',
-        r'[WD]MZ ': 'BMZ',
-        'Cell-Run': 'Sellrun',
-        # 'gemopper' : 'gemopper', # dafuq?
-        # 'baff' : 'Buff', # nicht immer
-    }
-}
+spellcheck_dict = s_check.main_dict
 
 
 def spellcheck_string(text, playlist_name):
@@ -1369,13 +1321,13 @@ def spellcheck_string(text, playlist_name):
         if dict_s == 'regular':
             for x, y in spellcheck_dict[dict_s].items():
                 try:
-                    text = re.sub(x, y, text)
+                    text = re.sub(x, y, text, flags=re.IGNORECASE)
                 except:
                     text = text.replace(x, y)
         elif dict_s == playlist_name:
             for x, y in spellcheck_dict[dict_s].items():
                 try:
-                    text = re.sub(x, y, text)
+                    text = re.sub(x, y, text, flags=re.IGNORECASE)
                 except:
                     text = text.replace(x, y)
     return text
@@ -1386,7 +1338,7 @@ def spellcheck(input_path, playlist_name, jsons):
     with open(edited_path + "_text.txt", "w", encoding='utf8') as f:
         for filename in jsons:
             transcript = get_transcript(input_path, filename)
-            temp = transcript['text']
+            # temp = transcript['text']
             found = re.search(r'[^,.!\?]{2000}', transcript['text'])
             if found is not None:
                 print('stuck in no-punctuation mode: ' + filename)
@@ -1536,6 +1488,7 @@ def latex_escape(title, skip=False):
         title = title.replace(key, value)
     return title
 
+
 def forge_title(title, eID, playlist_name):
     pieces = title_mine(title, playlist_name)
     if 'eID' in pieces:
@@ -1548,6 +1501,49 @@ def forge_title(title, eID, playlist_name):
         title = pieces['title']
     title = '#' + str(eID) + ": " + title
     return title
+
+
+def add_acronyms(playlist_name, f):
+    if playlist_name in s_check.acro:
+        ac_dict = s_check.acro[playlist_name]
+    else:
+        return
+    if len(ac_dict) == 0:
+        return
+
+    f.write('\\begin{acronym}[MMORPG]\n')
+    for ac, entries in ac_dict.items():
+        line = '\t\\acro{' + ac + '}[' + ac + ']{' + entries[0] + '}'
+        f.write(line + '\n')
+        if len(entries) > 1:
+            line = '\t\\acrodefplural{' + ac + \
+                '}[' + entries[1] + ']{' + entries[2] + '}'
+            f.write(line + '\n')
+    f.write('\\end{acronym}\n')
+
+
+def texify_acronyms(text, playlist_name):
+    if playlist_name in s_check.acro:
+        ac_dict = s_check.acro[playlist_name]
+    else:
+        return text
+    if len(ac_dict) == 0:
+        return text
+
+    for ac, entries in ac_dict.items():
+        # Todo: find out why r'\b(?=\w)' might be used instead r'\b'
+        ac_s = r'\b' + re.escape(ac) + r'\b'
+        ac = r'\\ac{' + ac + '}'
+        if len(entries) > 1:
+            acp_s = r'\b' + re.escape(entries[1]) + r'\b'
+            acp = '\\ac{' + entries[1] + '}'
+        else:
+            acp_s = r'\b' + re.escape(ac) + r's\b'
+            acp = r'\\ac{' + ac + 's}'
+        text = re.sub(ac_s, ac, text, flags=re.IGNORECASE)
+        text = re.sub(acp_s, acp, text, flags=re.IGNORECASE)
+    return text
+
 
 def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
     playlist_info, episodes_info = setup_infos(
@@ -1591,7 +1587,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
         author = playlist_info['author_name']
     for e_key in episodes_info:
         min = 0
-        max = 5
+        max = 19
         if e_key < min:
             continue
         if e_key > max:
@@ -1629,6 +1625,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
             # line = '\\newchapter{' + title_tex + '}{' + author_here + '}'
             index_lines.append(line)
 
+            index_lines.append('\\acresetall')
             # Todo: find out why double space is a no-go
             clean_name_tex = latex_escape(clean_name, True).replace("  ", " ")
 
@@ -1639,13 +1636,17 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
             tex_path_episode = tex_path + 'input\\' + \
                 clean_name.replace("  ", " ") + '.tex'
             with open(tex_path_episode, "w", encoding='utf8') as f:
-                f.write(latex_escape(info['text']))
+                text = latex_escape(info['text'])
+                text = texify_acronyms(text, playlist_name)
+                f.write(text)
 
             index_lines.append('\clearpage')
             # \newchapter{Story One}{Author One}
 
     if len(index_lines) > 0:
+        # TODO: acronyms
         with open(tex_path + 'input\\index.tex', "w", encoding='utf8') as f:
+            add_acronyms(playlist_name, f)
             line = '\part{' + playlist_name + '}'
             f.write(line + '\n')
             for line in index_lines:
@@ -1654,7 +1655,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
 
 def NLP(input_path, playlist_name, playlist_info, episodes_info):
     # print('vor NPL')
-    nlp.main(input_path, playlist_name, playlist_info, episodes_info)        
+    nlp.main(input_path, playlist_name, playlist_info, episodes_info)
     # print('nach NPL')
 
 
@@ -1675,10 +1676,14 @@ def main():
         episodes_info = {}
         # TODO: Find out why this doesnt work
         # playlist_info, episodes_info = extract_html_info(data_pl_path, pl_n)
+        print('extract_html_info', flush=True)
         extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
+        print('add_transcript')
         # add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
+        print('NLP', flush=True)
         NLP(data_pl_path, pl_n, playlist_info, episodes_info)
         # convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
+        print('convert_to_tex', flush=True)
         convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info)
 
         sys.stdout = old_stdout
