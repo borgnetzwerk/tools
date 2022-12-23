@@ -17,21 +17,16 @@ from os.path import exists
 import os.path as path
 import spellcheck.main as s_check
 # Define
-audiofolder = 'mp3'
-tokenfolder = 'token'
-editfolder = 'edited'
+audiofolder = helper.audiofolder
+tokenfolder = helper.tokenfolder
+editfolder = helper.editfolder
 # If major changes have been made: Flush out these old ones
 flush_out_relics = True
 
 # ---- Functions ---- #
 
 
-
-
 # Convert extracted time to readable time
-
-
-
 
 
 # Sort a dict according to a list.
@@ -59,47 +54,6 @@ def sort_episodes(episodes):
             temp[idx] = episodes[k]
         return temp
 
-# Prepare dict so it can be used for MediaWiki
-
-
-def clean_dict(dict, playlist_name):
-    temp = {}
-    for k in dict:
-        dict[k] = helper.remove_quot(dict[k])
-        if k == 'id':
-            temp[k] = dict[k]
-        elif k == 'date':
-            dict[k] = helper.time_converter(dict[k])
-            temp[k] = dict[k]
-        elif k == 'runtime':
-            dict[k] = helper.time_converter(dict[k])
-            temp[k] = dict[k]
-        elif k == 'name':
-            temp[k] = dict[k]
-        elif k == 'title':
-            temp[k] = dict[k]
-        elif k == 'description':
-            temp[k] = dict[k]
-        elif k == 'author':
-            temp2 = helper.cut_out(dict[k], dict_author)
-            temp['author_type'] = helper.remove_quot(temp2['author_type'])
-            temp['author_name'] = helper.remove_quot(temp2['author_name'])
-        elif k == 'publisher':
-            temp[k] = dict[k]
-        elif k == 'language':
-            temp[k] = dict[k]
-        elif k == '@type':
-            temp[k] = dict[k]
-        elif k == 'accessMode':
-            temp[k] = dict[k]
-        elif k == 'url':
-            temp[k] = dict[k]
-        elif k == 'image':
-            temp[k] = dict[k]
-        else:
-            temp[k] = dict[k]
-    return temp
-
 
 def texify(var_s, k):
     if k == 'url':
@@ -111,6 +65,8 @@ def texify(var_s, k):
                 url_var = "Spotify"
             elif "youtube.com" in t:
                 url_var = "YouTube"
+            elif "bnwiki.de" in t:
+                url_var = "BNW"
             winner += ' \href{' + t + \
                 '}{\includegraphics[height=11pt]{gfx/' + url_var + '.png}}'
         var_s = winner
@@ -160,9 +116,9 @@ def Spotify2dict(index, input_path, filename, playlist_name):
 
     # ---- Clean ---- #
     # sort_dict(playlist_info, key_order)
-    playlist_info = clean_dict(playlist_info, playlist_name)
+    playlist_info = helper.clean_dict(playlist_info, playlist_name)
     for key, value in episodes.items():
-        episodes[key] = clean_dict(value, playlist_name)
+        episodes[key] = helper.clean_dict(value, playlist_name)
 
     # ---- Sort ---- #
     # sort_dict(playlist_info, key_order)
@@ -252,53 +208,10 @@ def json2csv(playlist_info, episodes, input_path, playlist_name):
     return
 
 
-
-title_structure = {
-    'BMZ':   {
-        'playlist_name':   [r'(^B+MZ)', 0],
-        'void1':   [r'([- ]{0,3})', 0],
-        'special':   [r'(\w*[- ]{0,3})', 0.1],
-        'void2':   [r'([ # ]{0,3})', 0],
-        'eID':   [r'(\d*)', 1],
-        'void3':   [r'([: ,]{0,2})', 0],
-        'title':   [r'(.*)', 1]
-    },
-    'Hagrids Hütte':   {
-        'eID':   [r'(^[\d\w]{1}\.[\d]{2})', 1],
-        'void1':   [r'[- ]{0,3}\w*[- ]{0,3}', 0],
-        'title':   [r'.*', 1]
-    }
-}
-
-
-def title_mine(title, playlist_name):
-    temp = {}
-    splits = title_structure[playlist_name]
-    for split in splits:
-        sep = splits[split][0]
-        found = re.split(sep, title, 1)
-        if len(found) > 2:
-            if 'void' not in split and len(found[1]) > 0:
-                temp[split] = found[1]
-                # temp[split] = str(found[1])
-            title = found[2]
-    return temp
-
-
-def compare_titles(try_this, comp, playlist_name):
-    similarity_score = 0
-    for struc in try_this:
-        if struc in try_this and struc in comp:
-            if comp[struc] == try_this[struc]:
-                similarity_score += title_structure[playlist_name][struc][1]
-                # We have found the matching episode and it has the ID idx
-    return similarity_score
-
-
 def search_for_title(try_this, episodes_info, playlist_name):
     for idx, eID in enumerate(episodes_info):
-        comp = title_mine(episodes_info[eID]['title'], playlist_name)
-        is_match = compare_titles(try_this, comp, playlist_name)
+        comp = helper.title_mine(episodes_info[eID]['title'], playlist_name)
+        is_match = helper.compare_titles(try_this, comp, playlist_name)
         if is_match >= 1:
             return idx
         # if 'try_pl_name' in try_this and 'try_pl_name' in comp:   Playlists should always be the same
@@ -306,7 +219,7 @@ def search_for_title(try_this, episodes_info, playlist_name):
     #! Very time expensive
     # if len(title.lower()) > 10:
     #     for idx, eID in enumerate(episodes_info):
-    #         comp = title_mine(episodes_info[eID]['title'])
+    #         comp = helper.title_mine(episodes_info[eID]['title'])
     #         sim = helper.similar(title, episodes_info[eID]['title'])
     #         if sim:
     #             return idx
@@ -362,7 +275,7 @@ def handle_diff_ep(list_var, playlist_name):
         # TODO: find out why suddenly read as string -> saved in dict -> find out why
         plID = int(plID)
         title = episode['title']
-        try_this = title_mine(title, playlist_name)
+        try_this = helper.title_mine(title, playlist_name)
         try_this['plID'] = str(plID)
         # try_this['plID'] = plID
         # if the ID is missing from the main Episode
@@ -437,13 +350,13 @@ def handle_diff_ep(list_var, playlist_name):
         eID = missing_match['eID']
         listID = missing_match['listID']
         title = missing_match['title']
-        try_this = title_mine(title, playlist_name)
-        clone_score = compare_titles(try_this, try_this, playlist_name)
+        try_this = helper.title_mine(title, playlist_name)
+        clone_score = helper.compare_titles(try_this, try_this, playlist_name)
         for idy in range(1, 3+1):
             try:
-                comp = title_mine(
+                comp = helper.title_mine(
                     list_var[listID][eID-idy]['title'], playlist_name)
-                score = compare_titles(try_this, comp, playlist_name)
+                score = helper.compare_titles(try_this, comp, playlist_name)
                 if score == clone_score:
                     print('[' + str(listID) + '][' + str(eID) + ']' +
                           ' is a copy of [' + str(listID) + '][' + str(eID-idy) + ']', flush=True)
@@ -478,9 +391,9 @@ def handle_diff_ep(list_var, playlist_name):
         for matched_triple in matched_ep_titles:
             score = 0
             for x in range(0, 3):
-                try_this = title_mine(episode_triple[x], playlist_name)
-                comp = title_mine(matched_triple[x], playlist_name)
-                score += compare_titles(try_this, comp, playlist_name)
+                try_this = helper.title_mine(episode_triple[x], playlist_name)
+                comp = helper.title_mine(matched_triple[x], playlist_name)
+                score += helper.compare_titles(try_this, comp, playlist_name)
             match_score_list.append(score)
         hightest = 0
         for score in match_score_list:
@@ -501,10 +414,12 @@ def handle_diff_ep(list_var, playlist_name):
                     pot_title = [pot_ep_prev, pot_episode, pot_ep_next]
                     score = 0
                     for x in range(0, 3):
-                        try_this = title_mine(pot_title[x], playlist_name)
-                        comp = title_mine(
+                        try_this = helper.title_mine(
+                            pot_title[x], playlist_name)
+                        comp = helper.title_mine(
                             matched_ep_titles[match_ID][x], playlist_name)
-                        score += compare_titles(try_this, comp, playlist_name)
+                        score += helper.compare_titles(try_this,
+                                                       comp, playlist_name)
                     if score >= 2:
                         # update order (!most important)
                         order[main_eID][listID] = pot_eID
@@ -530,13 +445,13 @@ def handle_diff_ep(list_var, playlist_name):
         eID = missing_match['eID']
         listID = missing_match['listID']
         title = missing_match['title']
-        try_this = title_mine(title, playlist_name)
-        clone_score = compare_titles(try_this, try_this, playlist_name)
+        try_this = helper.title_mine(title, playlist_name)
+        clone_score = helper.compare_titles(try_this, try_this, playlist_name)
         for exID in list_var[listID]:
             if exID != eID:
                 episode = list_var[listID][exID]
-                comp = title_mine(episode['title'], playlist_name)
-                score = compare_titles(try_this, comp, playlist_name)
+                comp = helper.title_mine(episode['title'], playlist_name)
+                score = helper.compare_titles(try_this, comp, playlist_name)
                 if score == clone_score:
                     print('[' + str(listID) + '][' + str(eID) + ']' +
                           ' is a copy of [' + str(listID) + '][' + str(exID) + ']', flush=True)
@@ -554,12 +469,12 @@ def handle_diff_ep(list_var, playlist_name):
                     post_c = min([3, len(list_var[listID]) +
                                  1 - max([exID, int(eID)])])
                     for pre in range(1, pre_c+1):
-                        check2 = title_mine(
+                        check2 = helper.title_mine(
                             list_var[listID][start_ID-pre]['title'], playlist_name)
                         error_existing += (int(comp['eID']) +
                                            pre) - int(check2['eID'])
                     for post in range(1, post_c+1):
-                        check2 = title_mine(
+                        check2 = helper.title_mine(
                             list_var[listID][start_ID+post]['title'], playlist_name)
                         error_existing += int(check2['eID']) - \
                             (int(comp['eID']) + post)
@@ -569,13 +484,13 @@ def handle_diff_ep(list_var, playlist_name):
                     error_missing = 0
                     # previous: 3
                     for pre in range(1, pre_c+1):
-                        check2 = title_mine(
+                        check2 = helper.title_mine(
                             list_var[listID][start_ID-pre]['title'], playlist_name)
                         error_existing += (int(try_this['eID']) +
                                            pre) - int(check2['eID'])
                     # following: 3
                     for post in range(1, post_c+1):
-                        check2 = title_mine(
+                        check2 = helper.title_mine(
                             list_var[listID][start_ID+post]['title'], playlist_name)
                         error_existing += int(check2['eID']) - \
                             (int(try_this['eID']) + post)
@@ -605,13 +520,13 @@ def handle_diff_ep(list_var, playlist_name):
         eID = int(missing_match['eID'])
         listID = missing_match['listID']
         title = missing_match['title']
-        try_this = title_mine(title, playlist_name)
+        try_this = helper.title_mine(title, playlist_name)
 
         # previous episode
         prev_match = int(matched[listID][eID-1][0])
         prev_ep = list_var[listID][eID-1]
         prev_ep_title = prev_ep['title']
-        prev_split = title_mine(prev_ep_title, playlist_name)
+        prev_split = helper.title_mine(prev_ep_title, playlist_name)
         if 'eID' in prev_split:
             prev_mined_ID = int(prev_split['eID'])
 
@@ -619,7 +534,7 @@ def handle_diff_ep(list_var, playlist_name):
         next_match = int(matched[listID][eID+1][0])
         next_ep = list_var[listID][eID+1]
         next_ep_title = next_ep['title']
-        next_split = title_mine(next_ep_title, playlist_name)
+        next_split = helper.title_mine(next_ep_title, playlist_name)
         if 'eID' in next_split:
             next_mined_ID = int(next_split['eID'])
 
@@ -757,7 +672,6 @@ replace_dict = {
     "&#39;": "'",
 }
 
-noFileChars = '":\<>*?/'
 
 # --- 2. specific --- #
 # order keys should be read in (for sort_dict function)
@@ -983,11 +897,7 @@ def dictify_tokens(token, token_text, var_int, var_dict):
         var_dict[token] = {token_text: {var_int: 1}}
 
 
-def get_transcript(input_path, filename):
-    path_json = input_path + audiofolder + '\\' + filename
-    with open(path_json, encoding='utf-8') as json_file:
-        transcript = json.load(json_file)
-    return transcript
+
 
 
 def do_token_stuff(input_path, jsons):
@@ -1009,7 +919,7 @@ def do_token_stuff(input_path, jsons):
         counter_match = 0
         counter_no_match = 0
         for filename in jsons:
-            transcript = get_transcript(input_path, filename)
+            transcript = helper.get_transcript(input_path, filename)
             for segment in transcript['segments']:
                 tokens = segment['tokens']
                 text = segment['text']
@@ -1158,7 +1068,7 @@ def spellcheck(input_path, playlist_name, jsons):
     edited_path = input_path + editfolder + '\\'
     with open(edited_path + "_text.txt", "w", encoding='utf8') as f:
         for filename in jsons:
-            transcript = get_transcript(input_path, filename)
+            transcript = helper.get_transcript(input_path, filename)
             # temp = transcript['text']
             found = re.search(r'[^,.!\?]{2000}', transcript['text'])
             if found is not None:
@@ -1213,6 +1123,7 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
         split_tup = os.path.splitext(input_path + foldername + '\\' + filename)
         file_name = split_tup[0]
         file_extension = split_tup[1]
+        # TODO: if filename.endswith('.json'):
         if file_extension == '.json':
             jsons.append(filename)
         elif file_extension == '.mp3':
@@ -1229,13 +1140,13 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
             if "BMZ" not in entry:
                 continue
             title = filename.replace('.json', '')
-            try_this = title_mine(title, playlist_name)
+            try_this = helper.title_mine(title, playlist_name)
             for idx, eID in enumerate(episodes_info):
                 new_title = episodes_info[eID]['title']
-                for each in noFileChars:
+                for each in helper.noFileChars:
                     new_title = new_title.replace(each, '')
-                comp = title_mine(new_title, playlist_name)
-                is_match = compare_titles(try_this, comp, playlist_name)
+                comp = helper.title_mine(new_title, playlist_name)
+                is_match = helper.compare_titles(try_this, comp, playlist_name)
                 matched = False
                 if is_match >= 1:
                     matched = True
@@ -1261,13 +1172,10 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     # Todo: make every subsequential call look for transcripts in edited
 
 
-
-
-
 def convert_to_wiki(input_path, playlist_name, playlist_info, episodes_info):
     playlist_info, episodes_info = helper.setup_infos(
         playlist_info, episodes_info, input_path)
-    mediaWiki.main(playlist_info, episodes_info, input_path, playlist_name)
+    return mediaWiki.main(playlist_info, episodes_info, input_path, playlist_name)
 
 
 tex_esc = {
@@ -1292,20 +1200,6 @@ def latex_escape(title, skip=False):
         if key == '&' and skip:
             continue
         title = title.replace(key, value)
-    return title
-
-
-def forge_title(title, eID, playlist_name):
-    pieces = title_mine(title, playlist_name)
-    if 'eID' in pieces:
-        eID = pieces['eID']
-    # Make Episode 128 disappear, so that 165 allignes
-    elif eID > 128:
-        eID += 1
-    title = ''
-    if 'title' in pieces:
-        title = pieces['title']
-    title = '#' + str(eID) + ": " + title
     return title
 
 
@@ -1351,7 +1245,7 @@ def texify_acronyms(text, playlist_name):
     return text
 
 
-def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
+def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info, wiki_episodes_info = {}):
     playlist_info, episodes_info = helper.setup_infos(
         playlist_info, episodes_info, input_path)
     language = 'de'
@@ -1393,18 +1287,15 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
         author = playlist_info['author_name']
     for e_key in episodes_info:
         min = 0
-        max = 19
+        # max = 19
+        max = 999
         if e_key < min:
             continue
         if e_key > max:
             break
         episode = episodes_info[e_key]
         title = episode['title']
-        title_file = title
-        for each in noFileChars:
-            title_file = title_file.replace(each, '')
-        clean_name = helper.fill_digits(e_key, 3) + '_' + title_file
-        json_path = input_path + '\\' + editfolder + '\\' + clean_name + '.json'
+        clean_name, json_path = helper.clean_title(title, input_path, e_key)
         # reminder: Episodes that have no mp3 (i.E. Spotify exclusives) cannot be found
         if exists(json_path):
             with open(json_path, encoding='utf-8') as json_file:
@@ -1419,13 +1310,18 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
             if 'url' in episode:
                 # author_here += texify(episode['url'], 'url')
                 # Wenn Icons dort sind, brauchen wir das "Onkel Barlow" vielleicht nicht
-                author_here = texify(episode['url'], 'url')
+                urls = episode['url']
+                if e_key in wiki_episodes_info:
+                    if 'url_wiki' in wiki_episodes_info[e_key]:
+                        url_wiki = wiki_episodes_info[e_key]['url_wiki'].replace('%', '\\%')
+                        urls = url_wiki + ' ; ' + urls
+                author_here = texify(urls, 'url')
             # Wiki
                 # author_here += texify(episode['url'], 'url')
-            title_forged = forge_title(title, e_key+1, playlist_name)
+            title_forged = helper.forge_title(title, e_key, playlist_name)
             title_tex = latex_escape(title_forged)
             # No BMZ in title:
-            title_tex = re.sub(r'BMZ *:*', '', title_tex, 1)
+            # title_tex = re.sub(r'BMZ *:*', '', title_tex, 1)
 
             line = '\\newchapter{' + title_tex + '}{' + author_here + '}'
             # line = '\\newchapter{' + title_tex + '}{' + author_here + '}'
@@ -1465,8 +1361,6 @@ def NLP(input_path, playlist_name, playlist_info, episodes_info):
     # print('nach NPL')
 
 
-
-
 def main():
     data_path, playlist_names = helper.get_data_folders()
     # for pl_n in playlist_names:
@@ -1486,10 +1380,10 @@ def main():
         # add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
         print('NLP', flush=True)
         NLP(data_pl_path, pl_n, playlist_info, episodes_info)
-        # convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
+        wiki_episodes_info = convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
         print('convert_to_tex', flush=True)
-        convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info)
-
+        convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info, wiki_episodes_info)
+    
         sys.stdout = old_stdout
         log_file.close()
 

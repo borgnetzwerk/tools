@@ -8,6 +8,120 @@ from os.path import isfile, join
 from datetime import datetime
 
 similar_enough = 0.9
+audiofolder = 'mp3'
+tokenfolder = 'token'
+editfolder = 'edited'
+
+
+# Prepare dict so it can be used for MediaWiki
+noFileChars = '":\<>*?/'
+
+def clean_title(title, input_path, eID):
+    if input_path[-1] != '\\':
+        input_path += '\\'
+    title_file = title
+    for each in noFileChars:
+        title_file = title_file.replace(each, '')
+    clean_name = fill_digits(eID, 3) + '_' + title_file
+    json_path = input_path + editfolder + '\\' + clean_name + '.json'
+    return [clean_name, json_path]
+
+def clean_dict(dict, playlist_name):
+    temp = {}
+    for k in dict:
+        dict[k] = remove_quot(dict[k])
+        if k == 'id':
+            temp[k] = dict[k]
+        elif k == 'date':
+            dict[k] = time_converter(dict[k])
+            temp[k] = dict[k]
+        elif k == 'runtime':
+            dict[k] = time_converter(dict[k])
+            temp[k] = dict[k]
+        elif k == 'name':
+            temp[k] = dict[k]
+        elif k == 'title':
+            temp[k] = dict[k]
+        elif k == 'description':
+            temp[k] = dict[k]
+        elif k == 'author':
+            temp2 = cut_out(dict[k], dict_author)
+            temp['author_type'] = remove_quot(temp2['author_type'])
+            temp['author_name'] = remove_quot(temp2['author_name'])
+        elif k == 'publisher':
+            temp[k] = dict[k]
+        elif k == 'language':
+            temp[k] = dict[k]
+        elif k == '@type':
+            temp[k] = dict[k]
+        elif k == 'accessMode':
+            temp[k] = dict[k]
+        elif k == 'url':
+            temp[k] = dict[k]
+        elif k == 'image':
+            temp[k] = dict[k]
+        else:
+            temp[k] = dict[k]
+    return temp
+
+
+def compare_titles(try_this, comp, playlist_name):
+    similarity_score = 0
+    for struc in try_this:
+        if struc in try_this and struc in comp:
+            if comp[struc] == try_this[struc]:
+                similarity_score += title_structure[playlist_name][struc][1]
+                # We have found the matching episode and it has the ID idx
+    return similarity_score
+
+
+title_structure = {
+    'BMZ':   {
+        'playlist_name':   [r'(^B+MZ)', 0],
+        'void1':   [r'([- ]{0,3})', 0],
+        'special':   [r'(\w*[- ]{0,3})', 0.1],
+        'void2':   [r'([ # ]{0,3})', 0],
+        'eID':   [r'(\d*)', 1],
+        'void3':   [r'([: ,]{0,2})', 0],
+        'title':   [r'(.*)', 1]
+    },
+    'Hagrids Hütte':   {
+        'eID':   [r'(^[\d\w]{1}\.[\d]{2})', 1],
+        'void1':   [r'[- ]{0,3}\w*[- ]{0,3}', 0],
+        'title':   [r'.*', 1]
+    }
+}
+
+
+def title_mine(title, playlist_name):
+    temp = {}
+    splits = title_structure[playlist_name]
+    for split in splits:
+        sep = splits[split][0]
+        found = re.split(sep, title, 1)
+        if len(found) > 2:
+            if 'void' not in split and len(found[1]) > 0:
+                temp[split] = found[1]
+                # temp[split] = str(found[1])
+            title = found[2]
+    return temp
+
+
+def forge_title(title, eID, playlist_name):
+    eID += 1  # use ID+1 as eID
+    pieces = title_mine(title, playlist_name)
+    if 'eID' in pieces:
+        eID = pieces['eID']
+    elif eID > 128:
+        eID += 1
+    title = ''
+    if 'title' in pieces:
+        title = pieces['title']
+    title = '#' + str(eID) + ": " + title
+    # No playlist_name in title:
+    title = re.sub(re.escape(playlist_name) + ' *:*', '', title, 1)
+    return title
+
 
 # Author_name and _type is nested in author, so they have to be extracted as well (for cut_out function)
 dict_author = {
@@ -188,6 +302,13 @@ def lemmatize(var_dict, nlp):
         #         lemma_dict[lemma].items(), reverse=True, key=lambda item: item[1])}
     print('reduced to  ' + str(len(lemma_dict)) + ' words', flush=True)
     return lemma_dict
+
+
+def get_transcript(input_path, filename):
+    path_json = input_path + audiofolder + '\\' + filename
+    with open(path_json, encoding='utf-8') as json_file:
+        transcript = json.load(json_file)
+    return transcript
 
 
 def dict2json(dict_var, name, path=os.getcwd()):

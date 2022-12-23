@@ -124,7 +124,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     # https://stackoverflow.com/questions/57857240/ho-to-do-lemmatization-on-german-text
 
     do_sim = True
-    # do_sim = False
+    do_sim = False
     if do_sim:
         lexicon_similar = {}
         upper_range = 2000
@@ -197,7 +197,7 @@ def main(input_path=os.getcwd(), playlist_name='BMZ', playlist_info={}, episodes
     # load the NER tagger
     tagger = False
     nlp = False
-    tagger = SequenceTagger.load('ner-multi-fast')
+    # tagger = SequenceTagger.load('ner-multi-fast')
     # nlp = spacy.load('de_core_news_md')
     test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp)
 

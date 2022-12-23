@@ -1,11 +1,32 @@
 import helper
-from ...wiki_bot.src import main as wiki_bot
+import wiki_bot
+import wiki.main as wiki_helpers
 
+
+import json
 import csv
 import sys
 import os
 from os import listdir
 from os.path import isfile, join
+import urllib.parse
+
+
+# from ...wiki_bot.src import main as wiki_bot
+# https://iq-inc.com/importerror-attempted-relative-import/
+# https://techwithtech.com/importerror-attempted-relative-import-with-no-known-parent-package/
+# https://stackoverflow.com/questions/7505988/importing-from-a-relative-path-in-python
+
+# first change the cwd to the script path
+# scriptPath = os.path.realpath(os.path.dirname(sys.argv[0]))
+# os.chdir(scriptPath)
+
+# #append the relative location you want to import from
+# sys.path.append("../")
+# import wiki_bot.src.main as wiki_bot
+# sys.path.remove('/wiki_bot/src')
+# import your module stored in '../common'
+
 
 csv_delimiter = ';'
 
@@ -18,7 +39,16 @@ write_individual_wiki_page
 """
 
 
-def wikify_dict(dict, playlist_name):
+def wiki_forge_title(title, playlist_name, id):
+    if id is not None:
+        title = helper.forge_title(title, id, playlist_name)
+    title = title.replace('[', '(')
+    title = title.replace(']', ')')
+    title = title.replace('#', '')
+    return title
+
+
+def wikify_dict(dict, playlist_name, id=None, author_name='TBD'):
     temp = {}
     for k in dict:
         dict[k] = helper.remove_quot(dict[k])
@@ -33,11 +63,13 @@ def wikify_dict(dict, playlist_name):
         elif k == 'name':
             temp[k] = dict[k]
         elif k == 'title':
-            dict[k] = dict[k].replace('[', '(')
-            dict[k] = dict[k].replace(']', ')')
-            fulltitle = '[[' + playlist_name + ':'
-            fulltitle += dict[k] + '|' + dict[k] + ']]'
-            temp[k] = fulltitle
+            temp['title_raw'] = dict[k]
+            title = wiki_forge_title(dict[k], playlist_name, id)
+            title_full = '/'.join([author_name, playlist_name, title])
+            link_to_title = '[[' + title_full + '|' + title + ']]'
+            temp['title'] = title
+            temp['title_full'] = title_full
+            temp['link_to_title'] = link_to_title
         elif k == 'description':
             temp[k] = dict[k]
         elif k == 'author':
@@ -70,68 +102,39 @@ def wikify_dict(dict, playlist_name):
     return temp
 
 
-def write_individual_wiki_page(input_path, id, row, elements):
-    text = ''
-    text += row[elements['description']] + '\n'
-    text += '\n'
-    hashtag = '#'
-    text += '{| class="wikitable"' + '\n'
-    text += '! ' + hashtag + ' !! date !! runtime !! url' + '\n'
-    text += '|-' + '\n'
-    text += '| ' + str(id) + ' || ' + row[elements['date']] + ' || ' + \
-        row[elements['runtime']] + ' || ' + row[elements['url']] + '\n'
-    text += '|}' + '\n'
-    text += '\n'
-    text += '= Zusammenfassung =' + '\n'
-    text += '<Zusammenfassung>' + '\n'
-    text += '\n'
-    text += '= Hörspiele =' + '\n'
-    text += '== <Titel Hörspiel 1> ==' + '\n'
-    text += '\n'
-    text += '= Transkript =' + '\n'
-    text += '\n'
-    nickname = row[elements['title']].split("|", 1)[1]
-    nickname = nickname.replace("]]", "")
-    text += '[[Kategorie:Hagrids Hütte:Hörspiel|' + nickname + ']]' + '\n'
-    text += '[[Kategorie:Hagrids Hütte:Episode|' + nickname + ']]' + '\n'
-    # filename = helper.fill_digits(id, 4)
-    # with open(input_path + filename + '_wiki.txt', 'w') as f:
-    #     f.write(text)
-
-
-def csv2table(input_path, filenames):
-    for filename in filenames:
-        cols = 1
-        with open(input_path + filename, newline='') as rf, open(input_path + filename.replace(".csv", "") + '_wiki.txt', 'w') as f:
-            freader = csv.reader(rf, delimiter=csv_delimiter)
-            lines = []
-            elements = {
-                "runtime": -1,
-                "date": -1,
-                "description": -1,
-                "title": -1,
-                "url": -1
-            }
-            if filename == "episodes.csv":
-                f.write('=== Episoden ===\n')
-            f.write('{| class="wikitable sortable"' + '\n')
-            f.write('|+ ' + filename.replace(".csv", "") + '\n')
-            for idx, row in enumerate(freader):
-                f.write('|-' + '\n')
-                if len(row) > cols:
-                    cols = len(row)
-                if idx == 0:
-                    for idy, element in enumerate(row):
-                        if element in elements:
-                            elements[element] = idy
-                    f.write('! ' + ' !! '.join(row) + '\n')
-                else:
-                    f.write('| ' + ' || '.join(row) + '\n')
-                    if individual_wiki_pages_per_episode and filename == "episodes.csv":
-                        write_individual_wiki_page(
-                            input_path, idx, row, elements)
-            f.write('|}' + '\n')
-        # outfile.write('{| class = class="wikitable sortable"\n')
+# def csv2table(input_path, filenames):
+#     for filename in filenames:
+#         cols = 1
+#         with open(input_path + filename, newline='') as rf, open(input_path + filename.replace(".csv", "") + '_wiki.txt', 'w') as f:
+#             freader = csv.reader(rf, delimiter=csv_delimiter)
+#             lines = []
+#             elements = {
+#                 "runtime": -1,
+#                 "date": -1,
+#                 "description": -1,
+#                 "title": -1,
+#                 "url": -1
+#             }
+#             if filename == "episodes.csv":
+#                 f.write('=== Episoden ===\n')
+#             f.write('{| class="wikitable sortable"' + '\n')
+#             f.write('|+ ' + filename.replace(".csv", "") + '\n')
+#             for idx, row in enumerate(freader):
+#                 f.write('|-' + '\n')
+#                 if len(row) > cols:
+#                     cols = len(row)
+#                 if idx == 0:
+#                     for idy, element in enumerate(row):
+#                         if element in elements:
+#                             elements[element] = idy
+#                     f.write('! ' + ' !! '.join(row) + '\n')
+#                 else:
+#                     f.write('| ' + ' || '.join(row) + '\n')
+#                     if individual_wiki_pages_per_episode and filename == "episodes.csv":
+#                         write_individual_wiki_page(
+#                             input_path, idx, row, elements)
+#             f.write('|}' + '\n')
+#         # outfile.write('{| class = class="wikitable sortable"\n')
 
 
 def lookupCSV(input_path):
@@ -169,18 +172,78 @@ def some_old_func(playlist_info={}, episodes_info={}, input_path=os.getcwd(), pl
     # json2csv(playlist_info, episodes_info, input_path, playlist_name)
 
 
+def add_wiki_url(wiki_episodes_info):
+    for eID, episode_info in wiki_episodes_info.items():
+        url_title = urllib.parse.quote(episode_info['title_full'])
+        wiki_url = 'https://data.bnwiki.de/index.php?title=' + url_title
+        episode_info['url_wiki'] = wiki_url
+    return wiki_episodes_info
+
+
 def update_wiki(playlist_info, episodes_info, input_path, playlist_name):
-    wiki_episodes = wikify_dict
+    wiki_playlist_info = wikify_dict(playlist_info, playlist_name)
+    wiki_episodes_info = {}
+    author_name = 'TBD'
+    if 'author_name' in playlist_info:
+        author_name = playlist_info['author_name']
+    for eID, episode_info in episodes_info.items():
+        wiki_episodes_info[eID] = wikify_dict(
+            episode_info, playlist_name, eID, author_name)
+
+    do_individual = True
+    do_individual = False
+
+    queries = {}
+    if do_individual:
+        for eID, episode_info in wiki_episodes_info.items():
+            # if eID > 2:
+            #     break
+            pagename = episode_info['title_full']
+
+            transcript_text = ''
+            clean_title, json_path = helper.clean_title(
+                episode_info['title_raw'], input_path, eID)
+
+            if isfile(json_path):
+                with open(json_path, encoding='utf-8') as json_file:
+                    transcript = json.load(json_file)
+                    # TODO: make this a better structured page:
+                    transcript_text = transcript['text']
+            episode_info['transcript'] = transcript_text
+
+            episode_info['text'] = wiki_helpers.write_individual_wiki_page(
+                playlist_name, eID, episode_info)
+            tasks = {}
+
+            order = 'edit'
+            text = episode_info['text']
+            is_bot = True
+            section = None
+            if 'section' in episode_info:
+                section = episode_info['section']
+            promt = wiki_bot.page_promt(
+                text, "edited from playlist2wiki-converter", is_bot, section)
+
+            tasks.update({order: promt})
+
+            queries.update({pagename: tasks})
+    if len(queries) > 0:
+        wiki_bot.main(queries)
+
+    wiki_episodes_info = add_wiki_url(wiki_episodes_info)
+
+    return wiki_episodes_info
 
 
 def main(playlist_info={}, episodes_info={}, input_path=os.getcwd(), playlist_name=''):
     if input_path == os.getcwd():
-        input_path, playlist_names = helper.get_data_folders()
+        data_path, playlist_names = helper.get_data_folders()
         playlist_name = playlist_names[0]
+        input_path = data_path + playlist_name + '\\'
         playlist_info, episodes_info = helper.setup_infos(
             playlist_info, episodes_info, input_path)
     # csv2table(input_path, lookupCSV(input_path))
-    update_wiki(playlist_info, episodes_info, input_path, playlist_name)
+    return update_wiki(playlist_info, episodes_info, input_path, playlist_name)
 
 
 if __name__ == '__main__':
