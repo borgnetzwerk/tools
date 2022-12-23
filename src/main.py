@@ -14,7 +14,6 @@ from pprint import PrettyPrinter
 from os import listdir
 from os.path import isfile, join
 from os.path import exists
-from datetime import datetime
 import os.path as path
 import spellcheck.main as s_check
 # Define
@@ -26,116 +25,14 @@ flush_out_relics = True
 
 # ---- Functions ---- #
 
-# Add digits until cap is reached
 
 
-def fill_digits(var_s, cap=2):
-    var_s = str(var_s)
-    while len(var_s) < cap:
-        var_s = "0" + var_s
-    return var_s
 
 # Convert extracted time to readable time
 
 
-def time_converter(var_s):
-    if "Std." in var_s or "Min." in var_s or "Sek." in var_s:
-        # Time: HH:MM:SS
-        m = re.search('\d*(?= *Std.)', var_s)
-        std = "" if m is None else m.group(0)
-        time = fill_digits(std) + ":"
-        m = re.search('\d*(?= *Min.)', var_s)
-        min = "" if m is None else m.group(0)
-        time += fill_digits(min) + ":"
-        m = re.search('\d*(?= *Sek.)', var_s)
-        sek = "" if m is None else m.group(0)
-        time += fill_digits(sek)
-        return time
-    else:
-        # Date: YYYY-MM-DD
-        list = var_s.split(' ')
-        if len(list) == 1:
-            # TODO: catch if date is already (somewhat) formatted
-            return var_s
-        day = ""
-        month = list[0]
-        year = list[1]
-        # See if first entry is really a month
-        just_once = 1
-        while just_once == 1:
-            if month == 'Jan.':
-                month = '01'
-            elif month == 'Feb.':
-                month = '02'
-            elif month == 'März':
-                month = '03'
-            elif month == 'Apr.':
-                month = '04'
-            elif month == 'Mai':
-                month = '05'
-            elif month == 'Juni':
-                month = '06'
-            elif month == 'Juli':
-                month = '07'
-            elif month == 'Aug.':
-                month = '08'
-            elif month == 'Sept.':
-                month = '09'
-            elif month == 'Okt.':
-                month = '10'
-            elif month == 'Nov.':
-                month = '11'
-            elif month == 'Dez.':
-                month = '12'
-            else:
-                # If first entry is not a month:
-                #   redo check with second entry
-                #   and assume year is current year
-                just_once += 1
-                year = str(datetime.now().year)
-                month = list[1]
-                day = str(list[0].replace(".", ""))
-                day = "-" + fill_digits(day)
-            just_once -= 1
-        # reminder: day is either "" or "-DD"
-        return year + '-' + month + day
-
-# Remove leading and closing quotation marks
 
 
-def remove_quot(var_s):
-    if var_s:
-        if var_s[0] == '"':
-            var_s = var_s[1:]
-        if var_s[-1] == '"':
-            var_s = var_s[:-1]
-    return var_s
-
-# Cut a string at the first hypen
-
-
-def cut_hypen(var_s):
-    var_s = var_s.split(" -", 1)[0]
-    var_s = var_s.split("-", 1)[0]
-    var_s = remove_quot(var_s)
-    return var_s
-
-# Cut a string at predetermined marks
-
-
-def cut_out(var_s, dict):
-    storage = {}
-    for key, value in dict.items():
-        temp = var_s.split(value, 1)
-        canidate = ""
-        if len(temp) > 1:
-            var_s = temp[0]
-            canidate = temp[1]
-        else:
-            canidate = temp[0]
-        if 'void' not in canidate and len(canidate) > 0:
-            storage[key] = canidate
-    return storage
 
 # Sort a dict according to a list.
 # reminder: items not in the list won't be transferred.
@@ -168,14 +65,14 @@ def sort_episodes(episodes):
 def clean_dict(dict, playlist_name):
     temp = {}
     for k in dict:
-        dict[k] = remove_quot(dict[k])
+        dict[k] = helper.remove_quot(dict[k])
         if k == 'id':
             temp[k] = dict[k]
         elif k == 'date':
-            dict[k] = time_converter(dict[k])
+            dict[k] = helper.time_converter(dict[k])
             temp[k] = dict[k]
         elif k == 'runtime':
-            dict[k] = time_converter(dict[k])
+            dict[k] = helper.time_converter(dict[k])
             temp[k] = dict[k]
         elif k == 'name':
             temp[k] = dict[k]
@@ -184,9 +81,9 @@ def clean_dict(dict, playlist_name):
         elif k == 'description':
             temp[k] = dict[k]
         elif k == 'author':
-            temp2 = cut_out(dict[k], dict_author)
-            temp['author_type'] = remove_quot(temp2['author_type'])
-            temp['author_name'] = remove_quot(temp2['author_name'])
+            temp2 = helper.cut_out(dict[k], dict_author)
+            temp['author_type'] = helper.remove_quot(temp2['author_type'])
+            temp['author_name'] = helper.remove_quot(temp2['author_name'])
         elif k == 'publisher':
             temp[k] = dict[k]
         elif k == 'language':
@@ -220,57 +117,6 @@ def texify(var_s, k):
     return var_s
 
 
-def wikify_dict(dict, playlist_name):
-    temp = {}
-    for k in dict:
-        dict[k] = remove_quot(dict[k])
-        if k == 'id':
-            temp[k] = dict[k]
-        elif k == 'date':
-            dict[k] = time_converter(dict[k])
-            temp[k] = dict[k]
-        elif k == 'runtime':
-            dict[k] = time_converter(dict[k])
-            temp[k] = dict[k]
-        elif k == 'name':
-            temp[k] = dict[k]
-        elif k == 'title':
-            dict[k] = dict[k].replace('[', '(')
-            dict[k] = dict[k].replace(']', ')')
-            fulltitle = '[[' + playlist_name + ':'
-            fulltitle += dict[k] + '|' + dict[k] + ']]'
-            temp[k] = fulltitle
-        elif k == 'description':
-            temp[k] = dict[k]
-        elif k == 'author':
-            temp2 = cut_out(dict[k], dict_author)
-            temp['author_type'] = remove_quot(temp2['author_type'])
-            temp['author_name'] = remove_quot(temp2['author_name'])
-        elif k == 'publisher':
-            temp[k] = dict[k]
-        elif k == 'language':
-            temp[k] = dict[k]
-        elif k == '@type':
-            temp[k] = dict[k]
-        elif k == 'accessMode':
-            temp[k] = dict[k]
-        elif k == 'url':
-            tokens = dict[k].split(' ; ')
-            winner = ""
-            for t in tokens:
-                url_var = 'Link'
-                if "spotify.com" in t:
-                    url_var = " Spotify"
-                elif "youtube.com" in t:
-                    url_var = " YouTube"
-                winner += '[' + t + url_var + ']'
-            temp[k] = winner
-        elif k == 'image':
-            temp[k] = '[' + dict[k] + ' image]'
-        else:
-            temp[k] = dict[k]
-    return temp
-
 # convert from Spotify index to dictionary
 
 
@@ -279,7 +125,7 @@ def Spotify2dict(index, input_path, filename, playlist_name):
     split_index = index.split("alt=")
 
     # extract playlist info
-    playlist_info = cut_out(split_index[0], dict_playlist)
+    playlist_info = helper.cut_out(split_index[0], dict_playlist)
 
     # remove unneeded rows
     split_index.pop(0)
@@ -291,7 +137,7 @@ def Spotify2dict(index, input_path, filename, playlist_name):
         sub = episode.split("Neue Folge\"></span>")
         if len(sub) > 1:
             episode = sub[1]
-        episode_info = cut_out(episode, dict_episode)
+        episode_info = helper.cut_out(episode, dict_episode)
         if 'description' in episode_info:
             episode_info["description"] = episode_info["description"].split("Werbung:", 1)[
                 0]
@@ -357,8 +203,8 @@ def YouTube2dict(index, input_path, filename, playlist_name):
         episode = {}
         rest = box.split(dict_episode_YT['title'])
         if len(rest) > 1:
-            episode['title'] = remove_quot(rest[1])
-            episode['url'] = remove_quot(rest[0])
+            episode['title'] = helper.remove_quot(rest[1])
+            episode['url'] = helper.remove_quot(rest[0])
             episode_info_YT[idx] = episode
     return playlist_info_YT, episode_info_YT
 
@@ -405,25 +251,6 @@ def json2csv(playlist_info, episodes, input_path, playlist_name):
             writer.writerow(values)
     return
 
-# convert from csv to wiki
-
-
-def csv2wiki(playlist_info, episodes, input_path, playlist_name):
-    # Könnte man auch als Übersicht über alle podcast machen, die im Data.bnwiki sind
-    # Sortierbar nach Sprache etc.
-    # Kategorien ...
-    mediaWiki.main(input_path)
-    return
-
-# convert from json to wiki
-
-
-def json2wiki(playlist_info, episodes, input_path, filename, playlist_name):
-    # Könnte man auch als Übersicht über alle podcast machen, die im Data.bnwiki sind
-    # Sortierbar nach Sprache etc.
-    # Kategorien ...
-    # mediaWiki.main(input_path)
-    return
 
 
 title_structure = {
@@ -480,7 +307,7 @@ def search_for_title(try_this, episodes_info, playlist_name):
     # if len(title.lower()) > 10:
     #     for idx, eID in enumerate(episodes_info):
     #         comp = title_mine(episodes_info[eID]['title'])
-    #         sim = similar(title, episodes_info[eID]['title'])
+    #         sim = helper.similar(title, episodes_info[eID]['title'])
     #         if sim:
     #             return idx
     return -1
@@ -996,12 +823,6 @@ dict_playlist = {
     "@type":   ',"@type":'
 }
 
-# Author_name and _type is nested in author, so they have to be extracted as well (for cut_out function)
-dict_author = {
-    "final_destination_void": "}",
-    'author_name': ',"name":',
-    'author_type': '{"@type":'
-}
 
 # ---- Main ---- #
 
@@ -1064,7 +885,7 @@ def extract_html_info(input_path, playlist_name, playlist_info, episodes_info):
 
     # If major changes are made:
     if not flush_out_relics:
-        playlist_info, episodes_info = setup_infos(
+        playlist_info, episodes_info = helper.setup_infos(
             playlist_info, episodes_info, input_path)
 
     for filename in data_files:
@@ -1374,7 +1195,7 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     episodes_info = {}
 
     # If major changes are made:
-    playlist_info, episodes_info = setup_infos(
+    playlist_info, episodes_info = helper.setup_infos(
         playlist_info, episodes_info, input_path)
 
     if len(data_folders) == 0 or audiofolder not in data_folders:
@@ -1419,9 +1240,9 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
                 if is_match >= 1:
                     matched = True
                 else:
-                    matched = similar(title, new_title)
+                    matched = helper.similar(title, new_title)
                 if matched:
-                    clean_name = fill_digits(idx, 3) + '_' + new_title
+                    clean_name = helper.fill_digits(idx, 3) + '_' + new_title
                     path_old = input_path + audiofolder + '\\' + filename
                     path_new = input_path + audiofolder + '\\' + clean_name + '.json'
                     if exists(path_old):
@@ -1440,28 +1261,13 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     # Todo: make every subsequential call look for transcripts in edited
 
 
-def setup_infos(playlist_info, episodes_info, input_path):
-    if len(playlist_info) == 0:
-        with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
-            # Todo: if an "old replacement"
-            playlist_info = json.load(json_file)
-    if len(episodes_info) == 0:
-        with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
-            episodes_info = json.load(json_file)
-            episodes_info = {int(k): v for k, v in episodes_info.items()}
-    return [playlist_info, episodes_info]
+
 
 
 def convert_to_wiki(input_path, playlist_name, playlist_info, episodes_info):
-    playlist_info, episodes_info = setup_infos(
+    playlist_info, episodes_info = helper.setup_infos(
         playlist_info, episodes_info, input_path)
-
-    playlist_info = wikify_dict(playlist_info, playlist_name)
-    for e_key in episodes_info:
-        episodes_info[e_key] = wikify_dict(episodes_info[e_key], playlist_name)
-    json2csv(playlist_info, episodes_info, input_path, playlist_name)
-
-    csv2wiki(playlist_info, episodes_info, input_path, playlist_name)
+    mediaWiki.main(playlist_info, episodes_info, input_path, playlist_name)
 
 
 tex_esc = {
@@ -1546,7 +1352,7 @@ def texify_acronyms(text, playlist_name):
 
 
 def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
-    playlist_info, episodes_info = setup_infos(
+    playlist_info, episodes_info = helper.setup_infos(
         playlist_info, episodes_info, input_path)
     language = 'de'
     if 'language' in playlist_info:
@@ -1597,7 +1403,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info):
         title_file = title
         for each in noFileChars:
             title_file = title_file.replace(each, '')
-        clean_name = fill_digits(e_key, 3) + '_' + title_file
+        clean_name = helper.fill_digits(e_key, 3) + '_' + title_file
         json_path = input_path + '\\' + editfolder + '\\' + clean_name + '.json'
         # reminder: Episodes that have no mp3 (i.E. Spotify exclusives) cannot be found
         if exists(json_path):
@@ -1659,12 +1465,10 @@ def NLP(input_path, playlist_name, playlist_info, episodes_info):
     # print('nach NPL')
 
 
+
+
 def main():
-    my_path = os.getcwd()
-    data_path = os.path.dirname(my_path) + '\\data\\'
-    playlist_names = [f for f in listdir(
-        data_path) if not isfile(join(data_path, f))]
-    playlist_names.remove('sample')
+    data_path, playlist_names = helper.get_data_folders()
     # for pl_n in playlist_names:
     for pl_n in playlist_names[:1]:
         old_stdout = sys.stdout

@@ -5,8 +5,143 @@ import os
 import spacy
 from os import listdir
 from os.path import isfile, join
+from datetime import datetime
 
 similar_enough = 0.9
+
+# Author_name and _type is nested in author, so they have to be extracted as well (for cut_out function)
+dict_author = {
+    "final_destination_void": "}",
+    'author_name': ',"name":',
+    'author_type': '{"@type":'
+}
+
+
+def fill_digits(var_s, cap=2):
+    """Add digits until cap is reached"""
+    var_s = str(var_s)
+    while len(var_s) < cap:
+        var_s = "0" + var_s
+    return var_s
+
+
+def remove_quot(var_s):
+    """Remove leading and closing quotation marks"""
+    if var_s:
+        if var_s[0] == '"':
+            var_s = var_s[1:]
+        if var_s[-1] == '"':
+            var_s = var_s[:-1]
+    return var_s
+
+
+def setup_infos(playlist_info, episodes_info, input_path):
+    if len(playlist_info) == 0:
+        with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
+            # Todo: if an "old replacement"
+            playlist_info = json.load(json_file)
+    if len(episodes_info) == 0:
+        with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
+            episodes_info = json.load(json_file)
+            episodes_info = {int(k): v for k, v in episodes_info.items()}
+    return [playlist_info, episodes_info]
+
+
+def get_data_folders():
+    """Goes up once, then down the data path"""
+    my_path = os.getcwd()
+    data_path = os.path.dirname(my_path) + '\\data\\'
+    playlist_names = [f for f in listdir(
+        data_path) if not isfile(join(data_path, f))]
+    playlist_names.remove('sample')
+    return [data_path, playlist_names]
+
+
+def cut_hypen(var_s):
+    """Cut a string at the first hypen"""
+    var_s = var_s.split(" -", 1)[0]
+    var_s = var_s.split("-", 1)[0]
+    var_s = remove_quot(var_s)
+    return var_s
+
+
+def cut_out(var_s, dict):
+    """Cut a string at predetermined marks"""
+    storage = {}
+    for key, value in dict.items():
+        temp = var_s.split(value, 1)
+        canidate = ""
+        if len(temp) > 1:
+            var_s = temp[0]
+            canidate = temp[1]
+        else:
+            canidate = temp[0]
+        if 'void' not in canidate and len(canidate) > 0:
+            storage[key] = canidate
+    return storage
+
+
+def time_converter(var_s):
+    if "Std." in var_s or "Min." in var_s or "Sek." in var_s:
+        # Time: HH:MM:SS
+        m = re.search('\d*(?= *Std.)', var_s)
+        std = "" if m is None else m.group(0)
+        time = fill_digits(std) + ":"
+        m = re.search('\d*(?= *Min.)', var_s)
+        min = "" if m is None else m.group(0)
+        time += fill_digits(min) + ":"
+        m = re.search('\d*(?= *Sek.)', var_s)
+        sek = "" if m is None else m.group(0)
+        time += fill_digits(sek)
+        return time
+    else:
+        # Date: YYYY-MM-DD
+        list = var_s.split(' ')
+        if len(list) == 1:
+            # TODO: catch if date is already (somewhat) formatted
+            return var_s
+        day = ""
+        month = list[0]
+        year = list[1]
+        # See if first entry is really a month
+        just_once = 1
+        while just_once == 1:
+            if month == 'Jan.':
+                month = '01'
+            elif month == 'Feb.':
+                month = '02'
+            elif month == 'März':
+                month = '03'
+            elif month == 'Apr.':
+                month = '04'
+            elif month == 'Mai':
+                month = '05'
+            elif month == 'Juni':
+                month = '06'
+            elif month == 'Juli':
+                month = '07'
+            elif month == 'Aug.':
+                month = '08'
+            elif month == 'Sept.':
+                month = '09'
+            elif month == 'Okt.':
+                month = '10'
+            elif month == 'Nov.':
+                month = '11'
+            elif month == 'Dez.':
+                month = '12'
+            else:
+                # If first entry is not a month:
+                #   redo check with second entry
+                #   and assume year is current year
+                just_once += 1
+                year = str(datetime.now().year)
+                month = list[1]
+                day = str(list[0].replace(".", ""))
+                day = "-" + fill_digits(day)
+            just_once -= 1
+        # reminder: day is either "" or "-DD"
+        return year + '-' + month + day
 
 
 def similar(seq1, seq2, level=similar_enough):
