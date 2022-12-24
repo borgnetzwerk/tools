@@ -102,39 +102,6 @@ def wikify_dict(dict, playlist_name, id=None, author_name='TBD'):
     return temp
 
 
-# def csv2table(input_path, filenames):
-#     for filename in filenames:
-#         cols = 1
-#         with open(input_path + filename, newline='') as rf, open(input_path + filename.replace(".csv", "") + '_wiki.txt', 'w') as f:
-#             freader = csv.reader(rf, delimiter=csv_delimiter)
-#             lines = []
-#             elements = {
-#                 "runtime": -1,
-#                 "date": -1,
-#                 "description": -1,
-#                 "title": -1,
-#                 "url": -1
-#             }
-#             if filename == "episodes.csv":
-#                 f.write('=== Episoden ===\n')
-#             f.write('{| class="wikitable sortable"' + '\n')
-#             f.write('|+ ' + filename.replace(".csv", "") + '\n')
-#             for idx, row in enumerate(freader):
-#                 f.write('|-' + '\n')
-#                 if len(row) > cols:
-#                     cols = len(row)
-#                 if idx == 0:
-#                     for idy, element in enumerate(row):
-#                         if element in elements:
-#                             elements[element] = idy
-#                     f.write('! ' + ' !! '.join(row) + '\n')
-#                 else:
-#                     f.write('| ' + ' || '.join(row) + '\n')
-#                     if individual_wiki_pages_per_episode and filename == "episodes.csv":
-#                         write_individual_wiki_page(
-#                             input_path, idx, row, elements)
-#             f.write('|}' + '\n')
-#         # outfile.write('{| class = class="wikitable sortable"\n')
 
 
 def lookupCSV(input_path):
@@ -191,9 +158,26 @@ def update_wiki(playlist_info, episodes_info, input_path, playlist_name):
             episode_info, playlist_name, eID, author_name)
 
     do_individual = True
-    do_individual = False
+    # do_individual = False
 
     queries = {}
+    
+    pagename = 'OnkelBarlow'
+
+    text = wiki_helpers.write_episodes(
+        playlist_name, wiki_episodes_info)
+    tasks = {}
+
+    order = 'edit'
+    is_bot = True
+    section = None
+    promt = wiki_bot.page_promt(
+        text, "edited from playlist2wiki-converter", is_bot, section)
+
+    tasks.update({order: promt})
+
+    queries.update({pagename: tasks})
+
     if do_individual:
         for eID, episode_info in wiki_episodes_info.items():
             # if eID > 2:

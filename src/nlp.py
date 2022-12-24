@@ -95,8 +95,8 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
                     lexicon.items(), reverse=True, key=lambda item: item[1])}
                 helper.dict2json(lexicon,
                                  "_lexicon", edit_path)
-                lexicon_ep_count = sorted(
-                    lexicon_ep_count.items(), reverse=True, key=lambda k: len(lexicon_ep_count[k]))
+                lexicon_ep_count = {k: v for k, v in sorted(
+                    lexicon_ep_count.items(), reverse=True, key=lambda item: len(list(item[1].values())))}
                 helper.dict2json(lexicon_ep_count,
                                  "_lexicon_ep_count", edit_path)
 

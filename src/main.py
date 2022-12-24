@@ -1388,11 +1388,11 @@ def main():
         extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
         print('add_transcript')
         add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
-        print('NLP', flush=True)
-        NLP(data_pl_path, pl_n, playlist_info, episodes_info)
         # wiki_episodes_info = convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
         print('convert_to_tex', flush=True)
         # convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info, wiki_episodes_info)
+        print('NLP', flush=True)
+        NLP(data_pl_path, pl_n, playlist_info, episodes_info)
     
         sys.stdout = old_stdout
         log_file.close()
