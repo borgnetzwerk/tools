@@ -3,7 +3,7 @@ from wordcloud import WordCloud
 # import matplotlib.pyplot as plt
 
 # Define a dictionary that maps words to frequencies
-with open("wordcloud\data\episode_word_frequencies.json", encoding="utf-8") as f:
+with open("data\sample\_lexicon_full_ranked.json", encoding="utf-8") as f:
     word_frequencies = json.load(f)
 
 for episode, frequency in word_frequencies.items():
@@ -15,7 +15,7 @@ for episode, frequency in word_frequencies.items():
         background_color="white",
         color_func=lambda *args, **kwargs: "black",
         max_font_size=150,
-        random_state=42,
+        # random_state=0,
         max_words=200,
     )
 
@@ -23,7 +23,7 @@ for episode, frequency in word_frequencies.items():
     wc.generate_from_frequencies(frequencies=frequency)
 
     # Save the wordcloud to file or do whatever you want with it
-    wc.to_file("wordcloud\output\Episodes\wordcloud_episode_{}.png".format(episode))
+    wc.to_file("data\output\episodes\wordcloud_episode_{}.png".format(episode))
 
     # Display the word cloud using matplotlib
     # plt.imshow(wordcloud, interpolation="bilinear")

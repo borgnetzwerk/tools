@@ -1,7 +1,7 @@
 import json
 
 # Define a dictionary that maps words to frequencies
-with open("wordcloud\data\lexicon_full_ranked.json", encoding="utf-8") as f:
+with open("data\sample\_lexicon_ranked.json", encoding="utf-8") as f:
     word_frequencies = json.load(f)
 
 episode_word_frequencies = {}
