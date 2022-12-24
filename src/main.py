@@ -1179,18 +1179,17 @@ def convert_to_wiki(input_path, playlist_name, playlist_info, episodes_info):
 
 
 tex_esc = {
-    '\\':   '\\textbackslash',
-    '^':   '\\textasciicircum',
-    '~':   '\\textasciitilde',
-    '&':   '\\&',
-    '%':   '\\%',
-    '$':   '\\$',
-    '#':   '\\#',
-    '_':   '\\_',
-    '{':   '\\{',
-    '}':   '\\}',
+    chr(92):   chr(92) + 'textbackslash',
+    '^':   chr(92) + 'textasciicircum',
+    '~':   chr(92) + 'textasciitilde',
+    '&':   chr(92) + '&',
+    '%':   chr(92) + '%',
+    '$':   chr(92) + '$',
+    '#':   chr(92) + '#',
+    '_':   chr(92) + '_',
+    '{':   chr(92) + '{',
+    '}':   chr(92) + '}',
 }
-
 
 def latex_escape(title, skip=False):
     # https://tex.stackexchange.com/questions/34580/escape-character-in-latex
@@ -1202,7 +1201,16 @@ def latex_escape(title, skip=False):
         title = title.replace(key, value)
     return title
 
+tex_title_esc = {
+    '[':   '{[}',
+    ']':   '{]}',
+}
 
+def latex_title_escape(title):
+    for key, value in tex_title_esc.items():
+        title = title.replace(key, value)
+    return title
+    
 def add_acronyms(playlist_name, f):
     if playlist_name in s_check.acro:
         ac_dict = s_check.acro[playlist_name]
@@ -1236,7 +1244,7 @@ def texify_acronyms(text, playlist_name):
         ac = r'\\ac{' + ac + '}'
         if len(entries) > 1:
             acp_s = r'\b' + re.escape(entries[1]) + r'\b'
-            acp = '\\ac{' + entries[1] + '}'
+            acp = r'\\ac{' + entries[1] + '}'
         else:
             acp_s = r'\b' + re.escape(ac) + r's\b'
             acp = r'\\ac{' + ac + 's}'
@@ -1286,13 +1294,13 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info, wiki
     if 'author_name' in playlist_info:
         author = playlist_info['author_name']
     for e_key in episodes_info:
-        min = 0
-        # max = 19
-        max = 999
-        if e_key < min:
-            continue
-        if e_key > max:
-            break
+        # min = 726
+        # max = 726
+        # # max = 999
+        # if e_key < min:
+        #     continue
+        # if e_key > max:
+        #     break
         episode = episodes_info[e_key]
         title = episode['title']
         clean_name, json_path = helper.clean_title(title, input_path, e_key)
@@ -1320,6 +1328,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info, wiki
                 # author_here += texify(episode['url'], 'url')
             title_forged = helper.forge_title(title, e_key, playlist_name)
             title_tex = latex_escape(title_forged)
+            title_tex = latex_title_escape(title_tex)
             # No BMZ in title:
             # title_tex = re.sub(r'BMZ *:*', '', title_tex, 1)
 
@@ -1340,6 +1349,7 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info, wiki
             with open(tex_path_episode, "w", encoding='utf8') as f:
                 text = latex_escape(info['text'])
                 text = texify_acronyms(text, playlist_name)
+                text = text.replace(' ', '\n')
                 f.write(text)
 
             index_lines.append('\clearpage')
@@ -1377,12 +1387,12 @@ def main():
         print('extract_html_info', flush=True)
         extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
         print('add_transcript')
-        # add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
+        add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
         print('NLP', flush=True)
         NLP(data_pl_path, pl_n, playlist_info, episodes_info)
-        wiki_episodes_info = convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
+        # wiki_episodes_info = convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
         print('convert_to_tex', flush=True)
-        convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info, wiki_episodes_info)
+        # convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info, wiki_episodes_info)
     
         sys.stdout = old_stdout
         log_file.close()

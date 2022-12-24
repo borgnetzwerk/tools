@@ -7,7 +7,13 @@ main_dict = {
         r'(?<=\d)%': ' Prozent',
         # '......' : ' ', # Gedankenpause
         # '...' : ' ', # auslaufende Gedanken
-        r'\bmanchemal\b': 'manchmal'
+        r'\bmanchemal\b': 'manchmal',
+        r'곳' : '',
+        r'수' : '',
+        r'가' : '',
+        r'물' : '',
+        r'т' : '',
+        r'а' : '',
     }
 } | barlow.main
 

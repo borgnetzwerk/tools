@@ -96,6 +96,7 @@ words = {
 
     r"Lordhawk": "Lore Talk",
     r"Lore-Talk": "Queue Window",
+    "Poiseken": 'Päuseken',
 
     # Latein
     "Cumhawk ergopropterhawk": 'cum hoc ergo propter hoc',

@@ -72,7 +72,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
         lines = f.readlines()
 
     do_words = True
-    do_words = False
+    # do_words = False
     if do_words:
         for idx, line in enumerate(lines):
             lexicon_episode = {}
@@ -96,7 +96,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
                 helper.dict2json(lexicon,
                                  "_lexicon", edit_path)
                 lexicon_ep_count = sorted(
-                    lexicon_ep_count, reverse=True, key=lambda k: len(lexicon_ep_count[k]))
+                    lexicon_ep_count.items(), reverse=True, key=lambda k: len(lexicon_ep_count[k]))
                 helper.dict2json(lexicon_ep_count,
                                  "_lexicon_ep_count", edit_path)
 
@@ -124,7 +124,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     # https://stackoverflow.com/questions/57857240/ho-to-do-lemmatization-on-german-text
 
     do_sim = True
-    do_sim = False
+    # do_sim = False
     if do_sim:
         lexicon_similar = {}
         upper_range = 2000
