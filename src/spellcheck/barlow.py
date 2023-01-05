@@ -153,7 +153,8 @@ acro = {
         'PvP': ['Player versus Player'],
         'PvP': ['Player versus Environment'],
         'Mob': ['mobile object'],
-        'Add': ['additional enemy', 'Adds', 'additional enemies'],
+        # TODO: fix mistake with "Adds" -> most likely rework acro detection
+        # 'Add': ['additional enemy', 'Adds', 'additional enemies'],
         'DPS': ['damage per second'],
         'CC': ['crowd control'],
         'Pot': ['potion'],

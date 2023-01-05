@@ -1,4 +1,5 @@
 import helper
+import obsidize
 
 import re
 import csv
@@ -60,13 +61,7 @@ def texify(var_s, k):
         tokens = var_s.split(' ; ')
         winner = ""
         for t in tokens:
-            url_var = 'Link'
-            if "spotify.com" in t:
-                url_var = "Spotify"
-            elif "youtube.com" in t:
-                url_var = "YouTube"
-            elif "bnwiki.de" in t:
-                url_var = "BNW"
+            url_var = helper.get_brand(t)
             winner += ' \href{' + t + \
                 '}{\includegraphics[height=11pt]{gfx/' + url_var + '.png}}'
         var_s = winner
@@ -897,9 +892,6 @@ def dictify_tokens(token, token_text, var_int, var_dict):
         var_dict[token] = {token_text: {var_int: 1}}
 
 
-
-
-
 def do_token_stuff(input_path, jsons):
     # phase 1: Addapt names
     detected_nothing = "detected_nothing!!!"
@@ -1191,6 +1183,7 @@ tex_esc = {
     '}':   chr(92) + '}',
 }
 
+
 def latex_escape(title, skip=False):
     # https://tex.stackexchange.com/questions/34580/escape-character-in-latex
     for key, value in tex_esc.items():
@@ -1201,16 +1194,19 @@ def latex_escape(title, skip=False):
         title = title.replace(key, value)
     return title
 
+
 tex_title_esc = {
     '[':   '{[}',
     ']':   '{]}',
 }
 
+
 def latex_title_escape(title):
     for key, value in tex_title_esc.items():
         title = title.replace(key, value)
     return title
-    
+
+
 def add_acronyms(playlist_name, f):
     if playlist_name in s_check.acro:
         ac_dict = s_check.acro[playlist_name]
@@ -1253,7 +1249,7 @@ def texify_acronyms(text, playlist_name):
     return text
 
 
-def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info, wiki_episodes_info = {}):
+def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info, wiki_episodes_info={}):
     playlist_info, episodes_info = helper.setup_infos(
         playlist_info, episodes_info, input_path)
     language = 'de'
@@ -1321,7 +1317,8 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info, wiki
                 urls = episode['url']
                 if e_key in wiki_episodes_info:
                     if 'url_wiki' in wiki_episodes_info[e_key]:
-                        url_wiki = wiki_episodes_info[e_key]['url_wiki'].replace('%', '\\%')
+                        url_wiki = wiki_episodes_info[e_key]['url_wiki'].replace(
+                            '%', '\\%')
                         urls = url_wiki + ' ; ' + urls
                 author_here = texify(urls, 'url')
             # Wiki
@@ -1389,11 +1386,13 @@ def main():
         print('add_transcript')
         add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
         # wiki_episodes_info = convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
-        print('convert_to_tex', flush=True)
+        # print('convert_to_tex', flush=True)
         # convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info, wiki_episodes_info)
         print('NLP', flush=True)
-        NLP(data_pl_path, pl_n, playlist_info, episodes_info)
-    
+        # NLP(data_pl_path, pl_n, playlist_info, episodes_info)
+        print('Obsidian', flush=True)
+        obsidize.main(data_pl_path, pl_n, playlist_info, episodes_info)
+
         sys.stdout = old_stdout
         log_file.close()
 

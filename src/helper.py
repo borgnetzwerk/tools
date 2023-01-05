@@ -148,6 +148,23 @@ def remove_quot(var_s):
             var_s = var_s[:-1]
     return var_s
 
+def get_brand(t):
+    if "spotify.com" in t:
+        return "Spotify"
+    elif "youtube.com" in t:
+        return "YouTube"
+    elif "bnwiki.de" in t:
+        return "BNW"
+    return 'Link'
+    
+def get_clean_title(title, idx, obsidian = False):
+    clean_title = title
+    for each in noFileChars:
+        clean_title = clean_title.replace(each, '')
+    if obsidian:
+        clean_title = clean_title.replace("#", '')
+    clean_title = fill_digits(idx, 3) + '_' + clean_title
+    return clean_title
 
 def setup_infos(playlist_info, episodes_info, input_path):
     if len(playlist_info) == 0:
