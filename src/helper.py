@@ -2,66 +2,79 @@ import json
 import difflib
 import re
 import os
-import spacy
 from os import listdir
 from os.path import isfile, join
 from datetime import datetime
 
-similar_enough = 0.9
-audiofolder = 'mp3'
-tokenfolder = 'token'
-editfolder = 'edited'
+SIMILAR_ENOUGH = 0.9
+AUDIOFOLDER = 'mp3'
+TOKENFOLDER = 'token'
+EDITFOLDER = 'edited'
 
 
 # Prepare dict so it can be used for MediaWiki
 noFileChars = '":\<>*?/'
 
-def clean_title(title, input_path, eID):
+
+def get_clean_title(title, eID, obsidian=False):
+    """
+    Cleans a given title to make it suitable for filenames.
+    
+    Parameters:
+    title (string): The title. "episode1"
+    eID (int): The position of that episode in the playlist. 
+    
+    Returns:
+    string: cleaned title for use as filename
+    """
+    clean_title = title
+    for each in noFileChars:
+        clean_title = clean_title.replace(each, '')
+    if obsidian:
+        clean_title = clean_title.replace("#", '')
+    clean_title = fill_digits(eID, 3) + '_' + clean_title
+    return clean_title
+
+def get_edited_path(clean_title, input_path):
     if input_path[-1] != '\\':
         input_path += '\\'
-    title_file = title
-    for each in noFileChars:
-        title_file = title_file.replace(each, '')
-    clean_name = fill_digits(eID, 3) + '_' + title_file
-    json_path = input_path + editfolder + '\\' + clean_name + '.json'
-    return [clean_name, json_path]
+    json_path = input_path + EDITFOLDER + '\\' + clean_title + '.json'
+    return json_path
 
 def clean_dict(dict, playlist_name):
+    def default_cleaner(k, v):
+        return v
+
+    def split_authors(v, temp):
+        temp2 = cut_out(v, dict_author)
+        temp['author_type'] = remove_quot(temp2['author_type'])
+        temp['author_name'] = remove_quot(temp2['author_name'])
+        return temp
+
+    cleaners = {
+        'id': default_cleaner,
+        'date': time_converter,
+        'runtime': time_converter,
+        'name': default_cleaner,
+        'title': default_cleaner,
+        'description': default_cleaner,
+        'publisher': default_cleaner,
+        'language': default_cleaner,
+        '@type': default_cleaner,
+        'accessMode': default_cleaner,
+        'url': default_cleaner,
+        'image': default_cleaner
+    }
+
     temp = {}
-    for k in dict:
-        dict[k] = remove_quot(dict[k])
-        if k == 'id':
-            temp[k] = dict[k]
-        elif k == 'date':
-            dict[k] = time_converter(dict[k])
-            temp[k] = dict[k]
-        elif k == 'runtime':
-            dict[k] = time_converter(dict[k])
-            temp[k] = dict[k]
-        elif k == 'name':
-            temp[k] = dict[k]
-        elif k == 'title':
-            temp[k] = dict[k]
-        elif k == 'description':
-            temp[k] = dict[k]
+    for k, v in dict.items():
+        v = remove_quot(v)
+        if k in cleaners:
+            temp[k] = cleaners[k](k, v)
         elif k == 'author':
-            temp2 = cut_out(dict[k], dict_author)
-            temp['author_type'] = remove_quot(temp2['author_type'])
-            temp['author_name'] = remove_quot(temp2['author_name'])
-        elif k == 'publisher':
-            temp[k] = dict[k]
-        elif k == 'language':
-            temp[k] = dict[k]
-        elif k == '@type':
-            temp[k] = dict[k]
-        elif k == 'accessMode':
-            temp[k] = dict[k]
-        elif k == 'url':
-            temp[k] = dict[k]
-        elif k == 'image':
-            temp[k] = dict[k]
+            temp[k] = split_authors(v, temp)
         else:
-            temp[k] = dict[k]
+            temp[k] = default_cleaner(k, v)
     return temp
 
 
@@ -148,6 +161,7 @@ def remove_quot(var_s):
             var_s = var_s[:-1]
     return var_s
 
+
 def get_brand(t):
     if "spotify.com" in t:
         return "Spotify"
@@ -156,22 +170,14 @@ def get_brand(t):
     elif "bnwiki.de" in t:
         return "BNW"
     return 'Link'
-    
-def get_clean_title(title, idx, obsidian = False):
-    clean_title = title
-    for each in noFileChars:
-        clean_title = clean_title.replace(each, '')
-    if obsidian:
-        clean_title = clean_title.replace("#", '')
-    clean_title = fill_digits(idx, 3) + '_' + clean_title
-    return clean_title
+
 
 def setup_infos(playlist_info, episodes_info, input_path):
-    if len(playlist_info) == 0:
+    if not playlist_info:
         with open(input_path + 'playlist_info.json', encoding='utf-8') as json_file:
             # Todo: if an "old replacement"
             playlist_info = json.load(json_file)
-    if len(episodes_info) == 0:
+    if not episodes_info:
         with open(input_path + 'episodes_info.json', encoding='utf-8') as json_file:
             episodes_info = json.load(json_file)
             episodes_info = {int(k): v for k, v in episodes_info.items()}
@@ -275,8 +281,8 @@ def time_converter(var_s):
         return year + '-' + month + day
 
 
-def similar(seq1, seq2, level=similar_enough):
-    return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > similar_enough
+def similar(seq1, seq2, level=SIMILAR_ENOUGH):
+    return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > SIMILAR_ENOUGH
 
 
 def extract_file_folder(input_path):
@@ -322,7 +328,7 @@ def lemmatize(var_dict, nlp):
 
 
 def get_transcript(input_path, filename):
-    path_json = input_path + audiofolder + '\\' + filename
+    path_json = input_path + AUDIOFOLDER + '\\' + filename
     with open(path_json, encoding='utf-8') as json_file:
         transcript = json.load(json_file)
     return transcript
@@ -382,7 +388,7 @@ def split_layers(string, characters=" ", keep_char=False, layer=0):
             if piece == '':
                 continue
             inner_results = split_layers(piece, characters, keep_char, 1+layer)
-            if len(inner_results) == 0:
+            if not inner_results:
                 continue
             for s in inner_results[:-1]:
                 pieces.append(s)

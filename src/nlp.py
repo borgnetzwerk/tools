@@ -11,7 +11,7 @@ import time
 import numpy
 import difflib
 import shutil
-import spacy
+# import spacy
 from pprint import pprint
 from os import listdir
 from os.path import isfile, join

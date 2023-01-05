@@ -18,9 +18,9 @@ from os.path import exists
 import os.path as path
 import spellcheck.main as s_check
 # Define
-audiofolder = helper.audiofolder
-tokenfolder = helper.tokenfolder
-editfolder = helper.editfolder
+audiofolder = helper.AUDIOFOLDER
+tokenfolder = helper.TOKENFOLDER
+editfolder = helper.EDITFOLDER
 # If major changes have been made: Flush out these old ones
 flush_out_relics = True
 
@@ -324,7 +324,7 @@ def handle_diff_ep(list_var, playlist_name):
     for idx, element in enumerate(list_var):
         if idx != longest:
             for fID, episode in enumerate(element):
-                if len(matched[idx][fID]) == 0:
+                if not matched[idx][fID]:
                     entry = {
                         'title':   list_var[idx][fID]['title'],
                         'listID':   idx,
@@ -874,7 +874,7 @@ def split_punctuation(token):
                     continue
                 else:
                     found += split_punctuation(part)
-    if len(found) == 0:
+    if not found:
         found = [token]
     return found
 
@@ -1100,7 +1100,7 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
     playlist_info, episodes_info = helper.setup_infos(
         playlist_info, episodes_info, input_path)
 
-    if len(data_folders) == 0 or audiofolder not in data_folders:
+    if not data_folders or audiofolder not in data_folders:
         return
 
     for foldername in data_folders:
@@ -1212,7 +1212,7 @@ def add_acronyms(playlist_name, f):
         ac_dict = s_check.acro[playlist_name]
     else:
         return
-    if len(ac_dict) == 0:
+    if not ac_dict:
         return
 
     f.write('\\begin{acronym}[MMORPG]\n')
@@ -1231,7 +1231,7 @@ def texify_acronyms(text, playlist_name):
         ac_dict = s_check.acro[playlist_name]
     else:
         return text
-    if len(ac_dict) == 0:
+    if not ac_dict:
         return text
 
     for ac, entries in ac_dict.items():
@@ -1299,7 +1299,9 @@ def convert_to_tex(input_path, playlist_name, playlist_info, episodes_info, wiki
         #     break
         episode = episodes_info[e_key]
         title = episode['title']
-        clean_name, json_path = helper.clean_title(title, input_path, e_key)
+        clean_name = helper.get_clean_title(title, e_key)
+        json_path = helper.get_edited_path(clean_name, input_path)
+
         # reminder: Episodes that have no mp3 (i.E. Spotify exclusives) cannot be found
         if exists(json_path):
             with open(json_path, encoding='utf-8') as json_file:
@@ -1385,11 +1387,11 @@ def main():
         extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
         print('add_transcript')
         add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
-        # wiki_episodes_info = convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
-        # print('convert_to_tex', flush=True)
-        # convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info, wiki_episodes_info)
+        wiki_episodes_info = convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
+        print('convert_to_tex', flush=True)
+        convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info, wiki_episodes_info)
         print('NLP', flush=True)
-        # NLP(data_pl_path, pl_n, playlist_info, episodes_info)
+        NLP(data_pl_path, pl_n, playlist_info, episodes_info)
         print('Obsidian', flush=True)
         obsidize.main(data_pl_path, pl_n, playlist_info, episodes_info)
 

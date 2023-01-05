@@ -102,8 +102,6 @@ def wikify_dict(dict, playlist_name, id=None, author_name='TBD'):
     return temp
 
 
-
-
 def lookupCSV(input_path):
     input_path
     onlyfiles = [f for f in listdir(input_path) if isfile(join(input_path, f))]
@@ -161,7 +159,7 @@ def update_wiki(playlist_info, episodes_info, input_path, playlist_name):
     # do_individual = False
 
     queries = {}
-    
+
     pagename = 'OnkelBarlow'
 
     text = wiki_helpers.write_episodes(
@@ -185,8 +183,9 @@ def update_wiki(playlist_info, episodes_info, input_path, playlist_name):
             pagename = episode_info['title_full']
 
             transcript_text = ''
-            clean_title, json_path = helper.clean_title(
-                episode_info['title_raw'], input_path, eID)
+            clean_title = helper.get_clean_title(
+                episode_info['title_raw'], eID)
+            json_path = helper.get_edited_path(clean_title, input_path)
 
             if isfile(json_path):
                 with open(json_path, encoding='utf-8') as json_file:
