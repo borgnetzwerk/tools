@@ -1,12 +1,19 @@
 import json
 import difflib
+import difflib
+import Levenshtein
+import re
 import re
 import os
 from os import listdir
 from os.path import isfile, join
 from datetime import datetime
 
-SIMILAR_ENOUGH = 0.9
+SIMILAR_ENOUGH = {
+    "levenshtein": 0.9,
+    "jaccard": 0.9,
+    "sequencematcher": 0.9,
+}
 AUDIOFOLDER = 'mp3'
 TOKENFOLDER = 'token'
 EDITFOLDER = 'edited'
@@ -280,10 +287,49 @@ def time_converter(var_s):
         # reminder: day is either "" or "-DD"
         return year + '-' + month + day
 
+def similar(seq1, seq2, method='levenshtein', level = -1):
+    """
+    Compare two sequences and return True if they are similar enough, based on the chosen method and threshold.
 
-def similar(seq1, seq2, level=SIMILAR_ENOUGH):
-    return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > SIMILAR_ENOUGH
+    Parameters
+    ----------
+    seq1 : str
+        The first sequence to compare.
+    seq2 : str
+        The second sequence to compare.
+    method : str, optional
+        The method to use for comparing the sequences. Supported values are 'levenshtein', 'jaccard', and 'sequencematcher'.
+        Default is 'levenshtein'.
+    level : float, optional
+        The similarity threshold. Sequences with a similarity score greater than or equal to this value will be considered
+        similar. Default is 0.9.
 
+    Returns
+    -------
+    bool
+        True if the sequences are similar enough, False otherwise.
+
+    Raises
+    ------
+    ValueError
+        If the specified method is not supported.
+    """
+    if level == -1:
+        level = SIMILAR_ENOUGH[method]
+    if method == 'levenshtein':
+        distance = Levenshtein.distance(seq1.lower(), seq2.lower())
+        max_length = max(len(seq1), len(seq2))
+        return 1 - distance / max_length > level
+    elif method == 'jaccard':
+        seq1 = set(re.findall(r'\w+', seq1.lower()))
+        seq2 = set(re.findall(r'\w+', seq2.lower()))
+        intersection = seq1 & seq2
+        union = seq1 | seq2
+        return len(intersection) / len(union) > level
+    elif method == 'sequencematcher':
+        return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > level
+    else:
+        raise ValueError('Invalid method: {}'.format(method))
 
 def extract_file_folder(input_path):
     data_all = [f for f in listdir(input_path)]
@@ -303,8 +349,10 @@ def json2dict(dict_var, name, path=os.getcwd()):
         name += '.json'
     if path[-2:] != "\\":
         path += "\\"
-    with open(path + name, encoding='utf-8') as json_file:
+    filepath = path + name
+    with open(filepath, encoding='utf-8') as json_file:
         dict_var.update(json.load(json_file))
+    return os.path.getmtime(filepath)
 
 
 def lemmatize(var_dict, nlp):
