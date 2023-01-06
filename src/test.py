@@ -82,11 +82,11 @@ def reformat(text):
     rest = pieces[1]
     
     # Extract values of fields using regular expression
-    year_published = re.search(r'(?<=year: ).*?(?=\n)', work).group()
+    date = re.search(r'(?<=year: ).*?(?=\n)', work).group()
     title = re.search(r'(?<=title: ).*?(?=\n)', work).group()
     authors = re.search(r'(?<=authors: ).*?(?=\n)', work).group()
     in_ = re.search(r'(?<=in: ).*?(?=\n)', work).group()
-    page_range = re.search(r'(?<=page: ).*?(?=\n)', work).group()
+    page = re.search(r'(?<=page: ).*?(?=\n)', work).group()
     cite_title = re.search(r'(?<=citeTitle:[\n ]).*?(?=\n)', work).group()
     cite_id = re.search(r'(?<=citeID:[\n ]).*?(?=\n)', work).group()
     url = re.search(r'(?<=url: ).*?(?=\n)', work).group()
@@ -97,11 +97,11 @@ def reformat(text):
     
     # Build output string using string formatting method
     build = "---\n"
-    build += f"year: {year_published}\n"
+    build += f"year: {date}\n"
     build += f"title: {title}\n"
     build += f"authors: {authors}\n"
     build += f"in: {in_}\n"
-    build += f"page: {page_range}\n"
+    build += f"page: {page}\n"
     build += "---\n"
     build += f"```citeTitle:\n{cite_title}\n```\n"
     build += f"```citeID:\n{cite_id}\n```\n"
