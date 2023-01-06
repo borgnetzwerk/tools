@@ -140,19 +140,30 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
         upper_range = 2000
         max = len(lexicon)/2
         total = str(len(lexicon))
-        for idx, word in enumerate(lexicon[:max]):
-            if idx < done:
-                continue
-            for comp in lexicon[idx+1:max]:
-                are_sim = helper.similar(word, comp, "levenshtein")
-                if are_sim:
+        lock = threading.Lock() 
+        def compare(word, comp, lexicon_similar):
+            are_sim = helper.similar_threaded(word, comp, "levenshtein")
+            if are_sim:
+                with lock:  # acquire the lock
                     if word in lexicon_similar:
                         lexicon_similar[word] += [comp]
                     else:
                         lexicon_similar[word] = [comp]
+
+        for idx, word in enumerate(lexicon[:max]):
+            if idx < done:
+                continue
+            # They we'd neet to lock
+            threads = []
+            for comp in lexicon[idx+1:max]:
+                t = threading.Thread(target=compare, args=(word, comp, lexicon_similar))
+                t.start()  # start the thread
+                threads.append(t)  # add the thread to the list
+            for t in threads:
+                t.join()  # wait for all threads to finish
             # if upper_range + 1 < max:
             #     upper_range+=1
-            if idx % 10 == 0:
+            if idx % 50 == 0:
                 print(str(idx) + "/" + total + ' words checked.', flush=True)
                 helper.dict2json(
                     lexicon_similar, "_lexicon_similar", edit_path)
