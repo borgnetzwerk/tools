@@ -1143,7 +1143,7 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
                 if is_match >= 1:
                     matched = True
                 else:
-                    matched = helper.similar(title, new_title)
+                    matched = helper.similar(title, new_title, "levenshtein")
                 if matched:
                     clean_name = helper.fill_digits(idx, 3) + '_' + new_title
                     path_old = input_path + audiofolder + '\\' + filename
@@ -1383,18 +1383,20 @@ def main():
         episodes_info = {}
         # TODO: Find out why this doesnt work
         # playlist_info, episodes_info = extract_html_info(data_pl_path, pl_n)
-        print('extract_html_info', flush=True)
-        extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
-        print('add_transcript')
-        add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
-        wiki_episodes_info = convert_to_wiki(data_pl_path, pl_n, playlist_info, episodes_info)
-        print('convert_to_tex', flush=True)
-        convert_to_tex(data_pl_path, pl_n, playlist_info, episodes_info, wiki_episodes_info)
+        # print('extract_html_info', flush=True)
+        # extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
+        # print('add_transcript')
+        # add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
+        # wiki_episodes_info = convert_to_wiki(
+        #     data_pl_path, pl_n, playlist_info, episodes_info)
+        # print('convert_to_tex', flush=True)
+        # convert_to_tex(data_pl_path, pl_n, playlist_info,
+        #                episodes_info, wiki_episodes_info)
         print('NLP', flush=True)
         NLP(data_pl_path, pl_n, playlist_info, episodes_info)
         print('Obsidian', flush=True)
         obsidize.main(data_pl_path, pl_n, playlist_info, episodes_info)
-
+        
         sys.stdout = old_stdout
         log_file.close()
 

@@ -7,11 +7,13 @@ import personalInfos
 # "path\to\your\Obsidian\vault"
 OBSIDIAN_PATH = personalInfos.OBSIDIAN_PATH
 
+
 def add_links(links):
     note = "# Links\n"
     note += "[[" + "]] ; [[".join(links) + "]]\n\n"
     # text = re.sub(r"\b\w+\b", r"[[\g<0>]]", text)
     return note
+
 
 def add_urls_to_note(url, prefix):
     note = ""
@@ -24,6 +26,7 @@ def add_urls_to_note(url, prefix):
         brands.append(brand)
         note += prefix + "url_" + brand + ": \"" + url + "\"\n"
     return note
+
 
 def make_a_note_out_of_me(transcript, episode_info, playlist_info):
     note = "---\n"
@@ -77,26 +80,17 @@ def make_a_note_out_of_me(transcript, episode_info, playlist_info):
         note += "\n---\n"
     return note
 
+
 def add_full_text(text, links):
     for link in links:
-        text = re.sub(r"\b" + link + r"\b", r"[[" + link + "|\g<0>]]", text, flags=re.I)
+        text = re.sub(r"\b" + link + r"\b",
+                      r"[[" + link + "|\g<0>]]", text, flags=re.I)
     note = "# FullText\n"
     note += text + "\n\n"
     return note
 
-def include_to_obsidian(input_path, playlist_name, playlist_info, episodes_info):
-    obs_pl_path = OBSIDIAN_PATH + "\\" + playlist_name
-    if not os.path.exists(obs_pl_path):
-        os.makedirs(obs_pl_path)
-    data_path, playlist_names = helper.get_data_folders()
-    input_path = data_path + playlist_name + "\\"
-    edited_path = input_path + "edited\\"
 
-    playlist_info, episodes_info = helper.setup_infos(
-            playlist_info, episodes_info, input_path)
-    data_files, data_folders = helper.extract_file_folder(input_path+ "edited\\")
-    jsons = [filename for filename in data_files if filename.endswith(".json")]
-
+def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
     with open(edited_path + '_lexicon_ep_count.json', encoding='utf-8') as json_file:
         lexicon_ep_count = json.load(json_file)
     linkpreps = {}
@@ -133,8 +127,6 @@ def include_to_obsidian(input_path, playlist_name, playlist_info, episodes_info)
             #             linkpreps[eID].append(link)
 
     linkpreps = dict(sorted(linkpreps.items()))
-        
-    
 
     for eID, episode_info in episodes_info.items():
         # if eID <= 20:
@@ -150,22 +142,67 @@ def include_to_obsidian(input_path, playlist_name, playlist_info, episodes_info)
         else:
             print("Missing: " + file_path)
             continue
-        #convert transcript
+        # convert transcript
         note = make_a_note_out_of_me(transcript, episode_info, playlist_info)
         links = []
         if eID in linkpreps:
             links = linkpreps[eID]
         note += add_links(links)
-        note += add_full_text(transcript['text'], links)    
-        #write transcript
+        note += add_full_text(transcript['text'], links)
+        # write transcript
         clean_title = helper.get_clean_title(title, eID, True)
         filepath = obs_pl_path + "\\" + clean_title + ".md"
         with open(filepath, 'w', encoding='UTF8') as f:
             f.write(note)
 
+def include_lexicon(edited_path, playlist_name):
+    with open(edited_path + '_lexicon_similar.json', encoding='utf-8') as json_file:
+        lexicon_similar = json.load(json_file)
+    with open(edited_path + '_lexicon.json', encoding='utf-8') as json_file:
+        lexicon = json.load(json_file)
+    if not os.path.exists(OBSIDIAN_PATH + "\\lexicon"):
+        os.makedirs(OBSIDIAN_PATH + "\\lexicon")
+    for key, value in lexicon_similar.items():
+        # handle if note already exists
+        note = "---\n"
+        note += "count_in_" + playlist_name + ": " + str(lexicon[key]) + "\n"
+        #lemmacon
+        note += "---\n"
+
+        tags = "#lexem "
+        
+        note += "tags:: " + tags + "\n"
+        comment = ""
+        note += "comment:: " + comment + "\n"
+        note += "\n---\n"
+        note += add_links(value)
+        # write transcript
+        filepath = OBSIDIAN_PATH + "\\lexicon\\" + key + ".md"
+        with open(filepath, 'w', encoding='UTF8') as f:
+            f.write(note)
+
+
+def include_to_obsidian(input_path, playlist_name, playlist_info, episodes_info):
+    obs_pl_path = OBSIDIAN_PATH + "\\" + playlist_name
+    if not os.path.exists(obs_pl_path):
+        os.makedirs(obs_pl_path)
+    data_path, playlist_names = helper.get_data_folders()
+    input_path = data_path + playlist_name + "\\"
+    edited_path = input_path + "edited\\"
+
+    playlist_info, episodes_info = helper.setup_infos(
+        playlist_info, episodes_info, input_path)
+    data_files, data_folders = helper.extract_file_folder(
+        input_path + "edited\\")
+    jsons = [filename for filename in data_files if filename.endswith(".json")]
+
+    # include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info)
+    include_lexicon(edited_path, playlist_name)
+
 
 def main(input_path=os.getcwd(), playlist_name='BMZ', playlist_info={}, episodes_info={}):
-    include_to_obsidian(input_path, playlist_name, playlist_info, episodes_info)
+    include_to_obsidian(input_path, playlist_name,
+                        playlist_info, episodes_info)
 
 
 if __name__ == '__main__':

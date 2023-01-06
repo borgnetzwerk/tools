@@ -11,6 +11,7 @@ import time
 import numpy
 import difflib
 import shutil
+import threading
 # import spacy
 from pprint import pprint
 from os import listdir
@@ -72,7 +73,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
         lines = f.readlines()
 
     do_words = True
-    # do_words = False
+    do_words = False
     if do_words:
         for idx, line in enumerate(lines):
             lexicon_episode = {}
@@ -101,7 +102,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
                                  "_lexicon_ep_count", edit_path)
 
     else:
-        helper.json2dict(lexicon, "_lexicon", edit_path)
+        lexicon_mtime = helper.json2dict(lexicon, "_lexicon", edit_path)
 
     if nlp:
         do_lemma = True
@@ -127,16 +128,23 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     # do_sim = False
     if do_sim:
         lexicon_similar = {}
+        done = 0
+        if lexicon_mtime:
+            try:
+                lexicon_similar_mtime = helper.json2dict(lexicon_similar, "_lexicon_similar", edit_path)
+                if lexicon_similar_mtime > lexicon_mtime:
+                    last = list(lexicon_similar.keys())[-1]
+                    done = list(lexicon).index(last)
+            except:
+                pass
         upper_range = 2000
         max = len(lexicon)/2
-        counter = 0
-        for idx, word in enumerate(lexicon):
-            for idy, comp in enumerate(lexicon):
-                if idy <= idx:
-                    continue
-                if idy > max:
-                    break
-                are_sim = helper.similar(word, comp)
+        total = str(len(lexicon))
+        for idx, word in enumerate(lexicon[:max]):
+            if idx < done:
+                continue
+            for comp in lexicon[idx+1:max]:
+                are_sim = helper.similar(word, comp, "levenshtein")
                 if are_sim:
                     if word in lexicon_similar:
                         lexicon_similar[word] += [comp]
@@ -145,8 +153,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
             # if upper_range + 1 < max:
             #     upper_range+=1
             if idx % 10 == 0:
-                print(str(counter) + ' words checked.')
-                counter += 10
+                print(str(idx) + "/" + total + ' words checked.', flush=True)
                 helper.dict2json(
                     lexicon_similar, "_lexicon_similar", edit_path)
 
