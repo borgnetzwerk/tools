@@ -8,9 +8,12 @@ import os
 from os import listdir
 from os.path import isfile, join
 from datetime import datetime
+import math
+from collections import Counter
 
 SIMILAR_ENOUGH = {
-    "levenshtein": 0.9,
+    "cosine": 0.9,
+    "levenshtein": 0.85,
     "jaccard": 0.9,
     "sequencematcher": 0.9,
 }
@@ -287,6 +290,29 @@ def time_converter(var_s):
         # reminder: day is either "" or "-DD"
         return year + '-' + month + day
 
+def cosine_similarity(seq1, seq2):
+    # Convert the sequences to word count dictionaries
+    seq1_word_count = Counter(seq1)
+    seq2_word_count = Counter(seq2)
+
+    # Get the set of unique words in both sequences
+    common_words = set(seq1_word_count.keys()) & set(seq2_word_count.keys())
+
+    # If the sequences have no words in common, return 0
+    if not common_words:
+        return 0
+
+    # Calculate the dot product of the sequences
+    dot_product = sum(seq1_word_count[word] * seq2_word_count[word] for word in common_words)
+
+    # Calculate the Euclidean norms of the sequences
+    seq1_norm = math.sqrt(sum(seq1_word_count[word] ** 2 for word in seq1_word_count))
+    seq2_norm = math.sqrt(sum(seq2_word_count[word] ** 2 for word in seq2_word_count))
+
+    # Return the Cosine similarity
+    return dot_product / (seq1_norm * seq2_norm)
+
+
 def similar(seq1, seq2, method='levenshtein', level = -1):
     """
     Compare two sequences and return True if they are similar enough, based on the chosen method and threshold.
@@ -298,7 +324,7 @@ def similar(seq1, seq2, method='levenshtein', level = -1):
     seq2 : str
         The second sequence to compare.
     method : str, optional
-        The method to use for comparing the sequences. Supported values are 'levenshtein', 'jaccard', and 'sequencematcher'.
+        The method to use for comparing the sequences. Supported values are 'cosine', 'levenshtein', 'jaccard', and 'sequencematcher'.
         Default is 'levenshtein'.
     level : float, optional
         The similarity threshold. Sequences with a similarity score greater than or equal to this value will be considered
@@ -320,6 +346,7 @@ def similar(seq1, seq2, method='levenshtein', level = -1):
         distance = Levenshtein.distance(seq1.lower(), seq2.lower())
         max_length = max(len(seq1), len(seq2))
         return 1 - distance / max_length > level
+    # todo: make jaccard worth
     elif method == 'jaccard':
         seq1 = set(re.findall(r'\w+', seq1.lower()))
         seq2 = set(re.findall(r'\w+', seq2.lower()))
@@ -328,6 +355,8 @@ def similar(seq1, seq2, method='levenshtein', level = -1):
         return len(intersection) / len(union) > level
     elif method == 'sequencematcher':
         return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > level
+    elif method == 'cosine':
+        return cosine_similarity(seq1, seq2) > level
     else:
         raise ValueError('Invalid method: {}'.format(method))
 

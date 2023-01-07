@@ -12,7 +12,7 @@ import numpy
 import difflib
 import shutil
 import threading
-# import spacy
+import spacy
 from pprint import pprint
 from os import listdir
 from os.path import isfile, join
@@ -129,7 +129,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     if do_sim:
         lexicon_similar = {}
         done = 0
-        if lexicon_mtime:
+        if not lexicon_mtime:
             try:
                 lexicon_similar_mtime = helper.json2dict(lexicon_similar, "_lexicon_similar", edit_path)
                 if lexicon_similar_mtime > lexicon_mtime:
@@ -141,12 +141,18 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
         max = int(len(lexicon)/2)
         total = str(len(lexicon))
         lock = threading.Lock() 
-        print_every_x = 1
+        print_every_x = 100
         def compare(word, comp, lexicon_similar):
-            # are_sim = helper.similar(word, comp, "levenshtein")
-            are_sim = helper.similar(word, comp, "sequencematcher")
+            # Cosine: seems to match almost anything
+            # are_sim = helper.similar(word, comp, "cosine")
+            # levenshtein: seems to be best fit.
+            are_sim = helper.similar(word, comp, "levenshtein")
+            # sequencematcher: 
+            # are_sim = helper.similar(word, comp, "sequencematcher")
+            # jaccard: 
+            # are_sim = helper.similar(word, comp, "jaccard")
             if are_sim:
-                print(word + " ~= " + comp, flush=True)
+                # print(word + " ~= " + comp, flush=True)
                 with lock:  # acquire the lock
                     if word in lexicon_similar:
                         lexicon_similar[word] += [comp]
@@ -225,7 +231,7 @@ def main(input_path=os.getcwd(), playlist_name='BMZ', playlist_info={}, episodes
     tagger = False
     nlp = False
     # tagger = SequenceTagger.load('ner-multi-fast')
-    # nlp = spacy.load('de_core_news_md')
+    nlp = spacy.load('de_core_news_md')
     test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp)
 
 
