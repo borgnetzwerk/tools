@@ -161,11 +161,12 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
             # They we'd neet to lock
             threads = []
             for comp in words[idx+1:]:
-                t = threading.Thread(target=compare, args=(word, comp, lexicon_similar))
-                t.start()  # start the thread
-                threads.append(t)  # add the thread to the list
-            for t in threads:
-                t.join()  # wait for all threads to finish
+                compare(word, comp, lexicon_similar)
+            #     t = threading.Thread(target=compare, args=(word, comp, lexicon_similar))
+            #     t.start()  # start the thread
+            #     threads.append(t)  # add the thread to the list
+            # for t in threads:
+            #     t.join()  # wait for all threads to finish
             # if upper_range + 1 < max:
             #     upper_range+=1
             if idx % print_every_x == 0:
