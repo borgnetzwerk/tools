@@ -138,24 +138,29 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
             except:
                 pass
         upper_range = 2000
-        max = len(lexicon)/2
+        max = int(len(lexicon)/2)
         total = str(len(lexicon))
         lock = threading.Lock() 
+        print_every_x = 1
         def compare(word, comp, lexicon_similar):
-            are_sim = helper.similar_threaded(word, comp, "levenshtein")
+            # are_sim = helper.similar(word, comp, "levenshtein")
+            are_sim = helper.similar(word, comp, "sequencematcher")
             if are_sim:
+                print(word + " ~= " + comp, flush=True)
                 with lock:  # acquire the lock
                     if word in lexicon_similar:
                         lexicon_similar[word] += [comp]
                     else:
                         lexicon_similar[word] = [comp]
-
-        for idx, word in enumerate(lexicon[:max]):
+        words = list(lexicon.keys())[:max]
+        start_time = time.time()
+        lap_time = start_time
+        for idx, word in enumerate(words):
             if idx < done:
                 continue
             # They we'd neet to lock
             threads = []
-            for comp in lexicon[idx+1:max]:
+            for comp in words[idx+1:]:
                 t = threading.Thread(target=compare, args=(word, comp, lexicon_similar))
                 t.start()  # start the thread
                 threads.append(t)  # add the thread to the list
@@ -163,8 +168,11 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
                 t.join()  # wait for all threads to finish
             # if upper_range + 1 < max:
             #     upper_range+=1
-            if idx % 50 == 0:
-                print(str(idx) + "/" + total + ' words checked.', flush=True)
+            if idx % print_every_x == 0:
+                # TODO: Include how long this took (per word)
+                time_per_word = round((time.time() - lap_time) / print_every_x, 2) 
+                lap_time = time.time()
+                print(f"{str(idx)}/{total} words checked with currently {time_per_word} seconds per word.", flush=True)
                 helper.dict2json(
                     lexicon_similar, "_lexicon_similar", edit_path)
 
