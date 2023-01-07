@@ -101,7 +101,7 @@ def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
     with open(edited_path + '_lemma_dict.json', encoding='utf-8') as json_file:
         lemma_dict = json.load(json_file)
     linkpreps = {}
-    trivial_max = len(episodes_info) * 0.2
+    trivial_max = len(episodes_info) * 0.1
     trivial_min = 3
     link_min = 2
     wordlen_min = 2
@@ -125,7 +125,7 @@ def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
             # words in the middle
             lemma = word
             if word in lemma_dict:
-                word = lemma_dict[word]
+                lemma = lemma_dict[word]
             linkpreps[eID].append([word, lemma])
             # direct links:
             # for i_eID in group:

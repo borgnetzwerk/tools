@@ -386,28 +386,54 @@ def json2dict(dict_var, name, path=os.getcwd()):
 
 def lemmatize(var_dict, nlp):
     # this might change the reslts
-    print('lemmatizing ' + str(len(var_dict)) + ' words', flush=True)
+    wordcount = len(var_dict)
+    print('lemmatizing ' + str(wordcount) + ' words', flush=True)
     lemma_dict = {}
     lemmacon = {}
     # this currently turns 500kg to 500 kg, makes it 2 lemmata and thus brakes the sync
     # lemmas = nlp(' '.join(list(var_dict.keys())))
+    min = 0
+    steps = 1000
+    words = list(var_dict.keys())
+    lemmas_total = []
+    for i in range(int(wordcount/1000)+1):
+        words_here = words[i*steps:(i+1)*steps]
+        lemmas = nlp(' '.join(words_here))
+        if len(words_here) != len(lemmas):
+            lemmas = []
+            for word in words_here:
+                check_lemmas = nlp(word)
+                check_lemma_ = []
+                
+                for l in check_lemmas:
+                    check_lemma_.append(l.lemma_)
+                if len(check_lemma_) > 1:
+                    print(f"{word} gets lemmatized to {'; '.join(check_lemma_)}", flush=True)
+                lemma = "".join(check_lemma_)
+                lemmas.append(lemma)
+        lemmas_total += lemmas
+
     for idx, [word, value] in enumerate(var_dict.items()):
-        check_lemmas = nlp(word)
-        check_lemma_ = []
-        for l in check_lemmas:
-            check_lemma_.append(l.lemma_)
-        if len(check_lemmas) > 1:
-            print(f"{word} gets lemmatized to {'; '.join(check_lemma_)}")
+        # check_lemmas = nlp(word)
+        # check_lemma_ = []
+        # if idx % 1000 == 0:
+            # print(str(idx), flush=True)
+        # for l in check_lemmas:
+            # check_lemma_.append(l.lemma_)
+        # if len(check_lemmas) > 1:
         # lemma = nlp(word)[0]
         # lemma = lemmas[idx].lemma_
-        lemma = "".join(check_lemma_)
         # if lemma != check_lemma_[0]:
         #     if lemma == check_lemma_[0].replace("ß", "ss"):
         #         continue
         #     print(f"{word} gets lemmatized to {lemma} and {check_lemma_}")
         # TODO: Find out why lemma is sometimes not automatically lower case
-        word = word.lower()
+        lemma = lemmas_total[idx]
+        if type(lemma) is not str:
+            lemma = lemma.lemma_
         lemma = lemma.lower()
+        # Todo: Not sure how to handle "Alte Rechtschreibung" yet
+        # lemma = lemma.replace("ß", "ss"), 
         # Due to lexicon being sorted, lemma elements should be automatically sorted
         # sort = False
         # if lemma in lemma_dict:
