@@ -109,11 +109,13 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     else:
         do_lemma = False
     if do_lemma:
-        lemmacon = helper.lemmatize(lexicon, nlp)
+        lemmacon, lemma_dict = helper.lemmatize(lexicon, nlp)
         lemmacon = {k: v for k, v in sorted(
             lemmacon.items(), reverse=True, key=lambda item: sum(list(item[1].values())))}
         helper.dict2json(lemmacon,
                          "_lemmacon", edit_path)
+        helper.dict2json(lemma_dict,
+                         "_lemma_dict", edit_path)
     # Stemming
     # https://medium.com/@tusharsri/nlp-a-quick-guide-to-stemming-60f1ca5db49e
     # Cutting words down till the same for alle declinations remains
@@ -129,7 +131,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     if do_sim:
         lexicon_similar = {}
         done = 0
-        if not lexicon_mtime:
+        if lexicon_mtime:
             try:
                 lexicon_similar_mtime = helper.json2dict(lexicon_similar, "_lexicon_similar", edit_path)
                 if lexicon_similar_mtime > lexicon_mtime:
@@ -138,7 +140,7 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
             except:
                 pass
         upper_range = 2000
-        max = int(len(lexicon)/2)
+        max = int(len(lexicon))
         total = str(len(lexicon))
         lock = threading.Lock() 
         print_every_x = 100

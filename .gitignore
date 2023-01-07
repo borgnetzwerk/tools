@@ -158,3 +158,5 @@ cython_debug/
 #.idea/
 src/wiki_bot.py
 src/personalInfos.py
+data/sample/post
+data/sample/pre

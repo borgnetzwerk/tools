@@ -231,13 +231,13 @@ def cut_out(var_s, dict):
 def time_converter(var_s):
     if "Std." in var_s or "Min." in var_s or "Sek." in var_s:
         # Time: HH:MM:SS
-        m = re.search('\d*(?= *Std.)', var_s)
+        m = re.search(r'\d*(?= *Std.)', var_s)
         std = "" if m is None else m.group(0)
         time = fill_digits(std) + ":"
-        m = re.search('\d*(?= *Min.)', var_s)
+        m = re.search(r'\d*(?= *Min.)', var_s)
         min = "" if m is None else m.group(0)
         time += fill_digits(min) + ":"
-        m = re.search('\d*(?= *Sek.)', var_s)
+        m = re.search(r'\d*(?= *Sek.)', var_s)
         sek = "" if m is None else m.group(0)
         time += fill_digits(sek)
         return time
@@ -388,20 +388,37 @@ def lemmatize(var_dict, nlp):
     # this might change the reslts
     print('lemmatizing ' + str(len(var_dict)) + ' words', flush=True)
     lemma_dict = {}
-    lemmas = nlp(' '.join(list(var_dict.keys())))
+    lemmacon = {}
+    # this currently turns 500kg to 500 kg, makes it 2 lemmata and thus brakes the sync
+    # lemmas = nlp(' '.join(list(var_dict.keys())))
     for idx, [word, value] in enumerate(var_dict.items()):
+        check_lemmas = nlp(word)
+        check_lemma_ = []
+        for l in check_lemmas:
+            check_lemma_.append(l.lemma_)
+        if len(check_lemmas) > 1:
+            print(f"{word} gets lemmatized to {'; '.join(check_lemma_)}")
         # lemma = nlp(word)[0]
-        lemma = lemmas[idx].lemma_
+        # lemma = lemmas[idx].lemma_
+        lemma = "".join(check_lemma_)
+        # if lemma != check_lemma_[0]:
+        #     if lemma == check_lemma_[0].replace("ß", "ss"):
+        #         continue
+        #     print(f"{word} gets lemmatized to {lemma} and {check_lemma_}")
+        # TODO: Find out why lemma is sometimes not automatically lower case
+        word = word.lower()
+        lemma = lemma.lower()
         # Due to lexicon being sorted, lemma elements should be automatically sorted
         # sort = False
         # if lemma in lemma_dict:
         #     sort = True
-        nested_add(lemma_dict, [lemma], {word: value})
+        lemma_dict[word] = lemma
+        nested_add(lemmacon, [lemma], {word: value})
         # if sort:
         #     lemma_dict[lemma] = {k: v for k, v in sorted(
         #         lemma_dict[lemma].items(), reverse=True, key=lambda item: item[1])}
-    print('reduced to  ' + str(len(lemma_dict)) + ' words', flush=True)
-    return lemma_dict
+    print('reduced to  ' + str(len(lemmacon)) + ' words', flush=True)
+    return lemmacon, lemma_dict
 
 
 def get_transcript(input_path, filename):

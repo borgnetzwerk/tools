@@ -9,8 +9,11 @@ OBSIDIAN_PATH = personalInfos.OBSIDIAN_PATH
 
 
 def add_links(links):
+    link_set = set()
+    for link in links:
+        link_set.add("lexicon/" + link[1] + "|" + link[1])
     note = "# Links\n"
-    note += "[[" + "]] ; [[".join(links) + "]]\n\n"
+    note += "[[" + "]] ; [[".join(link_set) + "]]\n\n"
     # text = re.sub(r"\b\w+\b", r"[[\g<0>]]", text)
     return note
 
@@ -83,8 +86,10 @@ def make_a_note_out_of_me(transcript, episode_info, playlist_info):
 
 def add_full_text(text, links):
     for link in links:
-        text = re.sub(r"\b" + link + r"\b",
-                      r"[[" + link + "|\g<0>]]", text, flags=re.I)
+        word = link[0]
+        lemma = link[1]
+        text = re.sub(r"\b" + word + r"\b",
+                      r"[[lexicon/" + lemma + "|\g<0>]]", text, flags=re.I)
     note = "# FullText\n"
     note += text + "\n\n"
     return note
@@ -93,6 +98,8 @@ def add_full_text(text, links):
 def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
     with open(edited_path + '_lexicon_ep_count.json', encoding='utf-8') as json_file:
         lexicon_ep_count = json.load(json_file)
+    with open(edited_path + '_lemma_dict.json', encoding='utf-8') as json_file:
+        lemma_dict = json.load(json_file)
     linkpreps = {}
     trivial_max = len(episodes_info) * 0.2
     trivial_min = 3
@@ -116,7 +123,10 @@ def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
             continue
         for eID in group:
             # words in the middle
-            linkpreps[eID].append(word)
+            lemma = word
+            if word in lemma_dict:
+                word = lemma_dict[word]
+            linkpreps[eID].append([word, lemma])
             # direct links:
             # for i_eID in group:
             #     if eID != i_eID:
@@ -158,15 +168,25 @@ def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
 def include_lexicon(edited_path, playlist_name):
     with open(edited_path + '_lexicon_similar.json', encoding='utf-8') as json_file:
         lexicon_similar = json.load(json_file)
-    with open(edited_path + '_lexicon.json', encoding='utf-8') as json_file:
-        lexicon = json.load(json_file)
+    with open(edited_path + '_lemmacon.json', encoding='utf-8') as json_file:
+        lemmacon = json.load(json_file)
     if not os.path.exists(OBSIDIAN_PATH + "\\lexicon"):
         os.makedirs(OBSIDIAN_PATH + "\\lexicon")
-    for key, value in lexicon_similar.items():
+    for key, value in lemmacon.items():
         # handle if note already exists
+        count_in_ = 0
+        flexeds = []
+        for flexed, count in value.items():
+            count_in_ += count
+            flexeds.append(flexed)
+        if count_in_ < 3:
+            continue
+        similar = []
+        if key in lexicon_similar:
+            similar = lexicon_similar[key]
         note = "---\n"
-        note += "count_in_" + playlist_name + ": " + str(lexicon[key]) + "\n"
-        #lemmacon
+        note += "count_in_" + playlist_name + ": " + str(count_in_) + "\n"
+        
         note += "---\n"
 
         tags = "#lexem "
@@ -175,9 +195,14 @@ def include_lexicon(edited_path, playlist_name):
         comment = ""
         note += "comment:: " + comment + "\n"
         note += "\n---\n"
-        note += add_links(value)
+        note += "# Inflected words\n"
+        note += "; ".join(flexeds) + "\n\n"
+        note += "# similar words\n"
+        note += "; ".join(similar) + "\n\n"
+        # note += add_links(value)
         # write transcript
         filepath = OBSIDIAN_PATH + "\\lexicon\\" + key + ".md"
+        
         with open(filepath, 'w', encoding='UTF8') as f:
             f.write(note)
 
@@ -196,8 +221,8 @@ def include_to_obsidian(input_path, playlist_name, playlist_info, episodes_info)
         input_path + "edited\\")
     jsons = [filename for filename in data_files if filename.endswith(".json")]
 
-    # include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info)
-    include_lexicon(edited_path, playlist_name)
+    include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info)
+    # include_lexicon(edited_path, playlist_name)
 
 
 def main(input_path=os.getcwd(), playlist_name='BMZ', playlist_info={}, episodes_info={}):
