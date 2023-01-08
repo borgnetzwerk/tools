@@ -3,6 +3,7 @@ import helper
 import re
 import json
 import personalInfos
+import graphvizify
 
 # "path\to\your\Obsidian\vault"
 OBSIDIAN_PATH = personalInfos.OBSIDIAN_PATH
@@ -10,13 +11,21 @@ OBSIDIAN_PATH = personalInfos.OBSIDIAN_PATH
 
 def add_links(links):
     link_set = set()
-    for link in links:
-        link_set.add("lexicon/" + link[1] + "|" + link[1])
+    for word, lemma in links.items():
+        link_set.add("lexicon/" + lemma + "|" + lemma)
     note = "# Links\n"
     note += "[[" + "]] ; [[".join(link_set) + "]]\n\n"
     # text = re.sub(r"\b\w+\b", r"[[\g<0>]]", text)
     return note
 
+def add_related(group_list, pl_n):
+    note = "# Related Episodes\n"
+    g_list = []
+    for i in group_list:
+        g_list.append(f"{pl_n}/{i}|{i}")
+    note += "[[" + "]] ; [[".join(g_list) + "]]\n\n"
+    # text = re.sub(r"\b\w+\b", r"[[\g<0>]]", text)
+    return note
 
 def add_urls_to_note(url, prefix):
     note = ""
@@ -85,9 +94,7 @@ def make_a_note_out_of_me(transcript, episode_info, playlist_info):
 
 
 def add_full_text(text, links):
-    for link in links:
-        word = link[0]
-        lemma = link[1]
+    for word, lemma in links.items():
         text = re.sub(r"\b" + word + r"\b",
                       r"[[lexicon/" + lemma + "|\g<0>]]", text, flags=re.I)
     note = "# FullText\n"
@@ -118,15 +125,25 @@ def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
             if count >= trivial_min:
                 group.append(eID)
                 if eID not in linkpreps:
-                    linkpreps[eID] = []
+                    linkpreps[eID] = {}
         if len(group) < link_min:
             continue
         for eID in group:
+            if eID not in groups:
+                groups[eID] = {}
+            for ieID in group:
+                if ieID == eID:
+                    continue
+                if ieID not in groups[eID]:
+                    groups[eID][ieID] = 0
+                # Todo: possibility to scale with number of occurences, so one word 100 times counts +100
+                # But once you scale this with others, you're better off just using jaccard or sth
+                groups[eID][ieID] += 1
             # words in the middle
             lemma = word
             if word in lemma_dict:
                 lemma = lemma_dict[word]
-            linkpreps[eID].append([word, lemma])
+            linkpreps[eID].update({word: lemma})
             # direct links:
             # for i_eID in group:
             #     if eID != i_eID:
@@ -137,6 +154,31 @@ def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
             #             linkpreps[eID].append(link)
 
     linkpreps = dict(sorted(linkpreps.items()))
+
+    dot = {}
+    for eID, episode_info in episodes_info.items():
+        words = {}
+        if eID not in linkpreps:
+            continue
+        # if eID > 100:
+        #     break
+        for word, lemma in linkpreps[eID].items():
+            count = 0
+            if word in lexicon_ep_count:
+                if eID in lexicon_ep_count[word]:
+                    count = lexicon_ep_count[word][eID]
+            if lemma not in words:
+                words[lemma] = 0
+            words[lemma] += count
+        ep = {
+            "title" : episode_info["title"],
+            "words" : words
+        }
+        dot.update({eID : ep})
+
+    # graphvizify.generate_dot_file(dot, "_dot", edited_path)
+
+    # helper.dict2json(linkpreps, "_linkpreps", edited_path)
 
     for eID, episode_info in episodes_info.items():
         # if eID <= 20:
@@ -158,6 +200,19 @@ def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
         if eID in linkpreps:
             links = linkpreps[eID]
         note += add_links(links)
+        related_list = []
+        if eID in groups:
+            related_dict = {k: v for k, v in sorted(groups[eID].items(), key=lambda item: item[1])}
+            for ieID in groups[eID]:
+                if ieID == eID:
+                    continue
+                max_related = 5
+                if len(related_list) >= max_related:
+                    continue
+                title_temp = episodes_info[ieID]['title']
+                clean_title_temp = helper.get_clean_title(title_temp, ieID, True)
+                related_list.append(clean_title_temp)
+        note += add_related(related_list, playlist_info['title'])
         note += add_full_text(transcript['text'], links)
         # write transcript
         clean_title = helper.get_clean_title(title, eID, True)
