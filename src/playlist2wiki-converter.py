@@ -1058,6 +1058,8 @@ def spellcheck_string(text, playlist_name):
 
 def spellcheck(input_path, playlist_name, jsons):
     edited_path = input_path + editfolder + '\\'
+    if not os.path.exists(edited_path):
+        os.makedirs(edited_path)
     with open(edited_path + "_text.txt", "w", encoding='utf8') as f:
         for filename in jsons:
             transcript = helper.get_transcript(input_path, filename)
@@ -1129,8 +1131,8 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
         # TODO: generalize this
         for filename in jsons:
             entry = filename[:4]
-            if "BMZ" not in entry:
-                continue
+            # if playlist_name not in entry:
+            #     continue
             title = filename.replace('.json', '')
             try_this = helper.title_mine(title, playlist_name)
             for idx, eID in enumerate(episodes_info):
@@ -1160,6 +1162,25 @@ def add_transcript(input_path, playlist_name, playlist_info, episodes_info):
                             if not exists(path_new):
                                 os.rename(path_old, path_new)
     spellcheck(input_path, playlist_name, jsons)
+    # ! TODO: make this way more permanent
+    # TODO
+    def rreplace(s, old, new, occurrence):
+        li = s.rsplit(old, occurrence)
+        return new.join(li)
+
+    if len(episodes_info) < len(jsons):
+        for file in jsons:
+            eID = file.split("_",1)[0]
+            if eID not in episodes_info:
+                title = file.split("_",1)[1]
+                title = rreplace(title, ".json", "", 1)
+                episodes_info[eID] = {'title' : title}
+        playlist_info['title'] = playlist_name
+        playlist_info['author_name'] = playlist_name
+        infos2json(playlist_info, episodes_info,
+               input_path, filename, playlist_name)
+        
+        
     # do_token_stuff(input_path, jsons)
     # Todo: make every subsequential call look for transcripts in edited
 
@@ -1383,15 +1404,15 @@ def main():
         episodes_info = {}
         # TODO: Find out why this doesnt work
         # playlist_info, episodes_info = extract_html_info(data_pl_path, pl_n)
-        # print('extract_html_info', flush=True)
-        # extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
-        # print('add_transcript')
-        # add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
-        # wiki_episodes_info = convert_to_wiki(
-        #     data_pl_path, pl_n, playlist_info, episodes_info)
-        # print('convert_to_tex', flush=True)
-        # convert_to_tex(data_pl_path, pl_n, playlist_info,
-        #                episodes_info, wiki_episodes_info)
+        print('extract_html_info', flush=True)
+        extract_html_info(data_pl_path, pl_n, playlist_info, episodes_info)
+        print('add_transcript')
+        add_transcript(data_pl_path, pl_n, playlist_info, episodes_info)
+        wiki_episodes_info = convert_to_wiki(
+            data_pl_path, pl_n, playlist_info, episodes_info)
+        print('convert_to_tex', flush=True)
+        convert_to_tex(data_pl_path, pl_n, playlist_info,
+                       episodes_info, wiki_episodes_info)
         print('NLP', flush=True)
         NLP(data_pl_path, pl_n, playlist_info, episodes_info)
         print('Obsidian', flush=True)

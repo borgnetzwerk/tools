@@ -210,8 +210,8 @@ def update_wiki(playlist_info, episodes_info, input_path, playlist_name):
             tasks.update({order: promt})
 
             queries.update({pagename: tasks})
-    if len(queries) > 0:
-        wiki_bot.main(queries)
+    # if len(queries) > 0:
+    #     wiki_bot.main(queries)
 
     wiki_episodes_info = add_wiki_url(wiki_episodes_info)
 

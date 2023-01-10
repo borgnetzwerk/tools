@@ -10,6 +10,8 @@ from os.path import isfile, join
 from datetime import datetime
 import math
 from collections import Counter
+import numpy as np
+from numpy.linalg import norm
 
 SIMILAR_ENOUGH = {
     "cosine": 0.9,
@@ -24,6 +26,13 @@ EDITFOLDER = 'edited'
 
 # Prepare dict so it can be used for MediaWiki
 noFileChars = '":\<>*?/'
+
+def cosine_similarity(A, B):
+    # define two lists or array
+    
+    # compute cosine similarity
+    cosine = np.dot(A,B)/(norm(A)*norm(B))
+    return cosine
 
 
 def get_clean_title(title, eID, obsidian=False):
@@ -290,7 +299,7 @@ def time_converter(var_s):
         # reminder: day is either "" or "-DD"
         return year + '-' + month + day
 
-def cosine_similarity(seq1, seq2):
+def cosine_similarity_text(seq1, seq2):
     # Convert the sequences to word count dictionaries
     seq1_word_count = Counter(seq1)
     seq2_word_count = Counter(seq2)

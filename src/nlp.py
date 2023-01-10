@@ -71,9 +71,9 @@ def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
 
     with open(edit_path + '\\' + '_text.txt', "r", encoding="utf8") as f:
         lines = f.readlines()
-
+    lexicon_mtime = None
     do_words = True
-    do_words = False
+    # do_words = False
     if do_words:
         for idx, line in enumerate(lines):
             lexicon_episode = {}

@@ -95,7 +95,7 @@ words = {
     r"cue.window": "Queue Window",
 
     r"Lordhawk": "Lore Talk",
-    r"Lore-Talk": "Queue Window",
+    r"Lore-Talk": "Lore Talk",
     "Poiseken": 'Päuseken',
 
     # Latein
