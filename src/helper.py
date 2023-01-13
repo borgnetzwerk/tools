@@ -27,22 +27,23 @@ EDITFOLDER = 'edited'
 # Prepare dict so it can be used for MediaWiki
 noFileChars = '":\<>*?/'
 
+
 def cosine_similarity(A, B):
     # define two lists or array
-    
+
     # compute cosine similarity
-    cosine = np.dot(A,B)/(norm(A)*norm(B))
+    cosine = np.dot(A, B)/(norm(A)*norm(B))
     return cosine
 
 
 def get_clean_title(title, eID, obsidian=False):
     """
     Cleans a given title to make it suitable for filenames.
-    
+
     Parameters:
     title (string): The title. "episode1"
     eID (int): The position of that episode in the playlist. 
-    
+
     Returns:
     string: cleaned title for use as filename
     """
@@ -54,11 +55,27 @@ def get_clean_title(title, eID, obsidian=False):
     clean_title = fill_digits(eID, 3) + '_' + clean_title
     return clean_title
 
+
 def get_edited_path(clean_title, input_path):
     if input_path[-1] != '\\':
         input_path += '\\'
     json_path = input_path + EDITFOLDER + '\\' + clean_title + '.json'
     return json_path
+
+
+def show_newest_files(input_path, files):
+    # todo: Test if this could be replaced by:
+    # files = [x for x in sort(os.path.getmtime(input_path+'\\'+x))]
+    dates = []
+    for file in files:
+        date = os.path.getmtime(input_path+'\\'+file)
+        dates.append(date)
+    order = numpy.argsort(dates)
+    files_sorted = []
+    for position in reversed(order):
+        files_sorted.append(files[position])
+    return files_sorted
+
 
 def clean_dict(dict, playlist_name):
     def default_cleaner(k, v):
@@ -299,6 +316,7 @@ def time_converter(var_s):
         # reminder: day is either "" or "-DD"
         return year + '-' + month + day
 
+
 def cosine_similarity_text(seq1, seq2):
     # Convert the sequences to word count dictionaries
     seq1_word_count = Counter(seq1)
@@ -312,17 +330,20 @@ def cosine_similarity_text(seq1, seq2):
         return 0
 
     # Calculate the dot product of the sequences
-    dot_product = sum(seq1_word_count[word] * seq2_word_count[word] for word in common_words)
+    dot_product = sum(
+        seq1_word_count[word] * seq2_word_count[word] for word in common_words)
 
     # Calculate the Euclidean norms of the sequences
-    seq1_norm = math.sqrt(sum(seq1_word_count[word] ** 2 for word in seq1_word_count))
-    seq2_norm = math.sqrt(sum(seq2_word_count[word] ** 2 for word in seq2_word_count))
+    seq1_norm = math.sqrt(
+        sum(seq1_word_count[word] ** 2 for word in seq1_word_count))
+    seq2_norm = math.sqrt(
+        sum(seq2_word_count[word] ** 2 for word in seq2_word_count))
 
     # Return the Cosine similarity
     return dot_product / (seq1_norm * seq2_norm)
 
 
-def similar(seq1, seq2, method='levenshtein', level = -1):
+def similar(seq1, seq2, method='levenshtein', level=-1):
     """
     Compare two sequences and return True if they are similar enough, based on the chosen method and threshold.
 
@@ -365,9 +386,10 @@ def similar(seq1, seq2, method='levenshtein', level = -1):
     elif method == 'sequencematcher':
         return difflib.SequenceMatcher(a=seq1.lower(), b=seq2.lower()).ratio() > level
     elif method == 'cosine':
-        return cosine_similarity(seq1, seq2) > level
+        return cosine_similarity_text(seq1, seq2) > level
     else:
         raise ValueError('Invalid method: {}'.format(method))
+
 
 def extract_file_folder(input_path):
     data_all = [f for f in listdir(input_path)]
@@ -413,11 +435,12 @@ def lemmatize(var_dict, nlp):
             for word in words_here:
                 check_lemmas = nlp(word)
                 check_lemma_ = []
-                
+
                 for l in check_lemmas:
                     check_lemma_.append(l.lemma_)
                 if len(check_lemma_) > 1:
-                    print(f"{word} gets lemmatized to {'; '.join(check_lemma_)}", flush=True)
+                    print(
+                        f"{word} gets lemmatized to {'; '.join(check_lemma_)}", flush=True)
                 lemma = "".join(check_lemma_)
                 lemmas.append(lemma)
         lemmas_total += lemmas
@@ -426,9 +449,9 @@ def lemmatize(var_dict, nlp):
         # check_lemmas = nlp(word)
         # check_lemma_ = []
         # if idx % 1000 == 0:
-            # print(str(idx), flush=True)
+        # print(str(idx), flush=True)
         # for l in check_lemmas:
-            # check_lemma_.append(l.lemma_)
+        # check_lemma_.append(l.lemma_)
         # if len(check_lemmas) > 1:
         # lemma = nlp(word)[0]
         # lemma = lemmas[idx].lemma_
@@ -442,7 +465,7 @@ def lemmatize(var_dict, nlp):
             lemma = lemma.lemma_
         lemma = lemma.lower()
         # Todo: Not sure how to handle "Alte Rechtschreibung" yet
-        # lemma = lemma.replace("ß", "ss"), 
+        # lemma = lemma.replace("ß", "ss"),
         # Due to lexicon being sorted, lemma elements should be automatically sorted
         # sort = False
         # if lemma in lemma_dict:

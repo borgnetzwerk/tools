@@ -30,12 +30,11 @@ def write_individual_wiki_page_BMZ(ID, episode_info):
     elif ID < 99:
         leading_zeros = '0'
 
-
-
-    text = ''
+    description = ""
     if 'description' in episode_info:
-        text += episode_info['description'] + '\n'
-        text += '\n'
+        description += episode_info['description'] + '\n\n'
+    text = f"""{description}"""
+    #todo : continue putting all of this into the """string
     text += '{| class="wikitable"' + '\n'
     text += '! ' + hashtag + ' !! date !! runtime !! url' + '\n'
     text += '|-' + '\n'
@@ -85,7 +84,7 @@ def write_mainpage(episodes_info):
     text += '{| class="wikitable sortable"\n'
     text += '|+ episodes\n'
     text += '|-\n'
-    text += '! ' + hashtag + ' !! date !! runtime !! title !! url\n'
+    text += f'! {hashtag} !! date !! runtime !! title !! url\n'
     text += '|-\n'
     
     for ID, episode_info in episodes_info.items():
