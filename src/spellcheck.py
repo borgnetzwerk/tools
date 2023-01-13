@@ -23,7 +23,7 @@ def spellcheck_string(text, playlist_name):
 
 
 def spellcheck(input_path, playlist_name, jsons):
-    edited_path = input_path + editfolder + '\\'
+    edited_path = input_path + helper.editfolder + '\\'
     if not os.path.exists(edited_path):
         os.makedirs(edited_path)
     with open(edited_path + "_text.txt", "w", encoding='utf8') as f:
