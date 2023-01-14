@@ -70,7 +70,7 @@ def show_newest_files(input_path, files):
     for file in files:
         date = os.path.getmtime(input_path+'\\'+file)
         dates.append(date)
-    order = numpy.argsort(dates)
+    order = np.argsort(dates)
     files_sorted = []
     for position in reversed(order):
         files_sorted.append(files[position])
