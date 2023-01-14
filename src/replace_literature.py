@@ -1,5 +1,6 @@
 import helper
 import personalInfos
+import ORKG_csv
 
 import re
 import os
@@ -44,13 +45,14 @@ def extract_field_values(input_string: str) -> dict:
     }
 
 
-def build_literature_note(field_values: dict, rest: str) -> str:
+def build_literature_note(field_values: dict, rest: str, lib_path: str, note_path: str, input_path) -> str:
     """Build output string using string formatting method and join()."""
     # YAML
     date = field_values.get('date', '')
     title = field_values.get('title', '')
     author = field_values.get('author', '')
     in_ = field_values.get('in_', '')
+    in_abrev = field_values.get('in_', '')
     pages = field_values.get('pages', '')
     cite_title = field_values.get('cite_title', '')
     cite_id = field_values.get('cite_id', '')
@@ -60,91 +62,179 @@ def build_literature_note(field_values: dict, rest: str) -> str:
     read = field_values.get('read', '')
     comment = field_values.get('comment', '')
 
-    # Rest
-    
+    learning = field_values.get('learning', '')
+    keyword_links = field_values.get('keyword_links', '')
+    key_notes = field_values.get('key_notes', '')
+    quotes = field_values.get('quotes', '')
+
+    editorbtype = field_values.get('editorbtype', '')
+    editorb = field_values.get('editorb', '')
+    eventtitle = field_values.get('eventtitle', '')
+    pagetotal = field_values.get('pagetotal', '')
+    pmcid = field_values.get('pmcid', '')
+
     langid = field_values.get('langid', '')
     editor = field_values.get('editor', '')
     publisher = field_values.get('publisher', '')
     booktitle = field_values.get('booktitle', '')
+    journaltitle = field_values.get('journaltitle', '')
+    shortjournal = field_values.get('shortjournal', '')
+    url = field_values.get('url', '')
+    urldate = field_values.get('urldate', '')
     abstract = field_values.get('abstract', '')
     series = field_values.get('series', '')
+    volume = field_values.get('volume', '')
     doi = field_values.get('doi', '')
     isbn = field_values.get('isbn', '')
+    issn = field_values.get('issn', '')
+    number = field_values.get('number', '')
+    rights = field_values.get('rights', '')
+    keywords = field_values.get('keywords', '')
     location = field_values.get('location', '')
     ENTRYTYPE = field_values.get('ENTRYTYPE', '')
-    isbn = field_values.get('isbn', '')
     ID = field_values.get('ID', '')
     file = field_values.get('file', '')
+    shorttitle = field_values.get('shorttitle', '')
+    pmid = field_values.get('pmid', '')
+    note = field_values.get('note', '')
+    eprint = field_values.get('eprint', '')
+    eprinttype = field_values.get('eprinttype', '')
+    issue = field_values.get('issue', '')
+
+    if not in_:
+        if booktitle:
+            in_ = booktitle
+        elif journaltitle:
+            in_ = journaltitle
+    if not in_abrev:
+        if shortjournal:
+            in_abrev: shortjournal
 
     if not cite_title:
-        cite_title = f"[[@{ID}|{title}]]"
+        cite_title = f"[[note_path/@{ID}|{title}]]"
     if not cite_id:
-        cite_id = f"\[[[@{ID}|00]]\]"
+        cite_id = f"\[[[note_path/@{ID}|00]]\]"
     if not zotero:
         temp_zot = "zotero://select/items/@" + ID
-        zotero = f"[{temp_zot}]({temp_zot})" 
-    if not tags:
-        tags = "#science #literature "
+        zotero = f"[{temp_zot}]({temp_zot})"
+    temp_tags = ["#science ", "#literature "]
+    if tags:
+        if not tags.endswith(" "):
+            tags += " "
+    for temp_tag in temp_tags:
+        if temp_tag not in tags:
+            tags += temp_tag
+    bib_path = os.path.join(input_path, lib_path)
+    pdf = ""
+    if file:
+        for file_i in file.values():
+            if file_i.endswith(".pdf"):
+                pdf += f'[Acrobat]({os.path.join(bib_path, file_i).replace(" ", "%20")})\n'
+    lib_path = lib_path.replace("\\", "/")
+    if not pdf:
+        temp_tags = ["#missingPDF "]
+        for temp_tag in temp_tags:
+            if temp_tag not in tags:
+                tags += temp_tag
     if not read:
-        tags = "#read/false "
+        read = "#read/false "
 
+    #todo: make all lower case
+    if keywords:
+        temp = re.split(", *", keywords)
+        if keyword_links:
+            keyword_links += " "
+        missing = []
+        for key in temp:
+            search = "[[" + key + "]]"
+            if search not in temp:
+                missing.append(search)
+        keyword_links = " ".join(missing)
 
-    lines = [
-        "---",
-        f"date: {date}",
-        f"title: {title}",
-        f"author: {author}",
-        f"in: {in_}",
-        f"pages: {pages}",
-        "---",
-        f"```citeTitle:\n{cite_title}\n```",
-        f"```citeID:\n{cite_id}\n```",
-        "---",
-        f"url: {url}",
-        f"zotero: {zotero}",
-        "---",
-        f"tags:: {tags}",
-        f"read?:: {read}",
-        f"comment:: {comment}",
-        "---\n",
-    ]
-    yaml = "\n".join(lines)
+    yaml = f"""---
+date: {date}
+title: \"{title}\"
+author: \"{author}\"
+editor: \"{editor}\"
+publisher: \"{publisher}\"
+pages: \"{pages}\"
+language: \"{langid}\"
+location: \"{location}\"
+ENTRYTYPE: \"{ENTRYTYPE}\"
+in: \"{in_}\"
+short: \"{in_abrev}\"
+series: \"{series}\"
+volume: {volume}
+doi: {doi}
+isbn: {isbn}
+url: \"{url}\"
+ID: \"{ID}\"
+issn: {issn}
+number: {number}
+rights: \"{rights}\"
+keywords: \"{keywords}\"
+urldate: {urldate}
+shorttitle: \"{shorttitle}\"
+pmid: {pmid}
+note: \"{note}\"
+eprint: \"{eprint}\"
+eprinttype: \"{eprinttype}\"
+issue: \"{issue}\"
+editorbtype: \"{editorbtype}\"
+editorb: \"{editorb}\"
+eventtitle: \"{eventtitle}\"
+pagetotal: {pagetotal}
+pmcid: {pmcid}
+---
+""".replace(': ""', ": ")
 
-    lines = [
-        "# Learning\n",
-        "\n",
-        "## Key notes\n",
-        "\n",
-        "\n",
-        "## Quotes\n",
-        "\n",
-        "\n",
-        f"# Abstract\n{abstract}\n",
-        "\n",
-    ]
-    # todo:consider this option for multi-lines:
-    """ChatGPT:
-    Both of the options you provided are equivalent. They both define the same string with line breaks.
+    infos = f"""```citeTitle:
+{cite_title}
+```
+```citeID:
+{cite_id}
+```
+---
+url: {url}
+zotero: {zotero}
+{pdf}
+---
+tags:: {tags}
+read:: {read}
+comment:: {comment}
 
-    The first option defines the string as a list of lines and uses the join function to combine the lines into a single string. This can be more readable when the string contains many lines and/or the lines are long. It can also make it easier to modify specific lines, as you can access them using list indexing.
+---
+"""
+    text = f"""# Learning
+{learning}
 
-    The second option uses a f-string to insert the value of the abstract variable into the string. The f-string is a feature of Python that allows you to embed expressions inside string literals, using {expression}. The expression is evaluated at runtime and its value is formatted and inserted into the string.
+## Keywords
+{keyword_links}
 
-    In general, you can use whichever option you find more readable and maintainable.
-    """
-    lines = [
-        f"""# Learning\n
-        \n
-        ## Key notes\n
-        \n
-        \n
-        ## Quotes\n
-        \n
-        \n
-        # Abstract\n{abstract}\n
-        \n"""
-    ]
-    return yaml + rest
+## Key notes
+{key_notes}
+
+## Quotes
+{quotes}
+
+# Abstract
+{abstract}
+"""
+    lib_path = lib_path.replace("\\", "/")
+    for name, path in dict(file).items():
+        # if include files to yaml
+        # if name.startswith("path_"):
+        #     name = name.replace("path_", "", 1)
+        #     name = name.replace("_", " ")
+        text += f"""
+# {name}
+[Acrobat]({os.path.join(bib_path, path).replace(" ", "%20")})
+[[{lib_path}/{path}|{path.split("/", 2)[2]}]]
+![[{lib_path}/{path}]]
+"""
+
+    # todo: make sure rest is never needed anymore
+    return yaml + infos + text + rest
 
 
 def reformat(input_string: str, splitter: str = "\n# Learning\n") -> tuple:
@@ -246,11 +336,29 @@ def reformat_note_files(input_path: str, notes: List[str], bib: Dict[str, str]) 
                 f.write(text)
 
 
+def read_from_note(var_dict, note):
+    patterns = [
+        (r'(?<=\ntags:: ).*(?=\nread:: )', 'tags'),
+        (r'(?<=\nread:: ).*(?=\ncomment:: )', 'read'),
+        (r'(?<=\ncomment:: ).*(?=\n---\n)', 'comment'),
+        (r'(?<=\n# Learning\n).*(?=\n## Keywords\n)', 'learning'),
+        (r'(?<=\n## Keywords\n).*(?=\n## Key notes\n)', 'keyword_links'),
+        (r'(?<=\n## Key notes\n).*(?=\n## Quotes\n)', 'key_notes'),
+        (r'(?<=\n## Quotes\n).*(?=\n# Abstract\n)', 'quotes')
+    ]
+    for pattern, key in patterns:
+        m = re.search(pattern, note, flags=re.DOTALL)
+        if m:
+            var_dict[key] = m.group().rstrip()
+    return var_dict
+
+
+
 def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_folder_name):
     libname = "Meine Bibliothek"
+    lib_path = f"{zotero_folder_name}\\{libname}"
     bib_name = f"{input_path}\\{zotero_folder_name}\\{libname}\\{libname}.bib"
-    bib_path = os.path.join(input_path, bib_name)
-    with open(bib_path, encoding='UTF8') as bibtex_file:
+    with open(bib_name, encoding='UTF8') as bibtex_file:
         bib_database = bibtexparser.load(bibtex_file)
     """
     Errors:
@@ -260,16 +368,24 @@ def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_
     """
 
     def handle_int(key, value):
-        value = int(value)
+        try:
+            value = int(value)
+        except:
+            pass
+        return {key: value}
+
+    def handle_str(key, value):
         return {key: value}
 
     def handle_file(key, value):
         result = {}
         'Full Text PDF:files/4/Sicklinger et al. - 2014 - Interface Jacobian-based Co-Simulation.pdf:application/pdf;Snapshot:files/5/nme.html:text/html'
-        files = value.split(';')
+        files = re.split(r'(?<!\\);', value)
         for file in files:
             pieces = file.split(":")
-            k = "path_" + pieces[0].replace(" ", "_")
+            # deciced not to include the path in YAML
+            # k = "path_" + pieces[0].replace(" ", "_")
+            k = pieces[0]
             v = pieces[1]
             result[k] = v
         return {key: result}
@@ -351,8 +467,30 @@ def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_
         'title': handle_title,
         'location': handle_location,
         'ENTRYTYPE': handle_ENTRYTYPE,
-        'ID': handle_ID
+        'ID': handle_ID,
+        'url': handle_str,
+        'journaltitle': handle_str,
+        'volume': handle_str,
+        'issn': handle_int,
+        'number': handle_int,
+        'rights': handle_str,
+        'keywords': handle_str,
+        'urldate': handle_int,
+        'shorttitle': handle_int,
+        'pmid': handle_int,
+        'note': handle_str,
+        'eprint': handle_str,
+        'eprinttype': handle_str,
+        'shortjournal': handle_str,
+        'issue': handle_int,
+        'editorbtype': handle_str,
+        'editorb': handle_str,
+        'eventtitle': handle_str,
+        'pagetotal': handle_int,
+        'pmcid': handle_int,
     }
+
+    ORKG_csvs = []
 
     for entry in bib_database.entries:
         entry_dict = {}
@@ -363,10 +501,24 @@ def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_
                 entry_dict[k] = v
 
         rest = ""
-        for k, v in entry_dict.items():
-            rest += f"{k}: \"{v}\"\n"
-        note = build_literature_note(entry_dict, rest)
-        filepath = os.path.join(input_path, literature_notes_folder_name+ "\\@" + entry['ID'] + ".md")
+        # for k, v in entry_dict.items():
+        #     rest += f"{k}: \"{v}\"\n"
+
+        filepath = os.path.join(
+            input_path, literature_notes_folder_name + "\\@" + entry['ID'] + ".md")
+        # todo: handle if ReadNotes does exist (somewhat handled)
+        if os.path.isfile(filepath):
+            with open(filepath, 'r', encoding='UTF8') as f:
+                temp_note = f.read()
+                entry_dict = read_from_note(entry_dict, temp_note)
+
+        note = build_literature_note(
+            entry_dict, rest, lib_path, literature_notes_folder_name, input_path)
+
+        if "#missingPDF" not in note:
+            print("Working on " + entry['ID'])
+            ORKG_csvs.append(ORKG_csv.tex_to_csv_format(entry))
+
         with open(filepath, 'w', encoding='UTF8') as f:
             f.write(note)
     # TODO: Check if exists and needs to be reformated:
@@ -378,7 +530,11 @@ def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_
     # for filename in files["zotero"]:
     #     if filename.startswith(file_prefix):
     #         pass
-    #         # here lies the attatchment
+        #         # here lies the attatchment
+        if ORKG_csvs:
+            csv_path = os.path.join(input_path, lib_path)
+            csv_path = os.path.join(csv_path, "ORKG.csv")
+            ORKG_csv.write_to_csv(ORKG_csvs, csv_path)
     return files
 
 
@@ -395,7 +551,6 @@ def main():
         data_files, literature_notes_folder_name, zotero_folder_name)
     files = create_zotero_notes(
         files, input_path, zotero_folder_name, literature_notes_folder_name)
-    reformat_note_files(input_path, files['notes'], bib)
 
 
 if __name__ == "__main__":

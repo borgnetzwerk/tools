@@ -155,3 +155,6 @@ pre
 src/personalInfos.py
 src/test.py
 src/test.py
+src/ORKG_csv.py
+src/ResearchFields.json
+src/RF_Map.json
