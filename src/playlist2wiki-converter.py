@@ -1,11 +1,11 @@
-import helper
-import obsidize
+import helper.helper as helper
+import obsidize.obsidize as obsidize
 
 import re
 import csv
 import sys
-import mediaWiki
-import nlp
+import wikify.mediaWiki as mediaWiki
+import nlp.nlp as nlp
 import json
 import os
 import time
