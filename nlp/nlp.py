@@ -1,9 +1,3 @@
-import sys
-import inspect
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
 import helper.helper as helper
 
 import re
@@ -27,6 +21,8 @@ from os.path import exists
 import os.path as path
 from flair.data import Sentence
 from flair.models import SequenceTagger
+
+
 
 editfolder = 'edited'
 
