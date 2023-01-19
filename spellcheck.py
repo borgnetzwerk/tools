@@ -1,7 +1,13 @@
+import sys
+import inspect
+currentdir = os.path.dirname(os.path.abspath(
+    inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
 import helper.helper as helper
 import re
 import os
-import spellcheck.main as s_check
+import spellcheck.spellcheck as s_check
 
 
 def spellcheck_string(text, playlist_name):
