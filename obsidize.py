@@ -1,12 +1,28 @@
-import os
-import helper.helper as helper
-import re
-import json
-import personalInfos
-import graphvizify
-import numpy as np
-from numpy.linalg import norm
+import sys
+import inspect
+currentdir = os.path.dirname(os.path.abspath(
+    inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
+import sys
+currentdir = os.path.dirname(os.path.abspath(
+    inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
 from PIL import Image
+from numpy.linalg import norm
+import numpy as np
+import graphvizify
+import personalInfos
+import json
+import re
+import helper.helper as helper
+import os
+import inspect
+# sys.path.insert(0, '/home/amninder/Desktop/project/Folder_2/subfolder')
+
+#  borgnetzwerk.helper.helper import main as helper
+
 
 # "path\to\your\Obsidian\vault"
 OBSIDIAN_PATH = personalInfos.OBSIDIAN_PATH
@@ -355,7 +371,7 @@ def include_to_obsidian(input_path, playlist_name, playlist_info, episodes_info)
     # include_lexicon(edited_path, playlist_name)
 
 
-def main(input_path=os.getcwd(), playlist_name='BMZ', playlist_info={}, episodes_info={}):
+def main(playlist_name='BMZ', input_path=os.getcwd(), playlist_info={}, episodes_info={}):
     include_to_obsidian(input_path, playlist_name,
                         playlist_info, episodes_info)
 
