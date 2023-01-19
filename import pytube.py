@@ -1,3 +1,9 @@
+import sys
+import inspect
+currentdir = os.path.dirname(os.path.abspath(
+    inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
 import os
 import sys
 import json
@@ -10,6 +16,9 @@ OVERWRITE = True
 channels = {
     "UCwBT6zl54_cP0mOrVPFH-qg": "BorgNetzWerk",
     "UCoYvhMd-3LbORHvBVkC0hSw": "orkg7258",
+    "UCyHDQ5C6z1NDmJ4g6SerW8g": "maiLab",
+    "sciphi635": "sciphi635",
+    "unbubble": "unbubble",
     "georgiadow": "GeorgiaDow",
     "LegalEagle": "LegalEagle",
     "coldmirror": "coldmirror",
