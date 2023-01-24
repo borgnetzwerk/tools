@@ -12,7 +12,7 @@ sys.path.insert(0, parentdir)
 from PIL import Image
 from numpy.linalg import norm
 import numpy as np
-import graphvizify
+import publish.graphvizify as graphvizify
 import personalInfos
 import json
 import re

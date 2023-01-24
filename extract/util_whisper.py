@@ -1,17 +1,16 @@
+from os.path import isfile, join
+from os import listdir
+import os
+from datetime import datetime
+import time
+import json
+import whisper
 import sys
 import inspect
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
-import whisper
-import json
-import sys
-import time
-from datetime import datetime
-import os
-from os import listdir
-from os.path import isfile, join
 
 
 def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/mp3/BMZ #001 Legendaries und Artefakte.mp3"):

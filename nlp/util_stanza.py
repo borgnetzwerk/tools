@@ -1,6 +1,6 @@
 import stanza
-import util_networkx as nx
-import util_pdf
+import publish.util_networkx as nx
+import extract.util_pdf as util_pdf
 import re
 import os
 # stanza.download('de')       # This downloads the English models for the neural pipeline
@@ -152,7 +152,7 @@ def create_kg(text, page_id, doc):
                 leader = word.id
                 break
         follower = {
-            leader : {}
+            leader: {}
         }
         follower[leader].update(find_followers(leader, sent.words))
         print_order(follower, sent.words)
