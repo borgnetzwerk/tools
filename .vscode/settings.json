@@ -1,0 +1,5 @@
+{
+    "[csv][dynamic csv][tsv][csv (semicolon)]": {
+        "editor.stickyScroll.enabled": true
+    },
+}
