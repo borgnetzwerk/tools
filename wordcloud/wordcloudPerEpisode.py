@@ -1,5 +1,5 @@
 import json
-from wordcloud import WordCloud
+from publish.wordcloud import WordCloud
 # import matplotlib.pyplot as plt
 
 # Define a dictionary that maps words to frequencies
