@@ -137,8 +137,12 @@ def make_images(sim_matrix, edited_path):
     np.savetxt(edited_path + "_sim_matrix_I8.csv", I8, delimiter=";")
 
 
-def dotify():
-
+def dotify(dict_var):
+    #todo: Rework this
+    episodes_info = {}
+    lexicon_ep_count = {}
+    linkpreps = {}
+    ##
     dot = {}
     for eID, episode_info in episodes_info.items():
         words = {}

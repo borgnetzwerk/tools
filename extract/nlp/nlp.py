@@ -1,9 +1,9 @@
-import helper.helper as helper
+import core.helper as helper
+import publish.MediaWiki.mediaWiki as mediaWiki
 
 import re
 import csv
 import sys
-import wikify.mediaWiki as mediaWiki
 import nlp.nlp as nlp
 import json
 import os

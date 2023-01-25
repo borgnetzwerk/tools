@@ -212,10 +212,6 @@ def YouTube2dict(index, input_path, filename, playlist_name):
 # convert from dictionary to json
 
 
-
-
-
-
 def search_for_title(try_this, episodes_info, playlist_name):
     for idx, eID in enumerate(episodes_info):
         comp = helper.title_mine(episodes_info[eID]['title'], playlist_name)

@@ -1,6 +1,7 @@
 import csv
 import json
 import re
+import helper
 # import urllib.request
 # page = urllib.request.urlopen('https://orkg.org/api/classes/ResearchField/resources/?page=0&size=999')
 # print(page.read())
@@ -10,7 +11,7 @@ import re
 # Using a JSON string
 
 # Directly from dictionary
-with open('src/ResearchFields.json') as json_file:
+with open('ORKG/ResearchFields.json') as json_file:
     data = json.load(json_file)
 
 RF_map = {}
@@ -19,7 +20,7 @@ for rf in list(data.values())[0]:
 RF_map = {k: v for k, v in sorted(
     RF_map.items(), key=lambda item: int(item[0][1:]))}
 
-with open('src/RF_Map.json', 'w') as outfile:
+with open('ORKG/RF_Map.json', 'w') as outfile:
     json.dump(RF_map, outfile, indent=4)
 
 RF_patterns = {}
@@ -65,7 +66,7 @@ def update_list(data, key, value):
 
 def update_authors(data, key, value):
     values = value.split(" and ")
-    true_values =[]
+    true_values = []
     for value in values:
         true_values += value.split(" and ")
     values = true_values
@@ -122,12 +123,13 @@ def update_RF(data, key, tex):
                     if RF_id not in assume:
                         assume[RF_id] = 0
                     assume[RF_id] = value * weight
-    assume = {k: v for k, v in sorted(assume.items(), key=lambda item: item[1], reverse=True)}
+    assume = {k: v for k, v in sorted(
+        assume.items(), key=lambda item: item[1], reverse=True)}
     highest = 0
     results = []
     for RF_id, value in assume.items():
-        #TODO multiple matches?
-        
+        # TODO multiple matches?
+
         for result in results:
             # check if "Engineering" could be made "Computer Engineering"
             comp = identify_field_weight(RF_map[result], RF_map[RF_id])
@@ -138,7 +140,6 @@ def update_RF(data, key, tex):
                 highest = value
                 continue
 
-        
         if value >= highest:
             if RF_id not in results:
                 results.append(RF_id)
@@ -156,7 +157,7 @@ def update_RF(data, key, tex):
         # data.update({f"paper:{key}": "orkg:" + "; orkg:".join(results)})
         # data.update({f"paper:{key}": "; ".join(results)})
         # data.update({f"paper:{key}" : f"orkg:{results[-1]}"})
-        data.update({f"paper:{key}" : f"{results[-1]}"})
+        data.update({f"paper:{key}": f"{results[-1]}"})
     return data
 
 
@@ -166,8 +167,6 @@ def update_research_problem(data, key, value):
     # [
     #     "This work addresses"
     # ]
-    # 'This work addresses uncertainty quantification for optical structures. We decouple the propagation of uncertainties by combining local surrogate models with a scattering matrix approach, which is then embedded into a multifidelity Monte Carlo framework. The so obtained multifidelity method provides highly efficient estimators of statistical quantities jointly using different models of different fidelity and can handle many uncertain input parameters as well as large uncertainties. We address quasi-periodic optical structures and propose the efficient construction of low-fidelity models by polynomial surrogate modeling applied to unit cells. We recall the main notions of the multifidelity algorithm and illustrate it with a split ring resonator array simulation, serving as a benchmark for the study of optical structures. The numerical tests show speedups by orders of magnitude with respect to the standard Monte Carlo method.'
-    # 'This contribution proposes a methodology for the numerical analysis and for the improvement of the design of free-form membrane structures subjected to flow-induced effects. Typical applications in such context are tents exposed to wind. Different physical factors connected to thin and flexible structures, highly turbulent air flows, as well as their interaction have to be taken into account. This necessitates the appropriate combination of different numerical disciplines which is done in the simulation of fluid-structure interaction. The over-all complexity of the problem favours a modular and flexible software environment with a partitioned coupling strategy. Within such an environment, the solution of each physical and algorithmic field is applicable with the most suited method. In the proposed framework, the structural field is solved with the in-house finite element program {CARAT}, which uses several finite element types and advanced solution strategies for form finding, nonlinear, and dynamical problems. The fluid field is solved with the {CFD} software package {CFX}-5. The interaction between both physical fields is realized by the exchange of boundary conditions. Beyond the mere exchange of data, the utilization of stabilized as well as efficient coupling strategies is mandatory. This contribution illuminates the scope of numerical simulation theory and presents implementations followed by illustrative examples.;This contribution proposes a methodology for the numerical analysis and for the improvement of the design of free-form membrane structures subjected to flow-induced effects. Typical applications in such context are tents exposed to wind. Different physical factors connected to thin and flexible structures, highly turbulent air flows, as well as their interaction have to be taken into account. This necessitates the appropriate combination of different numerical disciplines which is done in the simulation of fluid-structure interaction. The over-all complexity of the problem favours a modular and flexible software environment with a partitioned coupling strategy. Within such an environment, the solution of each physical and algorithmic field is applicable with the most suited method. In the proposed framework, the structural field is solved with the in-house finite element program {CARAT}, which uses several finite element types and advanced solution strategies for form finding, nonlinear, and dynamical problems. The fluid field is solved with the {CFD} software package {CFX}-5. The interaction between both physical fields is realized by the exchange of boundary conditions. Beyond the mere exchange of data, the utilization of stabilized as well as efficient coupling strategies is mandatory. This contribution illuminates the scope of numerical simulation theory and presents implementations followed by illustrative examples.;This contribution proposes a methodology for the numerical analysis and for the improvement of the design of free-form membrane structures subjected to flow-induced effects. Typical applications in such context are tents exposed to wind. Different physical factors connected to thin and flexible structures, highly turbulent air flows, as well as their interaction have to be taken into account. This necessitates the appropriate combination of different numerical disciplines which is done in the simulation of fluid-structure interaction. The over-all complexity of the problem favours a modular and flexible software environment with a partitioned coupling strategy. Within such an environment, the solution of each physical and algorithmic field is applicable with the most suited method. In the proposed framework, the structural field is solved with the in-house finite element program {CARAT}, which uses several finite element types and advanced solution strategies for form finding, nonlinear, and dynamical problems. The fluid field is solved with the {CFD} software package {CFX}-5. The interaction between both physical fields is realized by the exchange of boundary conditions. Beyond the mere exchange of data, the utilization of stabilized as well as efficient coupling strategies is mandatory. This contribution illuminates the scope of numerical simulation theory and presents implementations followed by illustrative examples.;This contribution proposes a methodology for the numerical analysis and for the improvement of the design of free-form membrane structures subjected to flow-induced effects. Typical applications in such context are tents exposed to wind. Different physical factors connected to thin and flexible structures, highly turbulent air flows, as well as their interaction have to be taken into account. This necessitates the appropriate combination of different numerical disciplines which is done in the simulation of fluid-structure interaction. The over-all complexity of the problem favours a modular and flexible software environment with a partitioned coupling strategy. Within such an environment, the solution of each physical and algorithmic field is applicable with the most suited method. In the proposed framework, the structural field is solved with the in-house finite element program {CARAT}, which uses several finite element types and advanced solution strategies for form finding, nonlinear, and dynamical problems. The fluid field is solved with the {CFD} software package {CFX}-5. The interaction between both physical fields is realized by the exchange of boundary conditions. Beyond the mere exchange of data, the utilization of stabilized as well as efficient coupling strategies is mandatory. This contribution illuminates the scope of numerical simulation theory and presents implementations followed by illustrative examples.;This contribution proposes a methodology for the numerical analysis and for the improvement of the design of free-form membrane structures subjected to flow-induced effects. Typical applications in such context are tents exposed to wind. Different physical factors connected to thin and flexible structures, highly turbulent air flows, as well as their interaction have to be taken into account. This necessitates the appropriate combination of different numerical disciplines which is done in the simulation of fluid-structure interaction. The over-all complexity of the problem favours a modular and flexible software environment with a partitioned coupling strategy. Within such an environment, the solution of each physical and algorithmic field is applicable with the most suited method. In the proposed framework, the structural field is solved with the in-house finite element program {CARAT}, which uses several finite element types and advanced solution strategies for form finding, nonlinear, and dynamical problems. The fluid field is solved with the {CFD} software package {CFX}-5. The interaction between both physical fields is realized by the exchange of boundary conditions. Beyond the mere exchange of data, the utilization of stabilized as well as efficient coupling strategies is mandatory. This contribution illuminates the scope of numerical simulation theory and presents implementations followed by illustrative examples.;This contribution proposes a methodology for the numerical analysis and for the improvement of the design of free-form membrane structures subjected to flow-induced effects. Typical applications in such context are tents exposed to wind. Different physical factors connected to thin and flexible structures, highly turbulent air flows, as well as their interaction have to be taken into account. This necessitates the appropriate combination of different numerical disciplines which is done in the simulation of fluid-structure interaction. The over-all complexity of the problem favours a modular and flexible software environment with a partitioned coupling strategy. Within such an environment, the solution of each physical and algorithmic field is applicable with the most suited method. In the proposed framework, the structural field is solved with the in-house finite element program {CARAT}, which uses several finite element types and advanced solution strategies for form finding, nonlinear, and dynamical problems. The fluid field is solved with the {CFD} software package {CFX}-5. The interaction between both physical fields is realized by the exchange of boundary conditions. Beyond the mere exchange of data, the utilization of stabilized as well as efficient coupling strategies is mandatory. This contribution illuminates the scope of numerical simulation theory and presents implementations followed by illustrative examples.;This contribution proposes a methodology for the numerical analysis and for the improvement of the design of free-form membrane structures subjected to flow-induced effects. Typical applications in such context are tents exposed to wind. Different physical factors connected to thin and flexible structures, highly turbulent air flows, as well as their interaction have to be taken into account. This necessitates the appropriate combination of different numerical disciplines which is done in the simulation of fluid-structure interaction. The over-all complexity of the problem favours a modular and flexible software environment with a partitioned coupling strategy. Within such an environment, the solution of each physical and algorithmic field is applicable with the most suited method. In the proposed framework, the structural field is solved with the in-house finite element program {CARAT}, which uses several finite element types and advanced solution strategies for form finding, nonlinear, and dynamical problems. The fluid field is solved with the {CFD} software package {CFX}-5. The interaction between both physical fields is realized by the exchange of boundary conditions. Beyond the mere exchange of data, the utilization of stabilized as well as efficient coupling strategies is mandatory. This contribution illuminates the scope of numerical simulation theory and presents implementations followed by illustrative examples.;This contribution proposes a methodology for the numerical analysis and for the improvement of the design of free-form membrane structures subjected to flow-induced effects. Typical applications in such context are tents exposed to wind. Different physical factors connected to thin and flexible structures, highly turbulent air flows, as well as their interaction have to be taken into account. This necessitates the appropriate combination of different numerical disciplines which is done in the simulation of fluid-structure interaction. The over-all complexity of the problem favours a modular and flexible software environment with a partitioned coupling strategy. Within such an environment, the solution of each physical and algorithmic field is applicable with the most suited method. In the proposed framework, the structural field is solved with the in-house finite element program {CARAT}, which uses several finite element types and advanced solution strategies for form finding, nonlinear, and dynamical problems. The fluid field is solved with the {CFD} software package {CFX}-5. The interaction between both physical fields is realized by the exchange of boundary conditions. Beyond the mere exchange of data, the utilization of stabilized as well as efficient coupling strategies is mandatory. This contribution illuminates the scope of numerical simulation theory and presents implementations followed by illustrative examples.'
     # data.update({f"paper:{key}": "; ".join(values)})
     return data
 
@@ -212,21 +211,11 @@ def tex_to_csv_format(tex):
 
 
 def write_to_csv(data, path):
-    with open(path, "w", newline="", encoding='UTF-8') as f:
-        header_names = set()
-        for entry in data:
-            header_names.update(entry.keys())
-        writer = csv.DictWriter(f, fieldnames=header_names, delimiter=",")
-        # writer = csv.DictWriter(f, fieldnames=data[0].keys(), delimiter=",")
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
-            # result = ""
-            # for item in list(row.values()):
-            #     if result:
-            #         result += ","
-            #     result += item
-            # writer.writerow(",".join(list(row.values())))
+    header_names = set()
+    for entry in data:
+        header_names.update(entry.keys())
+    helper.write_to_csv(header_names, data, path)
+        
 
 
 def main(tex, path=None):

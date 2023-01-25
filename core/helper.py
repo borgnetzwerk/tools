@@ -12,6 +12,7 @@ import math
 from collections import Counter
 import numpy as np
 from numpy.linalg import norm
+import csv
 
 SIMILAR_ENOUGH = {
     "cosine": 0.9,
@@ -26,6 +27,21 @@ EDITFOLDER = 'edited'
 
 # Prepare dict so it can be used for MediaWiki
 noFileChars = '":\<>*?/'
+
+
+def write_to_csv(column_names, rows, path):
+    delimiter = ","
+    with open(path, "w", newline="", encoding='UTF-8') as f:
+        if type(rows[0]) == dict:
+            writer = csv.DictWriter(
+                f, fieldnames=column_names, delimiter=delimiter)
+            writer.writeheader()
+        else:
+            writer = csv.writer(f, delimiter=delimiter)
+            writer.writerow(column_names)
+        writer.writerows(rows)
+        # for row in rows:
+        #     writer.writerow(row)
 
 
 def cosine_similarity(A, B):

@@ -1,6 +1,7 @@
 import core.helper as helper
 import config.personal as personal
 import ORKG.bibtex_to_csv as ORKG_csv
+import review.k_score as k_score
 
 import re
 import os
@@ -44,6 +45,15 @@ def extract_field_values(input_string: str) -> dict:
         "comment": comment
     }
 
+def extract_pdfs(outer_path, files):
+    pdfs = []
+    if files:
+        for file_i in files.values():
+            if file_i.endswith(".pdf"):
+                # to remove \ in filenames
+                file_i = file_i.replace("\\", "")
+                pdfs.append(os.path.join(outer_path, file_i).replace("/", "\\"))
+    return pdfs
 
 def build_literature_note(field_values: dict, rest: str, lib_path: str, note_path: str, input_path) -> str:
     """Build output string using string formatting method and join()."""
@@ -124,12 +134,11 @@ def build_literature_note(field_values: dict, rest: str, lib_path: str, note_pat
     for temp_tag in temp_tags:
         if temp_tag not in tags:
             tags += temp_tag
-    bib_path = os.path.join(input_path, lib_path)
+    bib_path = os.path.join(input_path, lib_path).replace("\\", "/")
     pdf = ""
-    if file:
-        for file_i in file.values():
-            if file_i.endswith(".pdf"):
-                pdf += f'[Acrobat]({os.path.join(bib_path, file_i).replace(" ", "%20")})\n'
+    pdfs = extract_pdfs(bib_path, file)
+    for pdf_ in pdfs:
+        pdf += f'[Acrobat]({pdf_.replace(" ", "%20")})\n'
     lib_path = lib_path.replace("\\", "/")
     if not pdf:
         temp_tags = ["#missingPDF "]
@@ -220,8 +229,8 @@ comment:: {comment}
 # Abstract
 {abstract}
 """
-    lib_path = lib_path.replace("\\", "/")
     for name, path in dict(file).items():
+        path = path.replace("\\", "")
         # if include files to yaml
         # if name.startswith("path_"):
         #     name = name.replace("path_", "", 1)
@@ -489,8 +498,8 @@ def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_
         'pmcid': handle_int,
     }
 
-    ORKG_csvs = []
-
+    orkg_data_csv = []
+    orkg_data_score = {}
     for entry in bib_database.entries:
         entry_dict = {}
         for key, value in entry.items():
@@ -510,13 +519,16 @@ def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_
             with open(filepath, 'r', encoding='UTF8') as f:
                 temp_note = f.read()
                 entry_dict = read_from_note(entry_dict, temp_note)
+                        
+        if 'file' in entry_dict:
+            pdfs = extract_pdfs(lib_path, entry_dict['file'])
+            if pdfs:
+                print("Working on " + entry['ID'])
 
+                for file in pdfs:
+                    entry_dict = k_score.read_pdf(os.path.join(input_path, file), entry_dict)
         note = build_literature_note(
             entry_dict, rest, lib_path, literature_notes_folder_name, input_path)
-
-        if "#missingPDF" not in note:
-            print("Working on " + entry['ID'])
-            ORKG_csvs.append(ORKG_csv.tex_to_csv_format(entry))
 
         with open(filepath, 'w', encoding='UTF8') as f:
             f.write(note)
@@ -530,17 +542,22 @@ def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_
     #     if filename.startswith(file_prefix):
     #         pass
         #         # here lies the attatchment
-        if ORKG_csvs:
+        if "#missingPDF" not in note:
             csv_path = os.path.join(input_path, lib_path)
-            csv_path = os.path.join(csv_path, "ORKG.csv")
-            ORKG_csv.write_to_csv(ORKG_csvs, csv_path)
+            if "k_score" in entry_dict:
+                orkg_data_score[entry_dict['ID']] = entry_dict['k_score']
+                score_path = os.path.join(csv_path, "k_score.csv")
+                k_score.write_to_csv(orkg_data_score, score_path)
+            orkg_data_csv.append(ORKG_csv.bibtex_to_csv.tex_to_csv_format(entry))
+            OKRG_path = os.path.join(csv_path, "ORKG.csv")
+            ORKG_csv.bibtex_to_csv.write_to_csv(orkg_data_csv, OKRG_path)
     return files
 
 
 def main():
     my_path = os.getcwd()
     obsidian_path = personal.OBSIDIAN_PATH
-    TIB_path = obsidian_path + "\\TIB"
+    TIB_path = obsidian_path + "\\TIB_Obsidian"
     input_path = TIB_path
     zotero_folder_name = "Zotero"
     literature_notes_folder_name = "Reading notes"
