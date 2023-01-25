@@ -1,6 +1,6 @@
 import core.helper as helper
 import config.personal as personal
-import ORKG.bibtex_to_csv as ORKG
+import ORKG.bibtex_to_csv as ORKG_csv
 
 import re
 import os
@@ -139,7 +139,7 @@ def build_literature_note(field_values: dict, rest: str, lib_path: str, note_pat
     if not read:
         read = "#read/false "
 
-    #todo: make all lower case
+    # todo: make all lower case
     if keywords:
         temp = re.split(", *", keywords)
         if keyword_links:
@@ -353,7 +353,6 @@ def read_from_note(var_dict, note):
     return var_dict
 
 
-
 def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_folder_name):
     libname = "Meine Bibliothek"
     lib_path = f"{zotero_folder_name}\\{libname}"
@@ -540,7 +539,7 @@ def create_zotero_notes(files, input_path, zotero_folder_name, literature_notes_
 
 def main():
     my_path = os.getcwd()
-    obsidian_path = personalInfos.OBSIDIAN_PATH
+    obsidian_path = personal.OBSIDIAN_PATH
     TIB_path = obsidian_path + "\\TIB"
     input_path = TIB_path
     zotero_folder_name = "Zotero"

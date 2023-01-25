@@ -1,15 +1,10 @@
-import sys
-import inspect
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
+import core.helper as helper
+import review.spellcheck as s_check
+
 import os
 import re
-import helper.helper as helper
 import json
 import shutil
-import spellcheck.spellcheck as s_check
 
 
 tex_esc = {

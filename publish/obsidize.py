@@ -1,31 +1,16 @@
-import sys
-import inspect
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-import sys
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
+import publish.graphvizify as graphvizify
+import config.personal as personal
+import core.helper as helper
+
 from PIL import Image
 from numpy.linalg import norm
 import numpy as np
-import publish.graphvizify as graphvizify
-import personalInfos
 import json
 import re
-import helper.helper as helper
 import os
-import inspect
-# sys.path.insert(0, '/home/amninder/Desktop/project/Folder_2/subfolder')
-
-#  borgnetzwerk.helper.helper import main as helper
-
 
 # "path\to\your\Obsidian\vault"
-OBSIDIAN_PATH = personalInfos.OBSIDIAN_PATH
+OBSIDIAN_PATH = personal.OBSIDIAN_PATH
 
 
 def add_links(links):

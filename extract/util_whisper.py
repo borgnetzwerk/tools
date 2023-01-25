@@ -6,11 +6,6 @@ import time
 import json
 import whisper
 import sys
-import inspect
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
 
 
 def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/mp3/BMZ #001 Legendaries und Artefakte.mp3"):

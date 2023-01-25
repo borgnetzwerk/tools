@@ -1,17 +1,11 @@
-import sys
-import inspect
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-import helper.helper as helper
-import obsidize.obsidize as obsidize
+import core.helper as helper
+import publish.obsidize as obsidize
+import publish.mediaWiki as mediaWiki
+import extract.nlp.nlp as nlp
 
 import re
 import csv
 import sys
-import wikify.mediaWiki as mediaWiki
-import nlp.nlp as nlp
 import json
 import os
 import time

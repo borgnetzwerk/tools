@@ -1,13 +1,6 @@
-import sys
-import inspect
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-import helper.helper as helper
-import wiki_bot
+import core.helper as helper
 import wiki.main as wiki_helpers
-
+import wiki_bot
 
 import json
 import csv
