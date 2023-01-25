@@ -1,12 +1,6 @@
-import sys
-import inspect
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
 import core.helper as helper
-import personalInfos
-import ORKG
+import config.personal as personal
+import ORKG.bibtex_to_csv as ORKG
 
 import re
 import os
