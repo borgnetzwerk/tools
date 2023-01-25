@@ -165,3 +165,5 @@ src/wiki_bot.py
 src/personalInfos.py
 data/sample/post
 data/sample/pre
+publish/wiki_bot.py
+config/personal.py
