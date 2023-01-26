@@ -63,4 +63,4 @@ DO_SCORE: TRUE
 DO_OBSIDIAN: TRUE
 DO_SCORE: TRUE
 ```
-5. run `Bibtex_to_ORKG.py`
+5. run `k_score_Zotero.py`
