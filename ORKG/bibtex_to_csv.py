@@ -212,15 +212,40 @@ def tex_to_csv_format(tex):
                 data = handlers[key](data, key, tex)
     return data
 
+def filter_by_k_score(bib_database, bib_path, threshold = None):
+    k_score_file = os.path.join(os.path.dirname(bib_path), "k_score.csv")
+    try:
+        scores = helper.read_csv_by_ID(k_score_file)
+    except Exception as e:
+        print(e)
+        print("No k_scores.csv found. Using full BibTeX")
+        return bib_database.entries
 
-def main(bib_path, csv_path=None):
+    result = []
+    bib_db_by_ID = [e['ID'] for e in bib_database.entries]
+    for name, entry in scores.items():
+        if threshold and float(entry['total_score']) < threshold:
+            continue 
+        if name in bib_db_by_ID:
+            # TODO: Chance to append the score to the entry here.
+            result.append(bib_database.entries[bib_db_by_ID.index(name)])
+    if not result:
+        print("No matches with k_score.csv found. Using full BibTeX")
+        return bib_database.entries
+    return result
+
+
+def main(bib_path, csv_path=None, threshold=None):
     with open(bib_path, encoding='UTF8') as bibtex_file:
         bib_database = bibtexparser.load(bibtex_file)
     orkg_data_csv = []
     header_names = set()
-    for entry in bib_database.entries:
+    bib_database_entries = filter_by_k_score(bib_database, bib_path, threshold)
+    for idx, entry in enumerate(bib_database_entries):
         orkg_data_csv.append(tex_to_csv_format(entry))
-        header_names.update(entry.keys())
+        header_names.update(orkg_data_csv[-1].keys())
+        if idx % 50 == 0:
+            print(f"{idx}/{len(bib_database_entries)} done")
 
     if not csv_path:
         csv_path = os.path.join(os.path.dirname(bib_path), "ORKG.csv")

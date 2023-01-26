@@ -28,12 +28,13 @@ EDITFOLDER = 'edited'
 # Prepare dict so it can be used for MediaWiki
 noFileChars = '":\<>*?/'
 
+
 def write_to_py(code, path):
     with open(path, "w", newline="", encoding='UTF-8') as f:
         f.write(code)
 
-def write_to_csv(column_names, rows, path):
-    delimiter = ","
+
+def write_to_csv(column_names, rows, path, delimiter=","):
     with open(path, "w", newline="", encoding='UTF-8') as f:
         if type(rows[0]) == dict:
             writer = csv.DictWriter(
@@ -43,6 +44,23 @@ def write_to_csv(column_names, rows, path):
             writer = csv.writer(f, delimiter=delimiter)
             writer.writerow(column_names)
         writer.writerows(rows)
+        # for row in rows:
+        #     writer.writerow(row)
+
+
+def read_csv_by_ID(path, delimiter=","):
+    rowlist = read_csv(path, delimiter)
+    ID = list(rowlist[0].keys())[0]
+    result = {row[ID]:row for row in rowlist}
+    return result
+
+def read_csv(path, delimiter=","):
+    result=[]
+    with open(path, "r", newline="", encoding='UTF-8') as f:
+        reader = csv.DictReader(f, delimiter=delimiter)
+        for row in reader:
+            result.append(row)
+    return result
         # for row in rows:
         #     writer.writerow(row)
 
@@ -409,11 +427,13 @@ def similar(seq1, seq2, method='levenshtein', level=-1):
     else:
         raise ValueError('Invalid method: {}'.format(method))
 
+
 def extract_file_folder(path: str) -> tuple:
     """Return a tuple containing two lists: one for the file names and one for the folder names in the path."""
     file_names = [f for f in listdir(path) if isfile(join(path, f))]
     folder_names = [f for f in listdir(path) if not isfile(join(path, f))]
     return file_names, folder_names
+
 
 def concatenate_nested_files(folders_in, root_path):
     files = []

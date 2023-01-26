@@ -1,0 +1,35 @@
+# keywords
+#   groups
+#     keywords: weight (0 to 10)
+keywords:
+  fruits:
+    ananás: 6
+    ananas: 1
+    pineapple: 2
+
+  holding:
+    basket: 1
+    bowl: 1
+
+  taste:
+    funny: 5
+    very tasty: 10
+
+# Punish if only "very" and "tasty" are matched, not "very tasty"
+PUNISH_SEMIMATCH: 0.2
+
+# Punish if a group isn't matched at all
+PUNISH_NOMATCH: 0.1
+
+# Expected frequency of keywords per word
+# 1 = every word should be a keyword
+# 0.01 = one in every 100 words should be a keyword
+WEAKEN_WORDCOUNT: 0.01
+
+# Bump up the score after calculation
+FLAT_SCORE_BOOST: 10
+
+# What to run. Just comment out what you don't need
+DO_SCORE: TRUE
+DO_OBSIDIAN: TRUE
+DO_SCORE: TRUE
