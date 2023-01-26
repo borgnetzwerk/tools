@@ -28,6 +28,9 @@ EDITFOLDER = 'edited'
 # Prepare dict so it can be used for MediaWiki
 noFileChars = '":\<>*?/'
 
+def write_to_py(code, path):
+    with open(path, "w", newline="", encoding='UTF-8') as f:
+        f.write(code)
 
 def write_to_csv(column_names, rows, path):
     delimiter = ","
@@ -406,17 +409,23 @@ def similar(seq1, seq2, method='levenshtein', level=-1):
     else:
         raise ValueError('Invalid method: {}'.format(method))
 
+def extract_file_folder(path: str) -> tuple:
+    """Return a tuple containing two lists: one for the file names and one for the folder names in the path."""
+    file_names = [f for f in listdir(path) if isfile(join(path, f))]
+    folder_names = [f for f in listdir(path) if not isfile(join(path, f))]
+    return file_names, folder_names
 
-def extract_file_folder(input_path):
-    data_all = [f for f in listdir(input_path)]
-    data_files = []
-    data_folders = []
-    for elm in data_all:
-        if isfile(join(input_path, elm)):
-            data_files.append(elm)
-        else:
-            data_folders.append(elm)
-    return data_files, data_folders
+def concatenate_nested_files(folders_in, root_path):
+    files = []
+    for folder in folders_in:
+        if folder[0] == '.':
+            continue
+        new_path = root_path + "\\" + folder
+        data_files, folders = extract_file_folder(new_path)
+        data_files += concatenate_nested_files(folders, new_path)
+        for file in data_files:
+            files.append(folder + "\\" + file)
+    return files
 
 
 def json2dict(dict_var, name, path=os.getcwd()):

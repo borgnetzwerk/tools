@@ -1,36 +1,23 @@
+from core import helper
+
 from PyPDF2 import PdfReader
 import pandas as pd
 import numpy as np
 import math
+import os
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
-import helper
 import codecs
+import inspect
 
-keywords = {
-    "modeling": {
-        "Ontology simulation": 6,
-        "modeling": 1,
-        "engineering models": 2,
-        "ontology coupled models": 5,
-    },
-    "engineering": {
-        "structural": 1,
-        "aerodynamic": 1,
-        "thermodynamic": 1,
-    },
-    "multifidelity": {
-        "multifidelity approach": 5,
-        "variable fidelity simulation data": 3,
-        "multidisciplinary design optimization": 3,
-        "exchange of geometry information": 2,
-    }
+"""
+    PUNISH_SEMIMATCH = 0.2
+    PUNISH_NOMATCH = PUNISH_SEMIMATCH / 2
+    cfg['WEAKEN_WORDCOUNT'] = 0.01
+    FLAT_SCORE_BOOST = 10
 }
+"""
 
-PUNISH_SEMIMATCH = 0.2
-PUNISH_NOMATCH = PUNISH_SEMIMATCH / 2
-WEAKEN_WORDCOUNT = 0.01
-FLAT_SCORE_BOOST = 10
 
 def decode_hex(hex_encoded_text):
     if not "/x" in hex_encoded_text:
@@ -80,13 +67,7 @@ def decode_hex(hex_encoded_text):
     return "\n".join(line_list)
 
 
-def read_pdf(filepath, entry_dict):
-    # filepath = "H:\\Meine Ablage\\TIB_Obsidian\\Zotero\\Meine Bibliothek\\files\\134\\Sun et al. - 2009 - A framework for automated finite element analysis .pdf"
-    try:
-        reader = PdfReader(filepath)
-    except Exception as e:
-        print(e)
-        return entry_dict
+def get_text(reader):
     fulltext = ""
     for page in reader.pages:
         text = page.extract_text()
@@ -96,28 +77,22 @@ def read_pdf(filepath, entry_dict):
         if fulltext:
             fulltext += "\n"
         fulltext += text
-    if not fulltext or fulltext.count(' ') == 0:
+    if fulltext.count(' ') == 0:
         # todo: backup method to catch files like:
         # \files\58\Springer-TheNURBSBook.pdf
-        return entry_dict
-    filepath_new = filepath.replace(".pdf", "_extract.txt")
-    # with open(filepath_new, "w", encoding="utf8") as f:
-    #     f.write(fulltext)
+        return ""
+    return fulltext
 
-    # vectorizer = CountVectorizer()
-    # X = vectorizer.fit_transform([fulltext])
-    # df_bow_sklearn = pd.DataFrame(X.toarray(),columns=vectorizer.get_feature_names_out())
-    # df_bow_sklearn.head()
-    # df_bow_sklearn.style
 
+def calculate_score(entry_dict, fulltext, cfg):
     header = {'zotero_ID': entry_dict['ID']}
     scores = {}
     group_scores = {}
     appendix = {}
     total_score = 1
     wordcount = fulltext.count(" ")
-    wordcount_weight = wordcount * WEAKEN_WORDCOUNT
-    for g_name, group in keywords.items():
+    wordcount_weight = wordcount * cfg['WEAKEN_WORDCOUNT']
+    for g_name, group in cfg['keywords'].items():
         scores.update({word: fulltext.count(word) for word in group})
         semimatches = []
         group_score = 0
@@ -127,35 +102,55 @@ def read_pdf(filepath, entry_dict):
                 fragments = word.split(" ")
                 subscores = {fulltext.count(fragment)
                              for fragment in fragments}
-                scores[word] = min(subscores) * PUNISH_SEMIMATCH
+                scores[word] = min(subscores) * cfg['PUNISH_SEMIMATCH']
                 if scores[word] > 0:
                     semimatches.append(word)
             if scores[word] > 0:
                 group_score += (scores[word]) * weight
         group_scores[g_name+"_score"] = group_score
-    
+
     gsl = list(group_scores.values())
     for idx, score in enumerate(gsl):
         if score > 0:
             gsl[idx] = score/wordcount_weight
         else:
-            gsl[idx] = PUNISH_NOMATCH/wordcount_weight
-    total_score = FLAT_SCORE_BOOST + math.log10(np.prod(gsl))
+            gsl[idx] = cfg['PUNISH_NOMATCH']/wordcount_weight
+    total_score = cfg['FLAT_SCORE_BOOST'] + math.log10(np.prod(gsl))
     # else:
     #     total_score = total_score/pow(wordcount, 3)
     header["total_score"] = total_score
     header.update(group_scores)
     header["wordcount"] = wordcount
     appendix["semimatches"] = ";".join(semimatches)
-    appendix["total_score_function"] = "prod(group_score+1)/wordcount"
     entry_dict["k_score"] = header | scores | appendix
+    return entry_dict
+
+
+def read_pdf(filepath, entry_dict, cfg):
+    try:
+        reader = PdfReader(filepath)
+    except Exception as e:
+        print(e)
+        return entry_dict
+    fulltext = get_text(reader)
+    if not fulltext:
+        return entry_dict
+
+    entry_dict = calculate_score(entry_dict, fulltext, cfg)
     return entry_dict
 # read_pdf("", {})
 
 
-def write_to_csv(score_dict, path):
+def write_to_file(score_dict, path, cfg):
+    # others
+    helper.write_to_py(inspect.getsource(calculate_score),
+                       os.path.join(path, "calculate_score.py"))
+    # todo: make this go to yamls file
+    helper.dict2json(cfg, "cfg", path)
+    # CSV:
     score_dict = dict(sorted(score_dict.items(), key=lambda item: float(
         item[1]['total_score']), reverse=True))
     columns = list(list(score_dict.values())[0].keys())
     # df = pd.DataFrame([score_dict.values()], columns=columns, index=[score_dict.keys()])
-    helper.write_to_csv(columns, list(score_dict.values()), path)
+    helper.write_to_csv(columns, list(score_dict.values()),
+                        os.path.join(path, "k_score.csv"))

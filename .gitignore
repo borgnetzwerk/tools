@@ -167,3 +167,4 @@ data/sample/post
 data/sample/pre
 publish/wiki_bot.py
 config/personal.py
+pipelines/k_score/runs/*

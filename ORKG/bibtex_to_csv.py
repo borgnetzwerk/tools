@@ -1,14 +1,17 @@
+import core.helper as helper
+import bibtexparser
+
+import os
 import csv
 import json
 import re
-import helper
+
+# Todo: make this work directly from API / Website
 # import urllib.request
 # page = urllib.request.urlopen('https://orkg.org/api/classes/ResearchField/resources/?page=0&size=999')
 # print(page.read())
 # a = page.read()
 # RF_WEB = json.loads(page.text)
-
-# Using a JSON string
 
 # Directly from dictionary
 with open('ORKG/ResearchFields.json') as json_file:
@@ -210,17 +213,15 @@ def tex_to_csv_format(tex):
     return data
 
 
-def write_to_csv(data, path):
+def main(bib_path, csv_path=None):
+    with open(bib_path, encoding='UTF8') as bibtex_file:
+        bib_database = bibtexparser.load(bibtex_file)
+    orkg_data_csv = []
     header_names = set()
-    for entry in data:
+    for entry in bib_database.entries:
+        orkg_data_csv.append(tex_to_csv_format(entry))
         header_names.update(entry.keys())
-    helper.write_to_csv(header_names, data, path)
-        
 
-
-def main(tex, path=None):
-    data = tex_to_csv_format(tex)
-    if path:
-        write_to_csv([data], path)
-    else:
-        return data
+    if not csv_path:
+        csv_path = os.path.join(os.path.dirname(bib_path), "ORKG.csv")
+    helper.write_to_csv(header_names, orkg_data_csv, csv_path)
