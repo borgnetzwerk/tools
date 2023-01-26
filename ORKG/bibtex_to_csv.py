@@ -1,7 +1,9 @@
+import sys
+import os
+sys.path.append(os.getcwd())
 import core.helper as helper
 import bibtexparser
 
-import os
 import csv
 import json
 import re

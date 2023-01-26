@@ -11,8 +11,8 @@ Setup:
 import yaml
 import os
 import sys
-
 # todo: make this import cleaner
+# from ...ORKG import bibtex_to_csv
 sys.path.append(os.getcwd())
 from ORKG import bibtex_to_csv
 
