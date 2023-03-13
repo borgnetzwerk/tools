@@ -12,6 +12,13 @@ Zotero is a free and open-source reference management software that helps you or
 2. Download and install Zotero for your operating system from https://www.zotero.org/download/.
 3. Install the Zotero Connector for your web browser. You can find the connectors for Chrome, Firefox, and Safari at https://www.zotero.org/download/.
 
+### ORKG
+
+The ORKG allows researchers to better access, compare, and share scientific knowledge across disciplines. To share and complete your L-SEARCH, you'll need to create an ORKG account. 
+
+1. Go to https://www.orkg.org/ and click "Sign in" and "Create an Account"
+2. Once you've verified your account, you can log in to ORKG and start using it for your research.
+
 ### Python
 
 L-SEARCH is written in Python, so you'll need to have Python installed on your computer to use it. We recommend using Python 3.7 or higher.
@@ -19,9 +26,9 @@ L-SEARCH is written in Python, so you'll need to have Python installed on your c
 1. Download and install Python for your operating system from https://www.python.org/downloads/.
 2. Verify that Python is installed correctly by opening a terminal or command prompt and running the following command: 
 
-´´´
+```
 python --version
-´´´
+```
 
 This should print the version number of Python installed on your system.
 
@@ -35,7 +42,7 @@ The search query task involves identifying relevant keywords and phrases related
 This task involves identifying relevant keywords and phrases related to the topic of interest. These can be identified through previous and related work, base material such as a project proposal or a call for contribution. These initial keywords can be extended by utilizing of AI tools, as well as by usage of overview projects such as Open Knowledge Maps. The goal is to generate a weighted list of search terms.
 
 #### 1.1.2 Search Query execution
-Once the search terms are identified, they can be used to run a search query in a search engine or database. The goal is to primarely focus on Google Scholar, and enhance the results by running additional queries on other tools such as Open Knowledge Maps and Connected Papers. The goal is to retrieve an extensive set of relevant documents.
+Once the search terms are identified, they can be used to run a search query in a search engine or database. The goal is to primarily focus on Google Scholar, and enhance the results by running additional queries on other tools such as Open Knowledge Maps and Connected Papers. The goal is to retrieve an extensive set of relevant documents.
 
 ### 1.2 Zotero
 Zotero is a tool used to manage the retrieved documents and extract relevant information from them. The tasks involved in this step are:
@@ -56,10 +63,10 @@ This task involves creating visual representations of the information retrieved 
 This task involves using the Open Research Knowledge Graph (ORKG) to make the discovered work accessible to the scientific community. The findings are linked semantically and enhanced with the aid of a variety of different tools.
 
 #### 1.3.1 Paper
-First the papers need to be added, starting from the highest ranked paper. In the process of adding a paper previously extracted information can be added to the ORKG Contribution and will subsequently aid the linking process of this particualarly Survey, as well as any other subsequently conducted Reviews.
+First the papers need to be added, starting from the highest ranked paper. In the process of adding a paper previously extracted information can be added to the ORKG Contribution and will subsequently aid the linking process of this particularly Survey, as well as any other subsequently conducted Reviews.
 
 #### 1.3.2 List
-The ranked list of resources available since 1.2.3 can now be represented in the ORKG as well. Each Paper added in 1.3.1 can be assigned to this List. The Researcher can decide to add them all together once he fully completed step 1.3.1 for all papers, or add each imediatly after it has passed 1.3.1. The result of 1.3.2 is an accessible ranked list to be used for this survey and any subsequently interested Researcher in this particular field. 
+The ranked list of resources available since 1.2.3 can now be represented in the ORKG as well. Each Paper added in 1.3.1 can be assigned to this List. The Researcher can decide to add them all together once he fully completed step 1.3.1 for all papers, or add each immediately after it has passed 1.3.1. The result of 1.3.2 is an accessible ranked list to be used for this survey and any subsequently interested Researcher in this particular field. 
 
 #### 1.3.3 Comparison
 Creating comparisons from the List components is highly advised. In order of significance we propose 
@@ -68,12 +75,12 @@ Creating comparisons from the List components is highly advised. In order of sig
 2. TRIP: Top Ranked Important Papers:  
    A Comparison of the top 10 / Top 50 / Top 100 Papers by rank. This can be insightful to already gain an overview before creating the final VIP
 3. Interesting findings:  
-   A Comparison of interesting Methodologies, a comparison over similar approaches with different resoults, similar research questions, usage of similar Tools - any given Comparison that comes to mind while investigating the literature at hand.
-Comparisons are the most accessible artifacts of the literature review. While the List and Paper Contributions are important Artifacts to both eventually achieve the final result while building a traceble and lasting foundation for your results, they are not the most accessible representation of the knowledge the L-SEARCH reveals. With the Comparisons and respective Vizualization You enhance this knowledge to be quickly comprehended and spring new scholarly discourse and discovery.
+   A Comparison of interesting Methodologies, a comparison over similar approaches with different results, similar research questions, usage of similar Tools - any given Comparison that comes to mind while investigating the literature at hand.
+Comparisons are the most accessible artifacts of the literature review. While the List and Paper Contributions are important Artifacts to both eventually achieve the final result while building a traceable and lasting foundation for your results, they are not the most accessible representation of the knowledge the L-SEARCH reveals. With the Comparisons and respective visualization You enhance this knowledge to be quickly comprehended and spring new scholarly discourse and discovery.
 
 ## Phase 2: Focus Run
 After the initial run, increased familiarity with the system and the topic at hand, a more focussed second run can be held.
-It followes 3 goals:
+It follows 3 goals:
 1. Specify the desired resources and ranking more than the previous iteration
 2. Fill gaps that previously surfaced
 3. Verify Literature gaps
