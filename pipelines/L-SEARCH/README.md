@@ -63,11 +63,11 @@ The ranked list of resources available since 1.2.3 can now be represented in the
 
 #### 1.3.3 Comparison
 Creating comparisons from the List components is highly advised. In order of significance we propose 
-1. VIP: Very Important Papers:
+1. VIP: Very Important Papers:  
    A Comparison of the most important Papers, regardless of their rank, identified after 1.3.2 was fully completed. It represents the results of the survey and can be considered "The final representation of the survey's result". It is the gateway to all the knowledge relevant to the initial search query.
-2. TRIP: Top Ranked Important Papers:
+2. TRIP: Top Ranked Important Papers:  
    A Comparison of the top 10 / Top 50 / Top 100 Papers by rank. This can be insightful to already gain an overview before creating the final VIP
-3. Interesting findings:
+3. Interesting findings:  
    A Comparison of interesting Methodologies, a comparison over similar approaches with different resoults, similar research questions, usage of similar Tools - any given Comparison that comes to mind while investigating the literature at hand.
 Comparisons are the most accessible artifacts of the literature review. While the List and Paper Contributions are important Artifacts to both eventually achieve the final result while building a traceble and lasting foundation for your results, they are not the most accessible representation of the knowledge the L-SEARCH reveals. With the Comparisons and respective Vizualization You enhance this knowledge to be quickly comprehended and spring new scholarly discourse and discovery.
 
