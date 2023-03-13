@@ -2,6 +2,8 @@
 
 L-SEARCH is a tool that combines AI and research tools to simplify the process of conducting literature surveys and extracting relevant information from academic papers. This README file will guide you through the setup process.
 
+![L-SEARCH](https://user-images.githubusercontent.com/120123892/224770811-10b00da5-a672-4592-8c33-e61e410cded4.jpg)
+
 ## Phase 0: Setup
 
 ### Zotero
