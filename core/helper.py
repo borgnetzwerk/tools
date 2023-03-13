@@ -73,7 +73,7 @@ def cosine_similarity(A, B):
     return cosine
 
 
-def get_clean_title(title, eID, obsidian=False):
+def get_clean_title(title, eID=None, obsidian=False):
     """
     Cleans a given title to make it suitable for filenames.
 
@@ -89,7 +89,8 @@ def get_clean_title(title, eID, obsidian=False):
         clean_title = clean_title.replace(each, '')
     if obsidian:
         clean_title = clean_title.replace("#", '')
-    clean_title = fill_digits(eID, 3) + '_' + clean_title
+    if eID:
+        clean_title = fill_digits(eID, 3) + '_' + clean_title
     return clean_title
 
 

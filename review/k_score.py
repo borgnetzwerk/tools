@@ -9,6 +9,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 import codecs
 import inspect
+import logging
 
 """
     PUNISH_SEMIMATCH = 0.2
@@ -127,6 +128,11 @@ def calculate_score(entry_dict, fulltext, cfg):
 
 
 def read_pdf(filepath, entry_dict, cfg):
+    # supressing errors like "FloatObject (b'99.-72') invalid; use 0.0 instead"
+    # https://stackoverflow.com/questions/74866750/error-floatobject-b0-000000000000-14210855-invalid-use-0-0-instead-while-u
+    logger = logging.getLogger("PyPDF2")
+    logger.setLevel(logging.ERROR)
+
     try:
         reader = PdfReader(filepath)
     except Exception as e:

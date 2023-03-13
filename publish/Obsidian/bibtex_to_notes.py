@@ -389,7 +389,7 @@ def create_zotero_notes(files, cfg):
     #     if filename.startswith(file_prefix):
     #         pass
         #         # here lies the attatchment
-        if "#missingPDF" not in note:
+        if pdfs:
             csv_path = os.path.join(cfg['vault_path'], lib_path)
             if "k_score" in entry_dict:
                 k_score_dict[entry_dict['ID']] = entry_dict['k_score']

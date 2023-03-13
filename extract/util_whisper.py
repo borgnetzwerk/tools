@@ -79,7 +79,6 @@ def grab(input_path, filename):
     with open(input_path + '\\' + newfilename_new, 'w', encoding='utf-8') as file:
         json.dump(result, file, ensure_ascii=False, indent=4)
 
-
 def redo(filenames):
     file_path = os.getcwd() + '\\src\\redo.txt'
     with open(file_path, "r", encoding="utf8") as f:
@@ -144,6 +143,7 @@ def extract_info(input_path, playlist_name):
                 last_skipped = filename
                 skipped += 1
     log_file.close()
+
 
 
 def main():
