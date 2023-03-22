@@ -1,6 +1,8 @@
 # L-SEARCH - Literature Survey and Extraction using AI and Research Tools
 
-L-SEARCH is a tool that combines AI and research tools to simplify the process of conducting literature surveys and extracting relevant information from academic papers. This README file will guide you through the setup process.
+L-SEARCH is a tool that combines AI and research tools to simplify the process of conducting literature surveys and extracting relevant information from academic papers. This will guide you through the process.
+
+![L-SEARCH](https://user-images.githubusercontent.com/120123892/224781658-cef3caf9-7197-43a7-96ef-6fd91a5718a7.jpg)
 
 ## Phase 0: Setup
 
