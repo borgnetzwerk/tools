@@ -76,7 +76,7 @@ def grab(input_path, filename):
         newfilename_new = filename.replace('.mp4', '.json')
     elif filename.endswith(".mp3"):
         newfilename_new = filename.replace('.mp3', '.json')
-    with open(input_path + '\\' + newfilename_new, 'w', encoding='utf-8') as file:
+    with open(os.path.join(input_path,newfilename_new), 'w', encoding='utf-8') as file:
         json.dump(result, file, ensure_ascii=False, indent=4)
 
 def redo(filenames):
@@ -100,7 +100,7 @@ def redone(filename):
     return files
 
 
-def extract_info(input_path, playlist_name):
+def extract_info(input_path, playlist_name = None):
     old_stdout = sys.stdout
     log_file = open("logfile.log", "a", encoding='utf-8')
     sys.stdout = log_file
@@ -146,7 +146,7 @@ def extract_info(input_path, playlist_name):
 
 
 
-def main():
+def main(my_path = None):
     my_path = os.getcwd()
     data_path = os.path.dirname(my_path) + '\\data\\'
     playlist_names = [f for f in listdir(
