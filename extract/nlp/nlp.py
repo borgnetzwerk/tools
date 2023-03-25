@@ -4,7 +4,6 @@ import publish.MediaWiki.mediaWiki as mediaWiki
 import re
 import csv
 import sys
-import nlp.nlp as nlp
 import json
 import os
 import time
@@ -22,10 +21,7 @@ import os.path as path
 from flair.data import Sentence
 from flair.models import SequenceTagger
 
-
-
 editfolder = 'edited'
-
 
 def test(input_path, playlist_name, playlist_info, episodes_info, tagger, nlp):
     # make a sentence
