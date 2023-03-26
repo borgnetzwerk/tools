@@ -80,6 +80,9 @@ class NamedEntities:
 
     def get(self):
         return self.entities
+    
+    def get_frequencies(self):
+        return {k: len(v) for k, v in self.entities.items()}
 
     @classmethod
     def from_nlp_text(cls, sentence):
@@ -186,11 +189,24 @@ class Folder:
 
         if any(len(attr) == 0 for attr in [self.documents, self.non_stop_words, self.bag_of_words, self.named_entities]):
             print("Error on Folder: " + output_path)
-            with open(output_path.replace(".json", "error.json"), 'w', encoding='utf-8') as output_file:
-                json.dump(output_dict, output_file, indent=4)
-        else:
-            with open(output_path, 'w', encoding='utf-8') as output_file:
-                json.dump(output_dict, output_file, indent=4)
+        with open(output_path, 'w', encoding='utf-8') as output_file:
+            json.dump(output_dict, output_file, indent=4)
+
+    def save_summary(self, output_path):
+        threshold = min(
+            int(list(self.non_stop_words.get().values())[0] / 100), 10)
+        threshold = max(threshold, 3)
+        output_dict = {
+            'non_stop_words': {k: v for k, v in list(self.non_stop_words.get().items())[:1000] if v >= threshold},
+            'bag_of_words': {k: v for k, v in list(self.bag_of_words.get().items())[:1000] if v >= threshold},
+            'named_entities': {k: len(v) for k, v in list(self.named_entities.get().items())[:1000] if len(v) >= threshold},
+            'documents': [os.path.basename(doc.path) for doc in self.documents]
+        }
+
+        if any(len(attr) == 0 for attr in [self.documents, self.non_stop_words, self.bag_of_words, self.named_entities]):
+            print("Error on Folder: " + output_path)
+        with open(output_path, 'w', encoding='utf-8') as output_file:
+            json.dump(output_dict, output_file, indent=4)
 
 
 def initialize_dependencies(nlp=None, word_embeddings=None, tagger=None, spacy_model='en_core_web_sm', word_embeddings_model='glove', sequence_tagger_model='ner'):
@@ -244,6 +260,7 @@ def process_folder(input_folder, output_folder=None):
                                                   nlp, word_embeddings, tagger))
     folder.populate()
     folder.save(os.path.join(input_folder, "00_Folder.json"))
+    folder.save_summary(os.path.join(input_folder, "00_Folder_summary.json"))
     return folder
 
 
@@ -266,7 +283,7 @@ def process_json_file(json_path, output_path=None, nlp=None, word_embeddings=Non
         nlp, word_embeddings, tagger)
     if nlp is None:
         return None
-    
+
     try:
         with open(json_path, encoding='utf-8') as json_file:
             json_data = json.load(json_file)
