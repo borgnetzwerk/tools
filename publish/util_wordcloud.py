@@ -50,11 +50,30 @@ def generate_wordcloud_mask(dict_word_count, mask_path, output_file_path='wordcl
     mask = np.array(Image.open(mask_path))
     if len(mask.shape) == 2:
         mask = np.stack((mask,) * 3, axis=-1)  # convert grayscale to RGB
-    wc = WordCloud(background_color="white", mask=mask,
-                   width=width, height=height)
+
+
+    # Calculate the aspect ratio of the mask
+    mask_width, mask_height = mask.shape[1], mask.shape[0]
+    mask_aspect_ratio = mask_width / mask_height
+
+    # Adjust the width and height parameters to maintain the aspect ratio of the mask
+    if width / height > mask_aspect_ratio:
+        # The wordcloud will be constrained by height
+        width = int(height * mask_aspect_ratio)
+    else:
+        # The wordcloud will be constrained by width
+        height = int(width / mask_aspect_ratio)
+
+
+    # Resize the mask image if it is smaller than the desired width and height
+    mask_height, mask_width, _ = mask.shape
+    if mask_width < width or mask_height < height:
+        mask = cv2.resize(mask, (width, height))
+
+    wc = WordCloud(mask=mask, width=width, height=height)
     wc.generate_from_frequencies(dict_word_count)
-    image_colors = ImageColorGenerator(mask)
-    wc.recolor(color_func=image_colors)
+    # image_colors = ImageColorGenerator(mask)
+    # wc.recolor(color_func=random_color)
     wc.to_file(output_file_path)
 
 

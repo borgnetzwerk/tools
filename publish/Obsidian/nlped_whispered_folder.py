@@ -2,12 +2,17 @@ import os
 import json
 import re
 
-LIMIT_NAMED_ENTITIES = 10
-LIMIT_NON_STOP_WORDS = 0
+LIMIT_NAMED_ENTITIES = 20
+LIMIT_NON_STOP_WORDS = 10
 
 
-def folder(input_path, limit_ns=LIMIT_NON_STOP_WORDS, limit_ne=LIMIT_NAMED_ENTITIES):
+def folder(input_path, limit_ns=LIMIT_NON_STOP_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
     # loop over each file in the directory
+
+
+    # build Entry Node
+    # Sort all files into subfolders
+
 
     for filename in os.listdir(input_path):
         if filename.endswith("_processed.json"):
@@ -21,7 +26,7 @@ def folder(input_path, limit_ns=LIMIT_NON_STOP_WORDS, limit_ne=LIMIT_NAMED_ENTIT
                 os.makedirs(obsidian_dir)
 
             output_path = os.path.join(obsidian_dir, filebase + ".md")
-            if os.path.exists(output_path):
+            if os.path.exists(output_path) and not force:
                 continue
 
             # load the json data
@@ -56,12 +61,16 @@ def folder(input_path, limit_ns=LIMIT_NON_STOP_WORDS, limit_ne=LIMIT_NAMED_ENTIT
             # create the modified text block for the markdown file
             for word in non_stop_words + named_entities:
                 # use word boundaries and escape the word for regex
-                pattern = r'\b%s\b' % re.escape(word)
-                text = re.sub(pattern, '[[' + word + ']]', text, count=1)
+                if word in named_entities:
+                    pattern = r'\b%s\b' % re.escape(word)
+                    text = re.sub(pattern, '[[' + word + ']]', text, count=1)
+                else: 
+                    pattern = r'\b%s\b' % re.escape(word)
+                    text = re.sub(pattern, '**' + word + '**', text)
 
             note = f"""%%
 named_entities:: {", ".join("[[" + w + "]]" for w in named_entities)}
-non_stop_words:: {", ".join("[[" + w + "]]" for w in non_stop_words)}
+non_stop_words:: {", ".join("**" + w + "**" for w in non_stop_words)}
 %%
 # {filebase}
 

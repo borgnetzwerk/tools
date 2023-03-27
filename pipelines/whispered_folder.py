@@ -19,4 +19,4 @@ util_wordcloud.generate_wordcloud(folder.named_entities.get_frequencies(), os.pa
 mask = util_wordcloud.generate_mask(image)
 util_wordcloud.generate_wordcloud_mask(folder.non_stop_words.get(), mask, os.path.join(test, "00_non_stop_words_mask"))
 util_wordcloud.generate_wordcloud_mask(folder.named_entities.get_frequencies(), mask, os.path.join(test, "00_named_entities_mask"))
-nlped_whispered_folder.folder(test)
+nlped_whispered_folder.folder(test, force=True)
