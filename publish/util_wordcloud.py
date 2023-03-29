@@ -51,7 +51,6 @@ def generate_wordcloud_mask(dict_word_count, mask_path, output_file_path='wordcl
     if len(mask.shape) == 2:
         mask = np.stack((mask,) * 3, axis=-1)  # convert grayscale to RGB
 
-
     # Calculate the aspect ratio of the mask
     mask_width, mask_height = mask.shape[1], mask.shape[0]
     mask_aspect_ratio = mask_width / mask_height
@@ -63,7 +62,6 @@ def generate_wordcloud_mask(dict_word_count, mask_path, output_file_path='wordcl
     else:
         # The wordcloud will be constrained by width
         height = int(width / mask_aspect_ratio)
-
 
     # Resize the mask image if it is smaller than the desired width and height
     mask_height, mask_width, _ = mask.shape

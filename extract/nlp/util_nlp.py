@@ -8,6 +8,27 @@ from flair.embeddings import WordEmbeddings, DocumentPoolEmbeddings
 from collections import defaultdict
 from typing import List, Dict
 
+from spacy.lang.en.stop_words import STOP_WORDS as STOP_WORDS_en
+from spacy.lang.de.stop_words import STOP_WORDS as STOP_WORDS_de
+
+MY_STOP_WORDS = {
+    "en": {},
+    "de": {
+        "mal",
+        "einfach",
+        "sagen",
+        "eigentlich",
+        "finden",
+        "genau",
+        "quasi",
+        "halt",
+        "hey",
+        "irgendwie",
+        "bisschen",
+        "bissch"
+    }
+}
+
 
 class BagOfWords:
     def __init__(self, words: Dict[str, int] = None):
@@ -80,7 +101,7 @@ class NamedEntities:
 
     def get(self):
         return self.entities
-    
+
     def get_frequencies(self):
         return {k: len(v) for k, v in self.entities.items()}
 
@@ -133,8 +154,8 @@ class Document:
 
         if any(len(attr) == 0 for attr in [self.non_stop_words, self.bag_of_words, self.named_entities]):
             print("Error on file: " + output_path)
-            with open(output_path, 'w', encoding='utf-8') as output_file:
-                json.dump(output_dict, output_file, indent=4)
+        with open(output_path, 'w', encoding='utf-8') as output_file:
+            json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
 
 
 class Folder:
@@ -190,7 +211,7 @@ class Folder:
         if any(len(attr) == 0 for attr in [self.documents, self.non_stop_words, self.bag_of_words, self.named_entities]):
             print("Error on Folder: " + output_path)
         with open(output_path, 'w', encoding='utf-8') as output_file:
-            json.dump(output_dict, output_file, indent=4)
+            json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
 
     def save_summary(self, output_path):
         threshold = min(
@@ -206,13 +227,27 @@ class Folder:
         if any(len(attr) == 0 for attr in [self.documents, self.non_stop_words, self.bag_of_words, self.named_entities]):
             print("Error on Folder: " + output_path)
         with open(output_path, 'w', encoding='utf-8') as output_file:
-            json.dump(output_dict, output_file, indent=4)
+            json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
 
 
-def initialize_dependencies(nlp=None, word_embeddings=None, tagger=None, spacy_model='en_core_web_sm', word_embeddings_model='glove', sequence_tagger_model='ner'):
+def initialize_dependencies(nlp=None, word_embeddings=None, tagger=None, language="en", spacy_model='en_core_web_sm', word_embeddings_model='glove', sequence_tagger_model='ner'):
+    STOP_WORDS = STOP_WORDS_en
+    if language == "de":
+        spacy_model = "de_core_news_sm"
+        sequence_tagger_model = "flair/ner-german"
+        STOP_WORDS = STOP_WORDS_de
+
+    if language in MY_STOP_WORDS:
+        STOP_WORDS.union(MY_STOP_WORDS[language])
     if nlp is None:
         try:
             nlp = spacy.load(spacy_model)
+            # https://stackoverflow.com/questions/52263757/spacy-is-stop-doesnt-identify-stop-words
+            for word in STOP_WORDS:
+                for w in (word, word[0].capitalize(), word.upper()):
+                    lex = nlp.vocab[w]
+                    lex.is_stop = True
+
         except Exception as e:
             print(f"Error loading spacy: {str(e)}")
             return None, None, None
@@ -243,12 +278,12 @@ def get_output_path(input_path, filename=None, output_folder=None):
         return input_path.replace('.json', '_processed.json')
 
 
-def process_folder(input_folder, output_folder=None):
+def process_folder(input_folder, output_folder=None, language="en"):
     if output_folder:
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
 
-    nlp, word_embeddings, tagger = initialize_dependencies()
+    nlp, word_embeddings, tagger = initialize_dependencies(language=language)
     if nlp is None:
         return None
     folder = Folder(input_folder)
@@ -281,6 +316,7 @@ def process_json_file(json_path, output_path=None, nlp=None, word_embeddings=Non
 
     nlp, word_embeddings, tagger = initialize_dependencies(
         nlp, word_embeddings, tagger)
+
     if nlp is None:
         return None
 
