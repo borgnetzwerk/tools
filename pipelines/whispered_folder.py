@@ -12,9 +12,9 @@ from publish import util_wordcloud
 
 # test = "C:/Users/TimWittenborg/workspace/test/whispered"
 # test = "C:/Users/TimWittenborg/workspace/data"
-test = "D:/workspace/data/Weltverbesserer"
+test = "D:/workspace/raw (MP3)/Weltverbesserer"
 # image = "D:/workspace/data/masks/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie.jpg"
-image = "D:/workspace/data/masks/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg"
+image = "D:/workspace/raw (MP3)/Weltverbesserer/mask/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg"
 
 # Extract
 ## Transcribe (Whisper)
@@ -27,12 +27,12 @@ folder = util_nlp.process_folder(test, language="de")
 
 # Wordcloud
 util_wordcloud.generate_wordcloud(
-    folder.non_stop_words.get(), os.path.join(test, "00_non_stop_words"))
+    folder.bag_of_words.get(), os.path.join(test, "00_bag_of_words"))
 util_wordcloud.generate_wordcloud(
     folder.named_entities.get_frequencies(), os.path.join(test, "00_named_entities"))
 mask = util_wordcloud.generate_mask(image)
 util_wordcloud.generate_wordcloud_mask(
-    folder.non_stop_words.get(), mask, os.path.join(test, "00_non_stop_words_mask"))
+    folder.bag_of_words.get(), mask, os.path.join(test, "00_bag_of_words_mask"))
 util_wordcloud.generate_wordcloud_mask(folder.named_entities.get_frequencies(
 ), mask, os.path.join(test, "00_named_entities_mask"))
 

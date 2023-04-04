@@ -3,16 +3,14 @@ import json
 import re
 
 LIMIT_NAMED_ENTITIES = 20
-LIMIT_NON_STOP_WORDS = 10
+LIMIT_BAG_OF_WORDS = 10
 
 
-def folder(input_path, limit_ns=LIMIT_NON_STOP_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
+def folder(input_path, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
     # loop over each file in the directory
-
 
     # build Entry Node
     # Sort all files into subfolders
-
 
     for filename in os.listdir(input_path):
         if filename.endswith("_processed.json"):
@@ -21,26 +19,27 @@ def folder(input_path, limit_ns=LIMIT_NON_STOP_WORDS, limit_ne=LIMIT_NAMED_ENTIT
             filebase = filename.replace("_processed.json", "")
 
             # Create the Obsidian directory if it does not exist
-            obsidian_dir = os.path.join(input_path, "Obsidian/")
-            if not os.path.exists(obsidian_dir):
-                os.makedirs(obsidian_dir)
+            obsidian_dir = os.path.join(input_path, "Obsidian")
+            transcript_dir = os.path.join(obsidian_dir, "Transcript")
+            if not os.path.exists(transcript_dir):
+                os.makedirs(transcript_dir)
 
-            output_path = os.path.join(obsidian_dir, filebase + ".md")
+            output_path = os.path.join(transcript_dir, filebase + ".md")
             if os.path.exists(output_path) and not force:
                 continue
 
             # load the json data
-            with open(os.path.join(input_path, filename)) as f:
+            with open(os.path.join(input_path, filename), encoding="utf8") as f:
                 data = json.load(f)
 
             # extract the non-stop words and named entities
             named_entities = list(data["named_entities"])
 
-            non_stop_words = []
+            bag_of_words = []
             try:
-                ns_candidates = list(data["non_stop_words"])
+                ns_candidates = list(data["bag_of_words"])
                 counter = 0
-                while len(non_stop_words) < limit_ns:
+                while len(bag_of_words) < limit_ns:
                     candidate = ns_candidates[counter]
                     counter += 1
                     possible = True
@@ -49,7 +48,7 @@ def folder(input_path, limit_ns=LIMIT_NON_STOP_WORDS, limit_ne=LIMIT_NAMED_ENTIT
                             possible = False
                             break
                     if possible:
-                        non_stop_words.append(candidate)
+                        bag_of_words.append(candidate)
 
                 named_entities = named_entities[:limit_ne]
             except Exception as e:
@@ -59,18 +58,18 @@ def folder(input_path, limit_ns=LIMIT_NON_STOP_WORDS, limit_ne=LIMIT_NAMED_ENTIT
             text = data["text"]
 
             # create the modified text block for the markdown file
-            for word in non_stop_words + named_entities:
+            for word in bag_of_words + named_entities:
                 # use word boundaries and escape the word for regex
                 if word in named_entities:
                     pattern = r'\b%s\b' % re.escape(word)
                     text = re.sub(pattern, '[[' + word + ']]', text, count=1)
-                else: 
+                else:
                     pattern = r'\b%s\b' % re.escape(word)
                     text = re.sub(pattern, '**' + word + '**', text)
 
             note = f"""%%
 named_entities:: {", ".join("[[" + w + "]]" for w in named_entities)}
-non_stop_words:: {", ".join("**" + w + "**" for w in non_stop_words)}
+bag_of_words:: {", ".join("**" + w + "**" for w in bag_of_words)}
 %%
 # {filebase}
 
