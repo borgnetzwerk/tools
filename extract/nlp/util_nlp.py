@@ -10,6 +10,7 @@ from typing import List, Dict
 import inspect
 import review.similaritiy as similarity
 import numpy as np
+import math
 
 import importlib
 
@@ -17,8 +18,6 @@ import importlib
 # from spacy.lang.de.stop_words import STOP_WORDS as STOP_WORDS_de
 
 
-# todo: create a class of nlp thing that holds all solvers, etc.
-# so you can change language on this
 class NLPTools:
     naming_conventions = {
         "en": {"spacy": "en_core_web_sm", "flair": "ner"},
@@ -103,14 +102,40 @@ class NLPTools:
 class BagOfWords:
     def __init__(self, words: Dict[str, int] = None):
         self.words = words or {}
+        self.TF = None
+        self.TF_IDF = None
         self.sort()
 
     def __len__(self):
         return len(self.words)
 
-    def sort(self):
-        self.words = {k: v for k, v in sorted(self.words.items(),
-                                              key=lambda x: x[1], reverse=True)}
+    def calc_TF(self):
+        total = sum(self.words.values())
+        self.TF = {word: count/total for word, count in self.words.items()}
+        self.sort(do_words=False, do_TF=True)
+        return self.TF
+
+    def calc_TF_IDF(self, IDF: Dict[str, float]):
+        self.TF_IDF = {word: frequency*IDF[word]
+                       for word, frequency in self.get_TF().items()}
+        self.sort(do_words=False, do_TF_IDF=True)
+        return self.TF_IDF
+
+    def get_TF(self):
+        if self.TF is None:
+            return self.calc_TF()
+        return self.TF
+
+    def sort(self, do_words=True, do_TF=False, do_TF_IDF=False):
+        if do_words:
+            self.words = {k: v for k, v in sorted(self.words.items(),
+                                                  key=lambda x: x[1], reverse=True)}
+        if do_TF:
+            self.TF = {k: v for k, v in sorted(self.TF.items(),
+                                               key=lambda x: x[1], reverse=True)}
+        if do_TF_IDF:
+            self.TF_IDF = {k: v for k, v in sorted(self.TF_IDF.items(),
+                                                key=lambda x: x[1], reverse=True)}
 
     def get(self):
         return self.words
@@ -200,14 +225,6 @@ class Document:
         named_entities (dict): A dictionary containing the named entities in the document, where the keys are
             the entity types and the values are lists of `Span` objects representing each occurrence of that entity type.
     """
-
-    json_names = [
-        'file_path',
-        'text',
-        'bag_of_words',
-        'stop_words',
-        'named_entities'
-    ]
 
     def __init__(self, file_path=None, text=None, bag_of_words=None, stop_words=None, named_entities=None, language=None):
         self.language = language
@@ -304,21 +321,35 @@ class Folder:
         self.bag_of_words = BagOfWords()
         self.named_entities = NamedEntities()
         self.added_docs = set()
+        self.DF = defaultdict(int)
+        self.IDF = defaultdict(int)
         self.sim_matrix = None
 
     def calc_sim_matrix(self):
-        bag_sim_mat = similarity.create_word_vectors(
-            [doc.bag_of_words.get() for doc in self.documents], self.bag_of_words.get())
+        # bag_sim_mat = similarity.compute_similarity_matrix(
+        #     [doc.bag_of_words.get() for doc in self.documents], self.bag_of_words.get())
+        bag_sim_mat = similarity.compute_similarity_matrix(
+            [doc.bag_of_words.TF_IDF for doc in self.documents], self.bag_of_words.get())
 
         # todo: option to eventually weigh named entities differently
         # nam_sim_mat = similarity.create_word_vectors(
         #     [doc.named_entities.get() for doc in self.documents], self.named_entities)
-
         self.sim_matrix = bag_sim_mat
+        similarity.print_sim_matrix(self.sim_matrix, self.path)
 
     def add_document(self, document: Document):
         if document:
             self.documents.append(document)
+
+    def calc_IDF(self):
+        self.IDF = {word: math.log(len(self.documents)/(1+frequency))
+                    for word, frequency in self.DF.items()}
+        return self.IDF
+
+    def get_IDF(self):
+        if self.IDF:
+            return self.IDF
+        return self.calc_IDF()
 
     def populate(self):
         for doc in self.documents:
@@ -327,14 +358,20 @@ class Folder:
                 self.bag_of_words.add(doc.bag_of_words)
                 self.named_entities.add(doc.named_entities, doc.path)
                 self.added_docs.add(doc.path)
+                # document frequency
+                for word in doc.bag_of_words.get().keys():
+                    self.DF[word] += 1
+
+        for doc in self.documents:
+            doc.bag_of_words.calc_TF_IDF(self.get_IDF())
         self.stop_words.sort()
         self.bag_of_words.sort()
         self.named_entities.sort()
 
     def save(self, output_path):
         output_dict = {
-            'stop_words': self.stop_words.get(),
             'bag_of_words': self.bag_of_words.get(),
+            'stop_words': self.stop_words.get(),
             'named_entities': self.named_entities.get(),
             'documents': [os.path.basename(doc.path) for doc in self.documents]
         }

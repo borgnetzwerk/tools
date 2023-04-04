@@ -25,16 +25,16 @@ folder = util_nlp.process_folder(test, language="de")
 
 # Publish
 
-# Wordcloud
-util_wordcloud.generate_wordcloud(
-    folder.bag_of_words.get(), os.path.join(test, "00_bag_of_words"))
-util_wordcloud.generate_wordcloud(
-    folder.named_entities.get_frequencies(), os.path.join(test, "00_named_entities"))
-mask = util_wordcloud.generate_mask(image)
-util_wordcloud.generate_wordcloud_mask(
-    folder.bag_of_words.get(), mask, os.path.join(test, "00_bag_of_words_mask"))
-util_wordcloud.generate_wordcloud_mask(folder.named_entities.get_frequencies(
-), mask, os.path.join(test, "00_named_entities_mask"))
+# # Wordcloud
+# util_wordcloud.generate_wordcloud(
+#     folder.bag_of_words.get(), os.path.join(test, "00_bag_of_words"))
+# util_wordcloud.generate_wordcloud(
+#     folder.named_entities.get_frequencies(), os.path.join(test, "00_named_entities"))
+# mask = util_wordcloud.generate_mask(image)
+# util_wordcloud.generate_wordcloud_mask(
+#     folder.bag_of_words.get(), mask, os.path.join(test, "00_bag_of_words_mask"))
+# util_wordcloud.generate_wordcloud_mask(folder.named_entities.get_frequencies(
+# ), mask, os.path.join(test, "00_named_entities_mask"))
 
 # Obsidian
 nlped_whispered_folder.folder(test, force=True)

@@ -138,7 +138,7 @@ def make_images(sim_matrix, edited_path):
 
 
 def dotify(dict_var):
-    #todo: Rework this
+    # todo: Rework this
     episodes_info = {}
     lexicon_ep_count = {}
     linkpreps = {}
