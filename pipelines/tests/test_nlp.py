@@ -27,10 +27,9 @@ query = [
 ## Transcribe (Whisper)
 nlptools = util_nlp.NLPTools()
 for do in query:
-    old_stdout = sys.stdout
-    #todo: make this clearer
+
     util_whisper.extract_info(do["folder"])
-    sys.stdout = old_stdout
+
     ## NLP (Flair and SpaCy)
     folder = util_nlp.Folder(do["folder"], nlptools=nlptools, language=do["language"])
 

@@ -9,39 +9,56 @@ from collections import defaultdict
 from typing import List, Dict
 import inspect
 import review.similaritiy as similarity
+import core.helper as helper
 import numpy as np
 import math
+from termcolor import colored
 
+from mutagen.easyid3 import EasyID3
 import importlib
 
-# from spacy.lang.en.stop_words import STOP_WORDS as STOP_WORDS_en
-# from spacy.lang.de.stop_words import STOP_WORDS as STOP_WORDS_de
+from extract.nlp.my_stop_words import MY_STOP_WORDS
+
+
+def get_json_data(path):
+    if os.path.exists(path) and os.path.splitext(path)[1] == ".json":
+        try:
+            with open(path, 'r', encoding='utf8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Could not load {path}: {str(e)}")
+            return None
+
+
+def dump_json(path, output_dict):
+    with open(path, 'w', encoding='utf-8') as output_file:
+        json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
+
+
+def data_to_attributes(instance, data):
+    if not isinstance(data, dict):
+        return None
+    words = None
+    stops = None
+    for key, value in data.items():
+        if hasattr(instance, key):
+            if key == "bag_of_words":
+                words = value
+            elif key == "stop_words":
+                stops = value
+            elif key == "named_entities":
+                setattr(instance, key, NamedEntities(value))
+            else:
+                setattr(instance, key, value)
+    if words or stops:
+        setattr(instance, key, BagOfWords(words=words, stops=stops))
 
 
 class NLPTools:
     naming_conventions = {
-        "en": {"spacy": "en_core_web_sm", "flair": "ner"},
-        "de": {"spacy": "de_core_news_sm", "flair": "flair/ner-german"},
-        "zh": {"spacy": "zh_core_web_sm", "flair": "flair/ner-chinese"},
+        "en": {"spacy": "en_core_web_sm", "SequenceTagger": "ner", "WordEmbeddings": "glove"},
+        "de": {"spacy": "de_core_news_sm", "SequenceTagger": "flair/ner-german", "WordEmbeddings": "de"},
         # add more languages and their naming conventions as needed
-    }
-
-    MY_STOP_WORDS = {
-        "en": {},
-        "de": {
-            "mal",
-            "einfach",
-            "sagen",
-            "eigentlich",
-            "finden",
-            "genau",
-            "quasi",
-            "halt",
-            "hey",
-            "irgendwie",
-            "bisschen",
-            "bissch"
-        }
     }
 
     def __init__(self):
@@ -55,8 +72,9 @@ class NLPTools:
             return self.STOP_WORDS[language]
         stop_words_module = importlib.import_module(
             f"spacy.lang.{language}.stop_words")
-        self.STOP_WORDS[language] = NLPTools.MY_STOP_WORDS[language].union(
+        self.STOP_WORDS[language] = MY_STOP_WORDS[language].union(
             stop_words_module.STOP_WORDS)
+        # TODO: Idea to allways include the english stop-words, since sometimes other languages use english as well
         return self.STOP_WORDS[language]
 
     def get_spacy(self, language):
@@ -67,7 +85,12 @@ class NLPTools:
                 language, {}).get("spacy", f"{language}_core_news_sm")
             self.spacy[language] = spacy.load(nlp_model)
 
+            stop_words = self.get_STOP_WORDS(language)
+            self.spacy[language].Defaults.stop_words |= set(stop_words)
+
             for word in self.get_STOP_WORDS(language):
+                # todo: this does not seem to be enoguh, words with the same lemma get through
+                # thought: this may be intended and will be left like this for now.
                 for w in (word, word[0].capitalize(), word.upper()):
                     lex = self.spacy[language].vocab[w]
                     lex.is_stop = True
@@ -81,8 +104,10 @@ class NLPTools:
             return self.WordEmbeddings[language]
         try:
             word_embeddings_model = self.naming_conventions.get(
-                language, {}).get("flair", f"{language}_fasttext")
-            return WordEmbeddings(word_embeddings_model)
+                language, {}).get("WordEmbeddings", language)
+            self.WordEmbeddings[language] = WordEmbeddings(
+                word_embeddings_model)
+            return self.WordEmbeddings[language]
         except Exception as e:
             print(f"Error loading WordEmbeddings for {language}: {str(e)}")
             return None
@@ -92,50 +117,67 @@ class NLPTools:
             return self.SequenceTagger[language]
         try:
             sequence_tagger_model = self.naming_conventions.get(
-                language, {}).get("flair", f"ner-{language.lower()}")
-            return SequenceTagger.load(sequence_tagger_model)
+                language, {}).get("SequenceTagger", f"flair/ner-{language.lower()}")
+            self.SequenceTagger[language] = SequenceTagger.load(
+                sequence_tagger_model)
+            return self.SequenceTagger[language]
         except Exception as e:
             print(f"Error loading SequenceTagger for {language}: {str(e)}")
             return None
 
 
 class BagOfWords:
-    def __init__(self, words: Dict[str, int] = None):
-        self.words = words or {}
-        self.TF = None
-        self.TF_IDF = None
-        self.sort()
+    def __init__(self, words: Dict[str, int] = None, stops: Dict[str, int] = None, tf: Dict[str, float] = None, tf_idf: Dict[str, float] = None, text=None, nlptools=None, language=None):
+        self.words = words or defaultdict(int)
+        self.stops = stops or defaultdict(int)
+        self.tf = tf or {}
+        self.tf_idf = tf_idf or {}
+
+        if text:
+            self.from_nlp_text(text, language, nlptools)
 
     def __len__(self):
         return len(self.words)
 
-    def calc_TF(self):
+    def calc_tf(self):
         total = sum(self.words.values())
-        self.TF = {word: count/total for word, count in self.words.items()}
-        self.sort(do_words=False, do_TF=True)
-        return self.TF
+        self.tf = {word: count/total for word, count in self.words.items()}
+        self.sort(do_words=False, do_tf=True)
+        return self.tf
 
-    def calc_TF_IDF(self, IDF: Dict[str, float]):
-        self.TF_IDF = {word: frequency*IDF[word]
-                       for word, frequency in self.get_TF().items()}
-        self.sort(do_words=False, do_TF_IDF=True)
-        return self.TF_IDF
+    def calc_tf_idf(self, idf: Dict[str, float]):
+        self.tf_idf = {word: frequency*idf[word]
+                       for word, frequency in self.get_tf().items()}
+        self.sort(do_words=False, do_tf_idf=True)
+        return self.tf_idf
 
-    def get_TF(self):
-        if self.TF is None:
-            return self.calc_TF()
-        return self.TF
+    def get_tf(self):
+        if self.tf is None:
+            return self.calc_tf()
+        return self.tf
 
-    def sort(self, do_words=True, do_TF=False, do_TF_IDF=False):
+    def get_tf_idf(self):
+        return self.tf
+
+    def sort(self, do_words=True, do_tf=False, do_tf_idf=False):
         if do_words:
-            self.words = {k: v for k, v in sorted(self.words.items(),
-                                                  key=lambda x: x[1], reverse=True)}
-        if do_TF:
-            self.TF = {k: v for k, v in sorted(self.TF.items(),
-                                               key=lambda x: x[1], reverse=True)}
-        if do_TF_IDF:
-            self.TF_IDF = {k: v for k, v in sorted(self.TF_IDF.items(),
-                                                key=lambda x: x[1], reverse=True)}
+            if len(self.words):
+                # self.words = {k: v for k, v in sorted(self.words.items(),
+                                                    #   key=lambda x: x[1], reverse=True)}
+                self.words = dict(sorted(self.words.items(), key=lambda x: (-x[1], x[0])))
+
+            if len(self.stops):
+                # self.stops = {k: v for k, v in sorted(self.stops.items(),
+                                                    #   key=lambda x: x[1], reverse=True)}
+                self.stops = dict(sorted(self.stops.items(), key=lambda x: (-x[1], x[0])))
+        if do_tf:
+            if len(self.tf):
+                self.tf = {k: v for k, v in sorted(self.tf.items(),
+                                                   key=lambda x: x[1], reverse=True)}
+        if do_tf_idf:
+            if len(self.do_tf_idf):
+                self.tf_idf = {k: v for k, v in sorted(self.tf_idf.items(),
+                                                       key=lambda x: x[1], reverse=True)}
 
     def get(self):
         return self.words
@@ -147,33 +189,57 @@ class BagOfWords:
             else:
                 self.words[word] = count
 
-    @ classmethod
-    def from_nlp_text(cls, nlp_text):
-        bag_of_words = defaultdict(int)
-        stop_words = defaultdict(int)
+    def from_nlp_text(self, nlp_text, language=None, nlpTools=None):
         for token in nlp_text:
             if token.is_alpha:
                 word = token.lemma_.lower()
                 if token.is_stop:
-                    stop_words[word] += 1
+                    self.stops[word] += 1
                 else:
-                    bag_of_words[word] += 1
-        return cls(bag_of_words), cls(stop_words)
+                    self.words[word] += 1
+        self.update_stops(language=language, nlptools=nlpTools)
+        self.sort()
+
+    def update_stops(self, language, nlptools: NLPTools = None):
+        nlptools = nlptools or NLPTools()
+        to_stop = []
+        to_bag = []
+        for key in self.words.keys():
+            if key in nlptools.spacy[language].vocab and nlptools.spacy[language].vocab[key].is_stop:
+                to_stop.append(key)
+        for key in self.stops.keys():
+            if key in nlptools.spacy[language].vocab and not nlptools.spacy[language].vocab[key].is_stop:
+                to_bag.append(key)
+        for key in to_stop:
+            self.stops[key] = self.words.pop(key)
+        for key in to_bag:
+            self.words[key] = self.stops.pop(key)
+        self.sort()
+        return len(to_bag)+len(to_stop)
 
     # bag_of_words = {k: v for k, v in sorted(bag_of_words.items(), key=lambda item: item[1], reverse=True)}
 
 
 class NamedEntities:
-    def __init__(self, entities: Dict[str, List[str]] = None):
+    def __init__(self, entities: Dict[str, List[str]] = None, text=None,):
         self.entities = entities or {}
-        self.sort()
+
+        if text:
+            self.from_nlp_text(text)
 
     def __len__(self):
         return len(self.entities)
 
     def sort(self):
-        self.entities = {k: v for k, v in sorted(
-            self.entities.items(), key=lambda item: len(item[1]), reverse=True)}
+        if not self.entities:
+            return
+        val = list(self.entities.values())[0]
+        if isinstance(val, list):
+            self.entities = {k: v for k, v in sorted(
+                self.entities.items(), key=lambda item: len(item[1]), reverse=True)}
+        if isinstance(val, int):
+            self.entities = {k: v for k, v in sorted(
+                self.entities.items(), key=lambda item: item[1], reverse=True)}
 
     def add(self, other, path=None):
         for key, value in other.entities.items():
@@ -186,16 +252,14 @@ class NamedEntities:
                 self.entities[key] = value
 
     def merge(self, other, path=None):
-        result = self.entities.copy()
         for key, value in other.entities.items():
             if path:
                 path = os.path.basename(path)
                 value = [f"{path}: {x}" for x in value]
-            if key in result:
-                result[key] += value
+            if key in self.entities:
+                self.entities[key] += value
             else:
-                result[key] = value
-        return NamedEntities(result)
+                self.entities[key] = value
 
     def get(self):
         return self.entities
@@ -203,96 +267,267 @@ class NamedEntities:
     def get_frequencies(self):
         return {k: len(v) for k, v in self.entities.items()}
 
-    @ classmethod
-    def from_nlp_text(cls, sentence):
-        named_entities = {}
+    def from_nlp_text(self, sentence):
         for entity in sentence.get_spans('ner'):
             rep = f"Span[{entity.start_position}:{entity.end_position}]: {entity.tag} ({round(entity.score, 2)})"
-            if entity.text in named_entities:
-                named_entities[entity.text].append(rep)
+            if entity.text in self.entities:
+                self.entities[entity.text].append(rep)
             else:
-                named_entities[entity.text] = [rep]
-        return cls(named_entities)
+                self.entities[entity.text] = [rep]
+        self.sort()
+
+# File classes
 
 
-class Document:
-    """A class to represent a document.
+class Transcript:
+    def __init__(self, path=None, text=None, segments=None, language=None):
+        """
+        A class representing a transcript.
 
-    Attributes:
-        text (str): The full text of the document.
-        bag_of_words (dict): A dictionary containing the frequency count of each word in the document.
-        stop_words (list): A list of all non-stop words in the document.
-        named_entities (dict): A dictionary containing the named entities in the document, where the keys are
-            the entity types and the values are lists of `Span` objects representing each occurrence of that entity type.
-    """
+        Args:
+            text (str): Text content of the transcript.
+            path (str): Path to the transcript file.
 
-    def __init__(self, file_path=None, text=None, bag_of_words=None, stop_words=None, named_entities=None, language=None):
-        self.language = language
-        self.path = file_path
+        Attributes:
+            text (str): Text content of the transcript.
+            path (str): Path to the transcript file.
+        """
+        self.path = path
         self.text = text
-        self.bag_of_words = bag_of_words
-        self.stop_words = stop_words
-        self.named_entities = named_entities
+        self.language = language
+        self.segments = segments
+        if path:
+            self.fromfile()
 
-    def from_file(self, path):
-        try:
-            with open(path, 'r', encoding='utf-8') as file:
-                data = json.load(file)
-                for key, value in data.items():
-                    if hasattr(self, key):
-                        if key == "named_entities":
-                            value = NamedEntities(value)
-                        elif key == "bag_of_words" or key == "stop_words":
-                            value = BagOfWords(value)
-                        setattr(self, key, value)
+    def fromfile(self, path=None):
+        """
+        Load transcript from the given path.
+
+        Args:
+            path (str): Path to the transcript file.
+        """
+        if path is None:
+            path = self.path
+        else:
             self.path = path
-        except Exception as e:
-            print(f"Could not proceed on {path}: {str(e)}")
+        if not path:
+            print("need path to load Transcript")
             return None
+        data = get_json_data(path)
+        data_to_attributes(self, data)
+
+    def iscomplete(self):
+        if self.path and self.text:
+            return True
+        return False
+
+    def complete(self, path=None):
+        if not self.iscomplete():
+            self.fromfile(path)
+        return self.iscomplete()
 
     def get_dict(self):
         return {
-            'bag_of_words': self.bag_of_words.get(),
-            'stop_words': self.stop_words.get(),
-            'named_entities': self.named_entities.get(),
-            'text': self.text
+            'text': self.text,
+            'segments': self.segments,
+            'language': self.language
         }
 
-    def save(self, output_path):
-        output_dict = self.get_dict()
 
-        if any(len(attr) == 0 for attr in [self.stop_words, self.bag_of_words, self.named_entities]):
-            print("Error on file: " + output_path)
-        with open(output_path, 'w', encoding='utf-8') as output_file:
-            json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
+class NLPFeatureAnalysis:
+    def __init__(self, path=None, bag_of_words=None, named_entities=None, nlptools: NLPTools = None, transcript: Transcript = None):
+        """
+        A class representing NLP feature analysis.
+
+        Args:
+            bag_of_words (dict): A dictionary representing bag of words.
+            named_entities (list): A list of named entities.
+            tf_idf (dict): A dictionary representing tf-idf values.
+
+        Attributes:
+            bag_of_words (dict): A dictionary representing bag of words.
+            named_entities (list): A list of named entities.
+            tf_idf (dict): A dictionary representing tf-idf values.
+        """
+        self.path = path
+        self.bag_of_words = bag_of_words or BagOfWords()
+        self.named_entities = named_entities or NamedEntities()
+        if path:
+            self.fromfile(path)
+        if not self.iscomplete() and transcript:
+            self.complete(transcript, nlptools)
+
+    def fromfile(self, path):
+        """
+        Load transcript from the given path.
+
+        Args:
+            path (str): Path to the transcript file.
+        """
+        self.path = path
+        data = get_json_data(path)
+        data_to_attributes(self, data)
 
     def iscomplete(self):
-        # https://www.geeksforgeeks.org/how-to-get-a-list-of-class-attributes-in-python/
-        for i in inspect.getmembers(self):
-            # to remove private and protected functions
-            if not i[0].startswith('_'):
-                # To remove other methods that does not start with a underscore
-                if not inspect.ismethod(i[1]):
-                    if i[1] is None:
-                        return False
-        return True
+        if self.bag_of_words.get() and self.named_entities.get():
+            return True
+        return False
 
-    def update_stops(self, nlp=None):
-        to_stop = []
-        to_bag = []
-        for key in self.bag_of_words.words.keys():
-            if key in nlp.vocab and nlp.vocab[key].is_stop:
-                to_stop.append(key)
-        for key in self.stop_words.words.keys():
-            if key in nlp.vocab and not nlp.vocab[key].is_stop:
-                to_bag.append(key)
-        for key in to_stop:
-            self.stop_words.words[key] = self.bag_of_words.words.pop(key)
-            self.stop_words.sort()
-        for key in to_bag:
-            self.bag_of_words.words[key] = self.stop_words.words.pop(key)
-            self.bag_of_words.sort()
-        return len(to_bag)+len(to_stop)
+    def complete(self, transcript: Transcript, nlptools: NLPTools = None):
+        """Processes a JSON file containing text and returns a Document object.
+
+        Args:
+            json_path (str): The path to the input JSON file.
+
+        Returns:
+            Document: The Document object representing the input text.
+        """
+        nlptools = nlptools or NLPTools()
+
+        changes = False
+        if not self.iscomplete():
+            changes = True
+
+        self.fill_named_entities(transcript, nlptools)
+        self.fill_bag_of_words(transcript, nlptools)
+
+        # create a Document object and return it
+        if changes or self.update_stops(transcript.language, nlptools.get_spacy(transcript.language)):
+            self.save()
+        return self.iscomplete()
+
+    def fill_bag_of_words(self, transcript: Transcript, nlptools: NLPTools = None):
+        if not self.bag_of_words.get():
+            nlptools = nlptools or NLPTools()
+            if not transcript.iscomplete():
+                print("You need a text in a known language to complete " + self.path)
+                return False
+            # create a Sentence object from the text
+
+            doc = nlptools.get_spacy(transcript.language)(transcript.text)
+
+            # get the bag of words and non-stop-words
+            self.bag_of_words = BagOfWords(
+                text=doc, nlptools=nlptools, language=transcript.language)
+
+    def fill_named_entities(self, transcript: Transcript, nlptools: NLPTools = None):
+        if not self.named_entities.get():
+            nlptools = nlptools or NLPTools()
+            if not transcript.iscomplete():
+                print("You need a text in a known language to complete " + self.path)
+                return False
+            sentence = Sentence(transcript.text)
+
+            # embed the sentence using the WordEmbeddings
+            document_embeddings = DocumentPoolEmbeddings(
+                [nlptools.get_WordEmbeddings(transcript.language)])
+            document_embeddings.embed(sentence)
+
+            # get the named entities
+            nlptools.get_SequenceTagger(transcript.language).predict(sentence)
+            self.named_entities = NamedEntities(text=sentence)
+
+    def get_dict(self):
+        return {
+            'bag_of_words': self.bag_of_words.words,
+            'tf_idf': self.bag_of_words.get_tf_idf(),
+            'named_entities': self.named_entities.get(),
+            'stop_words': self.bag_of_words.stops
+        }
+
+    def save(self, path=None):
+        if path is None:
+            path = self.path
+        output_dict = self.get_dict()
+
+        if len(self.bag_of_words.words) == 0:
+            print(f"No {colored('words', 'red')} in file: " + path)
+        elif len(self.named_entities) == 0:
+            print("No named entities in file: " + path)
+        dump_json(path, output_dict)
+
+
+class MediaResource:
+    """
+    A class representing a media resource.
+
+    Args:
+        audio_file (Audiofile): An instance of Audiofile.
+        transcript (Transcript): An instance of Transcript.
+        nlp_analysis (NLPFeatureAnalysis): An instance of NLPFeatureAnalysis.
+
+    Attributes:
+        audio_file (Audiofile): An instance of Audiofile.
+        transcript (Transcript): An instance of Transcript.
+        nlp_analysis (NLPFeatureAnalysis): An instance of NLPFeatureAnalysis.
+    """
+
+    def __init__(self, audio_file_path=None, transcript_file_path=None, image_file_path=None, nlp_analysis_file_path=None, nlptools: NLPTools = None, ):
+        self.audio_file = EasyID3(audio_file_path)
+        # todo: check if no audiofile
+        self.transcript = Transcript(transcript_file_path)
+        self.nlp_analysis = NLPFeatureAnalysis(
+            nlp_analysis_file_path, nlptools=nlptools, transcript=self.transcript)
+        # todo: make this an actual class
+        self.image = image_file_path
+
+    def iscomplete(self):
+        return self.transcript.iscomplete() and self.nlp_analysis.iscomplete()
+
+    def complete(self, nlptools: NLPTools = None):
+        """Processes a JSON file containing text and returns a Document object.
+
+        Args:
+            json_path (str): The path to the input JSON file.
+
+        Returns:
+            Document: The Document object representing the input text.
+        """
+        nlptools = nlptools or NLPTools()
+
+        self.transcript.complete()
+        self.nlp_analysis.complete(nlptools)
+        # todo: complete from here
+        # Check what needs to be done:
+
+    def get_dict(self):
+        return dict(self.audio_file.items()) | self.transcript.get_dict() | self.nlp_analysis.get_dict()
+
+
+class Subfolder:
+    folder_formats = {
+        "blank": [],
+        # 00 Input
+        "00_audios": [".mp3", ".mp4"],
+        "00_images": [".png", ".jpg", ".jpeg"],
+        # 01 Extract
+        "01_whisper": [".json"],  # todo: vtt
+        # 02 Analyse
+        # todo: renaming from _processed
+        "02_nlp": [".json", "_processed.json"],
+        # 03 Publish
+        "03_notes": [".md"],
+    }
+
+    def __init__(self, folder_path, type="blank"):
+        self.path = os.path.join(folder_path, type)
+        self.type = type
+        self.endings = self.folder_formats[type]
+        os.makedirs(self.path, exist_ok=True)
+
+    def lookfor(self, filename):
+        found = []
+        not_found = []
+        basename = os.path.basename(filename)
+        stem = os.path.splitext(basename)[0]
+        for ending in self.endings:
+            path = os.path.join(self.path, stem+ending)
+            if os.path.exists(path):
+                found.append(path)
+            else:
+                not_found.append(path)
+
+        return found, not_found
 
 
 class Folder:
@@ -306,6 +541,7 @@ class Folder:
             documents as values.
         named_entities (Dict[str, List[str]]): A dictionary with named entities as keys and their occurrences in
             the documents as values.
+        paths (Dict[str, str]): A dictionary of paths to subfolders.
 
     Methods:
         add_document(document: Document) -> None: Adds a Document instance to the folder.
@@ -314,187 +550,141 @@ class Folder:
         save(output_path: str) -> None: Saves the Folder instance to a JSON file at the specified output path.
     """
 
-    def __init__(self, folder_path, documents: List[Document] = None):
+    # Define paths as a class-level property
+
+    def __init__(self, folder_path, nlptools=None, language=None, media_resources: List[MediaResource] = None):
         self.path = folder_path
-        self.documents = documents or []
-        self.stop_words = BagOfWords()
+        self.audio = Subfolder(folder_path, "00_audios")
+        self.image = Subfolder(folder_path, "00_images")
+        self.whisper = Subfolder(folder_path, "01_whisper")
+        self.analyse = Subfolder(folder_path, "02_nlp")
+        self.notes = Subfolder(folder_path, "03_notes")
+
+        self.media_resources: List[MediaResource] = media_resources or []
+        self.added_docs = set()
+        # todo: if media_resources, maybe fill set?
+
         self.bag_of_words = BagOfWords()
         self.named_entities = NamedEntities()
-        self.added_docs = set()
-        self.DF = defaultdict(int)
-        self.IDF = defaultdict(int)
+
+        self.df = defaultdict(int)
+        self.idf = defaultdict(int)
         self.sim_matrix = None
+
+        if nlptools:
+            self.process(nlptools)
 
     def calc_sim_matrix(self):
         # bag_sim_mat = similarity.compute_similarity_matrix(
         #     [doc.bag_of_words.get() for doc in self.documents], self.bag_of_words.get())
         bag_sim_mat = similarity.compute_similarity_matrix(
-            [doc.bag_of_words.TF_IDF for doc in self.documents], self.bag_of_words.get())
+            [mr.nlp_analysis.bag_of_words.tf_idf for mr in self.media_resources], self.bag_of_words.get())
 
         # todo: option to eventually weigh named entities differently
         # nam_sim_mat = similarity.create_word_vectors(
         #     [doc.named_entities.get() for doc in self.documents], self.named_entities)
         self.sim_matrix = bag_sim_mat
         similarity.print_sim_matrix(self.sim_matrix, self.path)
+        for mr in self.media_resources:
+            mr.nlp_analysis.save()
 
-    def add_document(self, document: Document):
-        if document:
-            self.documents.append(document)
+    def add_media_resource(self, media_resource: MediaResource):
+        if media_resource:
+            self.media_resources.append(media_resource)
 
-    def calc_IDF(self):
-        self.IDF = {word: math.log(len(self.documents)/(1+frequency))
-                    for word, frequency in self.DF.items()}
-        return self.IDF
+    def calc_idf(self):
+        self.idf = {word: math.log(len(self.media_resources)/(frequency))
+                    for word, frequency in self.df.items()}
+        return self.idf
 
-    def get_IDF(self):
-        if self.IDF:
-            return self.IDF
-        return self.calc_IDF()
+    def get_idf(self):
+        if self.idf:
+            return self.idf
+        return self.calc_idf()
 
     def populate(self):
-        for doc in self.documents:
-            if doc.path not in self.added_docs:
-                self.stop_words.add(doc.stop_words)
-                self.bag_of_words.add(doc.bag_of_words)
-                self.named_entities.add(doc.named_entities, doc.path)
-                self.added_docs.add(doc.path)
+        for mr in self.media_resources:
+            if mr.nlp_analysis.path not in self.added_docs:
+                self.bag_of_words.add(mr.nlp_analysis.bag_of_words)
+                self.named_entities.add(
+                    mr.nlp_analysis.named_entities, mr.nlp_analysis.path)
+                self.added_docs.add(mr.nlp_analysis.path)
                 # document frequency
-                for word in doc.bag_of_words.get().keys():
-                    self.DF[word] += 1
+                for word in mr.nlp_analysis.bag_of_words.get().keys():
+                    self.df[word] += 1
 
-        for doc in self.documents:
-            doc.bag_of_words.calc_TF_IDF(self.get_IDF())
-        self.stop_words.sort()
+        for mr in self.media_resources:
+            mr.nlp_analysis.bag_of_words.calc_tf_idf(self.get_idf())
         self.bag_of_words.sort()
         self.named_entities.sort()
 
-    def save(self, output_path):
-        output_dict = {
-            'bag_of_words': self.bag_of_words.get(),
-            'stop_words': self.stop_words.get(),
+    def get_dict(self):
+        return {
+            'bag_of_words': self.bag_of_words.words,
+            'idf': self.idf,
             'named_entities': self.named_entities.get(),
-            'documents': [os.path.basename(doc.path) for doc in self.documents]
+            'stop_words': self.bag_of_words.stops,
+            'documents': [os.path.basename(mr.nlp_analysis.path) for mr in self.media_resources]
         }
 
-        if any(len(attr) == 0 for attr in [self.documents, self.stop_words, self.bag_of_words, self.named_entities]):
+    def save(self, output_path=None):
+        if output_path is None:
+            output_path = os.path.join(self.path, "rep_Folder")
+        output_dict = self.get_dict()
+
+        if any(len(attr) == 0 for attr in [self.media_resources, self.bag_of_words, self.named_entities]):
             print("Error on Folder: " + output_path)
-        with open(output_path, 'w', encoding='utf-8') as output_file:
-            json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
+        dump_json(output_path, output_dict)
 
     def save_summary(self, output_path):
-        if not len(self.documents):
+        if not len(self.media_resources):
             print(f"No Documents found in folder: {output_path}")
             return None
         threshold = min(
-            int(list(self.stop_words.get().values())[0] / 100), 10)
+            int(list(self.bag_of_words.get().values())[0] / 100), 10)
         threshold = max(threshold, 3)
         output_dict = {
-            'bag_of_words': {k: v for k, v in list(self.bag_of_words.get().items())[:1000] if v >= threshold},
-            'stop_words': {k: v for k, v in list(self.stop_words.get().items())[:1000] if v >= threshold},
+            'bag_of_words': {k: v for k, v in list(self.bag_of_words.words.items())[:1000] if v >= threshold},
+            'stop_words': {k: v for k, v in list(self.bag_of_words.stops.items())[:1000] if v >= threshold},
             'named_entities': {k: len(v) for k, v in list(self.named_entities.get().items())[:1000] if len(v) >= threshold},
-            'documents': [os.path.basename(doc.path) for doc in self.documents]
+            'documents': [os.path.basename(doc.nlp_analysis.path) for doc in self.media_resources]
         }
 
-        if any(len(attr) == 0 for attr in [self.documents, self.stop_words, self.bag_of_words, self.named_entities]):
+        if any(len(attr) == 0 for attr in [self.media_resources, self.bag_of_words, self.named_entities]):
             print("Error on Folder: " + output_path)
-        with open(output_path, 'w', encoding='utf-8') as output_file:
-            json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
+        dump_json(output_path, output_dict)
 
+    def process(self, nlptools=None):
+        if nlptools is None:
+            nlptools = NLPTools()
 
-def get_output_path(input_path, filename=None, output_folder=None):
-    if '_processed.json' in input_path:
-        return input_path
-    if output_folder:
-        return os.path.join(output_folder, filename.replace('.json', '_processed.json'))
-    else:
-        return input_path.replace('.json', '_processed.json')
-
-
-def process_folder(input_folder, output_folder=None, language="en"):
-    nlptools = NLPTools()
-    if output_folder:
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-
-    folder = Folder(input_folder)
-    audio_path = os.path.join(input_folder, "audio")
-    extract_path = os.path.join(input_folder, "01_extract")
-    analyse_path = os.path.join(input_folder, "02_analyse")
-    for filename in os.listdir(extract_path):
-        if filename.endswith('.json') and not filename.endswith('_processed.json'):
-            input_path = os.path.join(audio_path, filename)
-            output_path = get_output_path(audio_path, filename, analyse_path)
-            folder.add_document(process_json_file(input_path, output_path,
-                                                  nlptools, language=language))
-    folder.populate()
-    folder.calc_sim_matrix()
-    folder.save(os.path.join(input_folder, "00_Folder.json"))
-    folder.save_summary(os.path.join(input_folder, "00_Folder_summary.json"))
-    return folder
-
-
-def process_json_file(json_path, output_path, nlptools: NLPTools, language="en"):
-    """Processes a JSON file containing text and returns a Document object.
-
-    Args:
-        json_path (str): The path to the input JSON file.
-
-    Returns:
-        Document: The Document object representing the input text.
-    """
-
-    rep = Document(language=language)
-
-    if output_path is None:
-        output_path = get_output_path(json_path)
-    elif os.path.exists(output_path):
-        rep.from_file(output_path)
-    elif rep.from_file(json_path) is None:
-        return None
-
-    # Check what needs to be done:
-
-    if rep.iscomplete():
-        if rep.update_stops(nlptools.get_spacy(language)):
-            rep.save(output_path)
-        return rep
-
-    if rep.path is None:
-        rep.path = json_path
-
-    if rep.bag_of_words is None or rep.stop_words is None:
-        # create a Sentence object from the text
-        sentence = Sentence(rep.text)
-
-        # embed the sentence using the WordEmbeddings
-        document_embeddings = DocumentPoolEmbeddings(
-            [nlptools.get_WordEmbeddings(language)])
-        document_embeddings.embed(sentence)
-
-        doc = nlptools.get_spacy(language)(rep.text)
-
-        # get the bag of words and non-stop-words
-        rep.bag_of_words, rep.stop_words = BagOfWords.from_nlp_text(doc)
-
-    rep.update_stops(nlptools.get_spacy(language))
-
-    if rep.named_entities is None:
-        # get the named entities
-        nlptools.get_SequenceTagger(language).predict(sentence)
-        rep.named_entities = NamedEntities.from_nlp_text(sentence)
-
-    # create a Document object and return it
-    rep.save(output_path)
-    return rep
+        for audio_file in os.listdir(self.audio.path):
+            audio_file_path = os.path.join(self.audio.path, audio_file)
+            i_found, i_not = self.image.lookfor(audio_file)
+            w_found, w_not = self.whisper.lookfor(audio_file)
+            a_found, a_not = self.analyse.lookfor(audio_file)
+            # todo: notes
+            # todo: make work when multiple are found
+            image = i_found[0] if i_found else i_not[0] if i_not else None
+            whisper = w_found[0] if w_found else w_not[0] if w_not else None
+            analyse = a_found[0] if a_found else a_not[0] if a_not else None
+            mr = MediaResource(audio_file_path=audio_file_path, image_file_path=image, transcript_file_path=whisper,
+                               nlp_analysis_file_path=analyse, nlptools=nlptools)
+            self.add_media_resource(mr)
+        self.populate()
+        self.calc_sim_matrix()
+        self.save(os.path.join(self.path, "00_Folder.json"))
+        self.save_summary(os.path.join(
+            self.path, "00_Folder_summary.json"))
 
 
 def main(input_path, output_path=None):
     if os.path.isfile(input_path):
         # process single file
-        document = process_json_file(input_path)
+        return MediaResource(transcript_file_path=input_path)
     elif os.path.isdir(input_path):
         # process all files in directory
-        process_folder(input_path, output_path)
+        return Folder(input_path)
     else:
         print('Invalid input path.')
 

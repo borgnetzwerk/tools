@@ -69,14 +69,16 @@ def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/m
     sys.stdout = old_stdout
 
 
-def grab(input_path, filename, device='cuda'):
+def grab(input_path, filename, output_path=None, device='cuda'):
     model = whisper.load_model("medium", device=device)
     result = model.transcribe(os.path.join(input_path, filename))
     if filename.endswith(".mp4"):
         newfilename_new = filename.replace('.mp4', '.json')
     elif filename.endswith(".mp3"):
         newfilename_new = filename.replace('.mp3', '.json')
-    with open(os.path.join(input_path, newfilename_new), 'w', encoding='utf-8') as file:
+    if output_path is None:
+        output_path = input_path
+    with open(os.path.join(output_path, newfilename_new), 'w', encoding='utf-8') as file:
         json.dump(result, file, ensure_ascii=False, indent=4)
 
 
@@ -119,11 +121,16 @@ def redone(filename):
 def extract_info(input_path, playlist_name=None):
     log_file = open("logfile.log", "a", encoding='utf-8')
     old_stdout = sys.stdout
+    # todo: make this cleaner and load the name from central place
+    audio_path = os.path.join(input_path, "00_audios")
+    whisper_path = os.path.join(input_path, "01_extract")
     with open("logfile.log", "a", encoding='utf-8') as log_file:
         sys.stdout = log_file
         try:
             filenames = [f for f in listdir(
-                input_path) if isfile(join(input_path, f))]
+                audio_path) if isfile(join(audio_path, f))]
+            existing = [f for f in listdir(
+                whisper_path) if isfile(join(whisper_path, f))]
         except:
             return
         print('\n-------------\n', flush=True)
@@ -138,12 +145,12 @@ def extract_info(input_path, playlist_name=None):
                     newfilename_new = filename.replace('.mp4', '.json')
                 elif filename.endswith(".mp3"):
                     newfilename_new = filename.replace('.mp3', '.json')
-                if newfilename_new not in filenames:
+                if newfilename_new not in existing:
                     if skipped > 0:
                         print('Skipping ' + str(skipped) +
                               ' until including ' + last_skipped + '.\n', flush=True)
                         skipped = 0
-                    grab(input_path, filename)
+                    grab(audio_path, filename, output_path=whisper_path)
                     print(str(datetime.now()), flush=True)
                     print(filename + ': ' + str(round(time.time() -
                                                       checkpoint, 2)) + " Sek." + '\n', flush=True)
