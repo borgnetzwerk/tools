@@ -5,7 +5,6 @@ import sys
 # todo: make this import cleaner
 sys.path.append(os.getcwd())
 
-from publish import util_wordcloud
 from publish.Obsidian import nlped_whispered_folder
 from extract.nlp import util_nlp
 from extract import util_whisper
@@ -14,12 +13,12 @@ from extract import util_whisper
 # test = "C:/Users/TimWittenborg/workspace/data"
 
 query = [
-    {"folder": "D:/workspace/raw (MP3)/Weltverbesserer",
-     "image": "D:/workspace/raw (MP3)/Weltverbesserer/mask/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg",
-     "language": "de"},
     {"folder": "D:/workspace/raw (MP3)/HoP",
      "image": "D:/workspace/raw (MP3)/HoP/mask/ab67656300005f1fcabcff3dcfa8fbd5f5b0fa04.jpeg",
      "language": "en"},
+    {"folder": "D:/workspace/raw (MP3)/Weltverbesserer",
+     "image": "D:/workspace/raw (MP3)/Weltverbesserer/mask/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg",
+     "language": "de"},
 ]
 
 
@@ -34,18 +33,5 @@ for do in query:
     ## NLP (Flair and SpaCy)
     folder = util_nlp.Folder(do["folder"], nlptools=nlptools, language=do["language"])
 
-    # Publish
-
-    # Wordcloud
-    util_wordcloud.generate_wordcloud(
-        folder.bag_of_words.get(), os.path.join(do["folder"], "00_bag_of_words"))
-    util_wordcloud.generate_wordcloud(
-        folder.named_entities.get_frequencies(), os.path.join(do["folder"], "00_named_entities"))
-    mask = util_wordcloud.generate_mask(do["image"])
-    util_wordcloud.generate_wordcloud_mask(
-        folder.bag_of_words.get(), mask, os.path.join(do["folder"], "00_bag_of_words_mask"))
-    util_wordcloud.generate_wordcloud_mask(folder.named_entities.get_frequencies(
-    ), mask, os.path.join(do["folder"], "00_named_entities_mask"))
-
     # Obsidian
-    nlped_whispered_folder.folder(do["folder"], force=True)
+    nlped_whispered_folder.folder(folder, force=True)

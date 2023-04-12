@@ -4,6 +4,7 @@ MY_STOP_WORDS = {
     """
 mal einfach sagen eigentlich finden genau
 quasi halt hey irgendwie bisschen bissch
+beispielsweise irgendjemand all worum
 """.split()
 )
 }

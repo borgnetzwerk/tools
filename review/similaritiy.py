@@ -2,10 +2,14 @@ import os
 import numpy as np
 import pandas as pd
 from typing import List, Dict
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
 
 from wordfreq import word_frequency
+
+MAX_LABELS = 15
 
 # todo: https://towardsdatascience.com/a-glance-at-text-similarity-52e607bfe920
 # TF-IDF (term frequency-inverse document frequency)
@@ -52,6 +56,7 @@ def compute_similarity_matrix(dictionaries: List[Dict[str, int]], sum_dict: Dict
 
 
 def print_sim_matrix(sim_matrix, path, prefix="", filename="", suffix="_similarity_matrix", xlabel='Documents', ylabel='Documents', dpi=300, vmin=None, vmax=None, cmap=None):
+    # If i want to see the figure:
     fig, ax = plt.subplots()
     np.fill_diagonal(sim_matrix, np.nan)
     if vmin is None:
@@ -83,11 +88,17 @@ def print_sim_matrix(sim_matrix, path, prefix="", filename="", suffix="_similari
         # 'turbo', 'turbo_r', 'twilight', 'twilight_r', 'twilight_shifted', 'twilight_shifted_r', 'viridis',
         # 'viridis_r', 'winter', 'winter_r'
     im = ax.imshow(sim_matrix*100, cmap=cmap, vmin=vmin, vmax=vmax)
-    if len(sim_matrix) < 10:
-        ax.set_xticks(range(len(sim_matrix)))
-        ax.set_yticks(range(len(sim_matrix)))
-        ax.set_xticklabels(range(1, len(sim_matrix)+1), rotation=90)
-        ax.set_yticklabels(range(1, len(sim_matrix)+1), rotation=90)
+    # if len(sim_matrix) < 10:
+    #     ax.set_xticks(range(len(sim_matrix)))
+    #     ax.set_yticks(range(len(sim_matrix)))
+    #     ax.set_xticklabels(range(1, len(sim_matrix)+1), rotation=90)
+    #     ax.set_yticklabels(range(1, len(sim_matrix)+1), rotation=90)
+    n = len(sim_matrix)
+    every_nth = max(1, n // MAX_LABELS)
+    ax.set_xticks(range(0, len(sim_matrix), every_nth))
+    ax.set_yticks(range(0, len(sim_matrix), every_nth))
+    ax.set_xticklabels(range(1, len(sim_matrix)+1, every_nth), rotation=90)
+    ax.set_yticklabels(range(1, len(sim_matrix)+1, every_nth), rotation=0)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title('Cosine Similarity Matrix')
