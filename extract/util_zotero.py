@@ -1,7 +1,7 @@
-import util_bibtex
+import bibtexparser
 import os
 import re
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any
 import shutil
 
 
@@ -12,9 +12,6 @@ class BibTeXEntry:
         for key, value in bib_entry.items():
             if value is None or key in ['entry_type', 'citation_key', 'ENTRYTYPE', 'ID']:
                 continue
-            # if not hasattr(self, key):
-            #     print(
-            #         f"Attribute '{key}' is a new type of BibTeX property. Please add it to the BibTeXEntry class.")
             setattr(self, key, value)
 
     def get(self, attr: str):
@@ -44,7 +41,7 @@ class BibTeXEntry:
         return links
 
     def save(self, file_path: str = None, mode: str = 'w') -> str:
-        res = ""
+        res = "\n"
         res += f"@{self.entry_type}{{{self.citation_key},\n"
         for attribute, value in reversed(self.__dict__.items()):
             if value is None or attribute in ['entry_type', 'citation_key']:
@@ -52,125 +49,130 @@ class BibTeXEntry:
             if isinstance(value, list):
                 value = " and ".join(value)
             res += f"    {attribute} = {{{value}}},\n"
-        res += "}\n\n"
+        res += "}\n"
         if file_path:
             with open(file_path, mode, encoding="utf-8") as file:
                 file.write(res)
         return res
 
 
-def store_bibtex_entries(entries: List[BibTeXEntry], file_path: str, mode: str = 'w') -> None:
-    with open(file_path, mode, encoding="utf-8") as file:
-        for entry in entries:
-            file.write(entry.save())
+class BibResources:
+    def __init__(self, path=None, entries: List[BibTeXEntry] = None) -> None:
+        self.entries: List[BibTeXEntry] = entries or []
+        self.folder_path = path or None
+        self.files_folder_path = None
+        self.bibtex_path = None
+        self.pdf_path = None
+        if path:
+            self.from_path(path)
 
+    def get_pdf_path(self, path=None):
+        if self.pdf_path and not path:
+            return self.pdf_path
+        if path is None:
+            path = self.folder_path
+        else:
+            self.folder_path = path
+        self.pdf_path = os.path.join(path, "00_PDFs")
+        return self.pdf_path
 
-def sort_pdf(entries: List[BibTeXEntry], root_folder: str, dst_folder: str) -> None:
-    for entry in entries:
-        links = entry.get_links()
-        if links is None:
-            continue
-        # todo: Handle if item exists twice
-        # todo: Handle if item has ;
-        # remove unwanteds
-        basenames = [os.path.basename(file_link['path'])
-                     for file_link in links]
-        drop = {}
-        for name in basenames:
-            if basenames.count(name) > 1 and name not in drop:
-                indices = [i for i, x in enumerate(basenames) if x == name]
-                for i in indices:
-                    if links[i]['path'].startswith("files/"):
-                        indices.remove(i)
-                        drop[name] = indices
-                        break
-        queue = sorted([val for sublist in drop.values()
-                       for val in sublist], reverse=True)
-        for i in queue:
-            links.pop(i)
-        for file_link in links:
-            name, path, mime_type = file_link['name'], file_link['path'], file_link['mime_type']
-            basename = os.path.basename(path)
-            dst_folder_new = os.path.join(dst_folder, entry.citation_key)
-            dst_path = os.path.join(dst_folder_new, basename)
-            os.makedirs(dst_folder_new, exist_ok=True)
-            move = False
-            src_path = path
-            if not os.path.isabs(path):
-                # relative -> copy
-                src_path = os.path.join(root_folder, path)
-                move = True
+    def add_entries(self):
+        with open(self.bibtex_path, encoding="utf-8") as bibtex_file:
+            parser = bibtexparser.bparser.BibTexParser()
+            parser.ignore_nonstandard_types = False
+            parser.homogenize_fields = False
+            parser.common_strings = False
+            bib_database = bibtexparser.load(bibtex_file, parser)
+            self.entries.extend(BibTeXEntry(entry)
+                                for entry in bib_database.entries)
 
-            if not os.path.exists(src_path):
-                print(
-                    f"Warning: File '{src_path}' not found for entry '{entry.citation_key}'.")
+    def from_path(self, path):
+        self.get_pdf_path(path)
+        folder_name = os.path.basename(path)
+        for entry in os.listdir(path):
+            if entry == "files" and os.path.isdir(os.path.join(path, entry)):
+                files_folder_path = os.path.join(path, entry)
+            elif entry == folder_name + ".bib" and os.path.isfile(os.path.join(path, entry)):
+                self.bibtex_path = os.path.join(path, entry)
+
+        if not self.bibtex_path or not files_folder_path:
+            print(f"Missing Zotero export at {path}:")
+            if not self.bibtex_path:
+                print(f"There must be a file called '{folder_name}.bib'")
+            if not self.bibtex_path:
+                print(f"There must be a folder called 'files'")
+            return None
+
+        self.add_entries()
+        self.sort_pdf()
+        self.store_bibtex_entries(
+            self.bibtex_path.replace(".bib", "_processed.bib"))
+
+    def store_bibtex_entries(self, new_file_name=None) -> None:
+        if new_file_name is None:
+            new_file_name = self.bibtex_path
+        with open(new_file_name, "w", encoding="utf-8") as file:
+            for entry in self.entries:
+                file.write(entry.save())
+
+    def sort_pdf(self) -> None:
+        for entry in self.entries:
+            links = entry.get_links()
+            if links is None:
                 continue
+            # todo: Handle if item exists twice
+            # todo: Handle if item has ;
+            # remove unwanteds
+            basenames = [os.path.basename(file_link['path'])
+                         for file_link in links]
+            drop = {}
+            for name in basenames:
+                if basenames.count(name) > 1 and name not in drop:
+                    indices = [i for i, x in enumerate(basenames) if x == name]
+                    for i in indices:
+                        if links[i]['path'].startswith("files/"):
+                            indices.remove(i)
+                            drop[name] = indices
+                            break
+            queue = sorted([val for sublist in drop.values()
+                            for val in sublist], reverse=True)
+            for i in queue:
+                links.pop(i)
+            for file_link in links:
+                name, path, mime_type = file_link['name'], file_link['path'], file_link['mime_type']
+                basename = os.path.basename(path)
+                dst_folder_new = os.path.join(
+                    self.get_pdf_path(), entry.citation_key)
+                dst_path = os.path.join(dst_folder_new, basename)
+                os.makedirs(dst_folder_new, exist_ok=True)
+                move = False
+                src_path = path
+                if not os.path.isabs(path):
+                    # relative -> copy
+                    src_path = os.path.join(self.folder_path, path)
+                    move = True
 
-            if os.path.exists(dst_path):
-                dst_path = os.path.join(
-                    dst_folder_new, f"{entry.citation_key}_{basename}")
-            if move:
-                try:
-                    shutil.move(src_path, dst_path)
-                except Exception as e:
-                    print(e)
-            else:
-                shutil.copy(src_path, dst_path)
-            file_link['path'] = os.path.relpath(dst_path, root_folder)
+                if not os.path.exists(src_path):
+                    print(
+                        f"Warning: File '{src_path}' not found for entry '{entry.citation_key}'.")
+                    continue
 
-    walk = list(os.walk(os.path.join(root_folder, "files")))
-    for path, _, _ in walk[::-1]:
-        if len(os.listdir(path)) == 0:
-            os.rmdir(path)
+                if os.path.exists(dst_path):
+                    dst_path = os.path.join(
+                        dst_folder_new, f"{entry.citation_key}_{basename}")
+                if move:
+                    try:
+                        shutil.move(src_path, dst_path)
+                    except Exception as e:
+                        print(e)
+                else:
+                    shutil.copy(src_path, dst_path)
+                file_link['path'] = os.path.relpath(dst_path, self.folder_path)
 
-
-# class BibTeXEntry:
-#     def __init__(self, entry_type=None, citation_key=None, fields=None):
-#         self.entry_type = entry_type
-#         self.citation_key = citation_key
-#         self.fields = fields or {}
-
-#     def add_field(self, field_name, field_value):
-#         self.fields[field_name] = field_value
-
-#     def __str__(self):
-#         fields_str = ', '.join(f'{key}={val}' for key, val in self.fields.items())
-#         return f'{self.entry_type}{{{self.citation_key},\n{fields_str}\n}}'
-
-
-def convert_export(path):
-    files_folder_path = None
-    bibtex_path = None
-    PDF_path = os.path.join(path, "00_PDFs")
-    folder_name = os.path.basename(path)
-    for entry in os.listdir(path):
-        if entry == "files" and os.path.isdir(os.path.join(path, entry)):
-            files_folder_path = os.path.join(path, entry)
-        elif entry == folder_name + ".bib" and os.path.isfile(os.path.join(path, entry)):
-            bibtex_path = os.path.join(path, entry)
-    if not bibtex_path or not files_folder_path:
-        print(f"Missing Zotero export at {path}:")
-        if not bibtex_path:
-            print(f"There must be a file called '{folder_name}.bib'")
-        if not bibtex_path:
-            print(f"There must be a folder called 'files'")
-
-    with open(bibtex_path, encoding="utf-8") as bibtex_file:
-        parser = util_bibtex.bibtexparser.bparser.BibTexParser()
-        parser.ignore_nonstandard_types = False
-        parser.homogenize_fields = False
-        parser.common_strings = False
-        bib_database = util_bibtex.bibtexparser.load(bibtex_file, parser)
-
-    entries = [BibTeXEntry(entry) for entry in bib_database.entries]
-    sort_pdf(entries, path, PDF_path)
-    store_bibtex_entries(
-        entries, bibtex_path.replace(".bib", "_processed.bib"))
-
-    bib = util_bibtex.clean(bibtex_path)
-    resources: List[BibTeXEntry] = []
-    for resource in bib:
-        resources.append(BibTeXEntry(fields=resource))
+        walk = list(os.walk(os.path.join(self.folder_path, "files")))
+        for path, _, _ in walk[::-1]:
+            if len(os.listdir(path)) == 0:
+                os.rmdir(path)
 
 
-convert_export("D:\workspace\Zotero\SE2A-B4-2")
+bibs = BibResources(path="D:\workspace\Zotero\SE2A-B4-2")
