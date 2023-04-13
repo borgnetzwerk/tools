@@ -21,6 +21,7 @@ import importlib
 
 from extract.nlp.my_stop_words import MY_STOP_WORDS
 
+
 def get_json_data(path):
     if os.path.exists(path) and os.path.splitext(path)[1] == ".json":
         try:
@@ -168,19 +169,23 @@ class BagOfWords:
         if do_words:
             if len(self.words):
                 # self.words = {k: v for k, v in sorted(self.words.items(),
-                                                    #   key=lambda x: x[1], reverse=True)}
-                self.words = dict(sorted(self.words.items(), key=lambda x: (-x[1], x[0])))
+                #   key=lambda x: x[1], reverse=True)}
+                self.words = dict(
+                    sorted(self.words.items(), key=lambda x: (-x[1], x[0])))
 
             if len(self.stops):
                 # self.stops = {k: v for k, v in sorted(self.stops.items(),
-                                                    #   key=lambda x: x[1], reverse=True)}
-                self.stops = dict(sorted(self.stops.items(), key=lambda x: (-x[1], x[0])))
+                #   key=lambda x: x[1], reverse=True)}
+                self.stops = dict(
+                    sorted(self.stops.items(), key=lambda x: (-x[1], x[0])))
         if do_tf:
             if len(self.tf):
-                self.tf = dict(sorted(self.tf.items(), key=lambda x: (-x[1], x[0])))
+                self.tf = dict(
+                    sorted(self.tf.items(), key=lambda x: (-x[1], x[0])))
         if do_tf_idf:
             if len(self.tf_idf):
-                self.tf_idf = dict(sorted(self.tf_idf.items(), key=lambda x: (-x[1], x[0])))
+                self.tf_idf = dict(
+                    sorted(self.tf_idf.items(), key=lambda x: (-x[1], x[0])))
 
     def get(self):
         return self.words
@@ -342,7 +347,7 @@ class Audio:
     def __init__(self, path=None, metadata=None):
         self.path = path
         self.metadata = metadata or EasyID3(path)
-    
+
     def get(self, arg=None):
         if arg == "path":
             return self.path
@@ -350,9 +355,10 @@ class Audio:
             return self.metadata.get(arg)
         else:
             return self.metadata
-    
+
     def get_dict(self):
         return self.metadata.items()
+
 
 class NLPFeatureAnalysis:
     def __init__(self, path=None, bag_of_words=None, named_entities=None, nlptools: NLPTools = None, transcript: Transcript = None):
@@ -498,9 +504,10 @@ class MediaResource:
         # todo: make this an actual class
         self.image = image_file_path
 
-        self.basename = next((item for item in [audio_file_path, transcript_file_path, image_file_path, nlp_analysis_file_path] if item is not None), None)
+        self.basename = next((item for item in [
+                             audio_file_path, transcript_file_path, image_file_path, nlp_analysis_file_path] if item is not None), None)
         self.original_name = None
-        
+
         self.search_original_name()
 
     def search_original_name(self, force=False):
@@ -508,7 +515,7 @@ class MediaResource:
             return self.original_name
         candidates = self.audio_file.get("title")
         if candidates:
-            self.original_name = candidates[0] 
+            self.original_name = candidates[0]
             return self.original_name
 
     def iscomplete(self):
@@ -617,7 +624,7 @@ class Folder:
     def calc_sim_matrix(self):
         # bag_sim_mat = similarity.compute_similarity_matrix(
         #     [doc.bag_of_words.get() for doc in self.documents], self.bag_of_words.get())
-        
+
         bag_sim_mat = similarity.compute_similarity_matrix(
             [mr.nlp_analysis.bag_of_words.tf_idf for mr in self.media_resources], self.bag_of_words.get())
 
@@ -717,7 +724,7 @@ class Folder:
         self.save(os.path.join(self.path, "00_Folder.json"))
         self.save_summary(os.path.join(
             self.path, "00_Folder_summary.json"))
-        
+
     # Wordcloud
     def wordcloud(self):
         util_wordcloud.generate_wordcloud(
@@ -733,6 +740,7 @@ class Folder:
             self.bag_of_words.get(), mask, os.path.join(self.path, "00_bag_of_words_mask"))
         util_wordcloud.generate_wordcloud_mask(
             self.named_entities.get_frequencies(), mask, os.path.join(self.path, "00_named_entities"))
+
 
 def main(input_path, output_path=None):
     if os.path.isfile(input_path):

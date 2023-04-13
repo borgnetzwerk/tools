@@ -84,9 +84,16 @@ def get_clean_title(title, eID=None, obsidian=False):
     Returns:
     string: cleaned title for use as filename
     """
+    replace_dict = {
+        "–": "-",
+        "’": "´",
+        " ": " ",
+    }
     clean_title = title
     for each in noFileChars:
         clean_title = clean_title.replace(each, '')
+    for key, value in replace_dict.items():
+        clean_title = clean_title.replace(key, value)
     if obsidian:
         clean_title = clean_title.replace("#", '')
     if eID:
