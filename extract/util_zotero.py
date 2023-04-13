@@ -24,21 +24,35 @@ class BibTeXEntry:
         file = self.get("file")
         if not file:
             return None
-        links = []
+        links = {}
         link_pattern = r'(?<!\\);'
-        sub_pattern = r'([^:]+):((?:\\.|[^\\:])*):([^:]+)'
+        sub_pattern = r'([^:]+):((?:\\.|[^\\:^\\])*):([^:]+)'
         for group in re.split(link_pattern, file):
             for link in re.findall(sub_pattern, group):
                 name, path, mime_type = link
                 path = path.replace("\\:\\", ":\\")
                 path = path.replace("\\\\", "\\")
                 path = path.replace("\\;", ";")
-                links.append({
+                links.update({path.strip(): {
                     'name': name.strip(),
-                    'path': path.strip(),
                     'mime_type': mime_type.strip()
+                }
                 })
         return links
+    bib_real = {
+        ""
+    }
+
+    def set_links(self, links: Dict[str, str]):
+        res = []
+        for path, values in links.items():
+            name = values["name"]
+            mime_type = values["mime_type"]
+            path = path.replace(";", "\\;")
+            path = path.replace(":\\", "\\:\\\\")
+            # path = path.replace("\\", "\\\\")
+            res.append(f"{name}:{path}:{mime_type}")
+        self.file = ";".join(res)
 
     def save(self, file_path: str = None, mode: str = 'w') -> str:
         res = "\n"
@@ -59,10 +73,12 @@ class BibTeXEntry:
 class BibResources:
     def __init__(self, path=None, entries: List[BibTeXEntry] = None) -> None:
         self.entries: List[BibTeXEntry] = entries or []
+        self.missing: List[BibTeXEntry] = []
         self.folder_path = path or None
         self.files_folder_path = None
         self.bibtex_path = None
         self.pdf_path = None
+        self.pdfs = []
         if path:
             self.from_path(path)
 
@@ -91,17 +107,17 @@ class BibResources:
         folder_name = os.path.basename(path)
         for entry in os.listdir(path):
             if entry == "files" and os.path.isdir(os.path.join(path, entry)):
-                files_folder_path = os.path.join(path, entry)
+                self.files_folder_path = os.path.join(path, entry)
             elif entry == folder_name + ".bib" and os.path.isfile(os.path.join(path, entry)):
                 self.bibtex_path = os.path.join(path, entry)
 
-        if not self.bibtex_path or not files_folder_path:
-            print(f"Missing Zotero export at {path}:")
+        if not self.bibtex_path or not self.files_folder_path:
+            print(f"Found no new Zotero export at {path}:")
+            if not self.files_folder_path:
+                print(f"There should be a folder called 'files'")
             if not self.bibtex_path:
                 print(f"There must be a file called '{folder_name}.bib'")
-            if not self.bibtex_path:
-                print(f"There must be a folder called 'files'")
-            return None
+                return None
 
         self.add_entries()
         self.sort_pdf()
@@ -117,62 +133,76 @@ class BibResources:
 
     def sort_pdf(self) -> None:
         for entry in self.entries:
-            links = entry.get_links()
-            if links is None:
+            old_links = entry.get_links()
+            if old_links is None:
                 continue
-            # todo: Handle if item exists twice
-            # todo: Handle if item has ;
-            # remove unwanteds
-            basenames = [os.path.basename(file_link['path'])
-                         for file_link in links]
-            drop = {}
-            for name in basenames:
-                if basenames.count(name) > 1 and name not in drop:
-                    indices = [i for i, x in enumerate(basenames) if x == name]
-                    for i in indices:
-                        if links[i]['path'].startswith("files/"):
-                            indices.remove(i)
-                            drop[name] = indices
-                            break
-            queue = sorted([val for sublist in drop.values()
-                            for val in sublist], reverse=True)
-            for i in queue:
-                links.pop(i)
-            for file_link in links:
-                name, path, mime_type = file_link['name'], file_link['path'], file_link['mime_type']
-                basename = os.path.basename(path)
-                dst_folder_new = os.path.join(
-                    self.get_pdf_path(), entry.citation_key)
-                dst_path = os.path.join(dst_folder_new, basename)
-                os.makedirs(dst_folder_new, exist_ok=True)
+            links = {}
+            dst_folder = os.path.join(
+                self.get_pdf_path(), entry.citation_key)
+
+            failures: Dict[str, List] = {}
+            for src_path, values in old_links.items():
+                basename = os.path.basename(src_path)
+                dst_path = os.path.join(dst_folder, basename)
+
                 move = False
-                src_path = path
-                if not os.path.isabs(path):
+                failed = False
+                if not os.path.isabs(src_path) and src_path.startswith("files"):
                     # relative -> copy
-                    src_path = os.path.join(self.folder_path, path)
+                    src_path = os.path.join(self.folder_path, src_path)
                     move = True
 
-                if not os.path.exists(src_path):
-                    print(
-                        f"Warning: File '{src_path}' not found for entry '{entry.citation_key}'.")
+                if os.path.exists(dst_path):
+                    if dst_path not in links:
+                        links[dst_path] = values
+                        if dst_path.endswith(".pdf"):
+                            self.pdfs.append(dst_path)
+                    if move and os.path.exists(src_path):
+                        os.remove(src_path)
                     continue
 
-                if os.path.exists(dst_path):
-                    dst_path = os.path.join(
-                        dst_folder_new, f"{entry.citation_key}_{basename}")
-                if move:
-                    try:
-                        shutil.move(src_path, dst_path)
-                    except Exception as e:
-                        print(e)
-                else:
-                    shutil.copy(src_path, dst_path)
-                file_link['path'] = os.path.relpath(dst_path, self.folder_path)
+                if not os.path.exists(src_path):
+                    failed = True
 
-        walk = list(os.walk(os.path.join(self.folder_path, "files")))
+                if not failed:
+                    os.makedirs(dst_folder, exist_ok=True)
+                    if move:
+                        try:
+                            shutil.move(src_path, dst_path)
+                        except Exception as e:
+                            print(e)
+                            failed = True
+                    else:
+                        try:
+                            shutil.copy(src_path, dst_path)
+                        except Exception as e:
+                            print(e)
+                            failed = True
+                if not failed:
+                    links[dst_path] = values
+                    if basename in failures:
+                        del failures[basename]
+                    if dst_path.endswith(".pdf"):
+                        self.pdfs.append(dst_path)
+                else:
+                    if basename not in failures:
+                        failures[basename] = []
+                    failures[basename].append(src_path)
+
+            entry.set_links(links)
+            for key, values in failures.items():
+                print('Missing: ' + ' ; '.join(values))
+                continue
+        if self.files_folder_path:
+            walk = list(os.walk(self.files_folder_path))
+            for path, _, _ in walk[::-1]:
+                if len(os.listdir(path)) == 0:
+                    os.rmdir(path)
+        walk = list(os.walk(self.get_pdf_path()))
         for path, _, _ in walk[::-1]:
             if len(os.listdir(path)) == 0:
                 os.rmdir(path)
+        print(f"We now have {len(self.pdfs)} PDFs stored at {self.pdf_path}")
 
 
 bibs = BibResources(path="D:\workspace\Zotero\SE2A-B4-2")
