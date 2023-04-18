@@ -15,6 +15,7 @@ import math
 from termcolor import colored
 from publish import util_wordcloud
 from publish.Obsidian import nlped_whispered_folder
+from extract import util_pdf
 
 from mutagen.easyid3 import EasyID3
 import importlib
@@ -501,6 +502,7 @@ class MediaResource:
         self.nlp_analysis = NLPFeatureAnalysis(
             nlp_analysis_file_path, nlptools=nlptools, transcript=self.transcript)
         self.obsidian_note = nlped_whispered_folder.ObsidianNote()
+        self.pdf = util_pdf.PDFDocument()
         # todo: make this an actual class
         self.image = image_file_path
 
@@ -534,12 +536,36 @@ class MediaResource:
 
         self.transcript.complete()
         self.nlp_analysis.complete(nlptools)
-        # todo: complete from here
-        # Check what needs to be done:
 
     def get_dict(self):
-        return dict(self.audio_file.get_dict()) | self.transcript.get_dict() | self.nlp_analysis.get_dict()
-
+        # TODO: check if this throws errors, else revert
+        # return dict(self.audio_file.get_dict()) | self.transcript.get_dict() | self.nlp_analysis.get_dict()
+        result_dict = {}
+        for key in self.__dict__:
+            attr = getattr(self, key)
+            try:
+                if hasattr(attr, 'get_dict'):
+                    result_dict |= attr.get_dict()
+            except:
+                continue
+        return result_dict
+    
+    def get(self, parameter):
+        if parameter == 'text':
+            if self.pdf is not None:
+                return self.pdf.get_text()
+            elif self.transcript is not None:
+                return self.transcript.get_text()
+            else:
+                return None
+        elif parameter == 'url':
+            return self.url
+        elif parameter == 'dict':
+            return self.get_dict()
+        elif parameter == 'type':
+            return self.__class__.__name__
+        else:
+            raise ValueError(f"Invalid parameter '{parameter}'")
 
 class Subfolder:
     folder_formats = {
