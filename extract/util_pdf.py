@@ -1,9 +1,18 @@
-import pdfplumber
-import pdfminer
-import os
+from pdfminer.high_level import extract_text
+from pdfminer.layout import LAParams
+from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
+from pdfminer.pdfpage import PDFPage
+from pdfrw import PdfReader
+from pdfquery import PDFQuery
+from tika import parser
+import PyPDF2
+import fitz
+import io
+# does not (really) work on windows: from polyglot.detect import Detector
+
 
 class PDFDocument:
-    def __init__(self, path=None, text=None, pages=None):
+    def __init__(self, path=None, text=None, pages=None, language=None):
         """
         A class representing a PDF document.
 
@@ -20,8 +29,26 @@ class PDFDocument:
         self.path = path
         self.text = text
         self.pages = pages
+        self.language = language
         if path:
             self.fromfile()
+        self.save()
+
+    def get_dict(self):
+        return {
+            'text': self.text,
+        }
+
+    def get(self, attr: str):
+        if attr == "dict":
+            return self.get_dict()
+        elif hasattr(self, attr):
+            return getattr(self, attr)
+
+    def save(self):
+        if self.text:
+            with open(self.path.replace(".pdf", ".txt"), "w", encoding="utf-8") as f:
+                f.write(self.text)
 
     def fromfile(self, path=None):
         """
@@ -37,27 +64,56 @@ class PDFDocument:
         if not path:
             print("need path to load PDFDocument")
             return None
-        # use a PDF parser to extract the text content of each page
-        with open(path, 'rb') as f:
-            parser = PDFParser(f)
-            doc = PDFDocument(parser)
-            parser.set_document(doc)
-            doc.initialize()
-            # check if the PDF is searchable (i.e. not an image-based PDF)
-            if not doc.is_extractable:
-                print("PDF is not searchable")
-                return None
-            # extract the text content of each page
-            pages = []
-            for page in doc.get_pages():
-                interpreter = PDFPageInterpreter(parser, page)
-                text = ''
-                for obj in interpreter:
-                    if isinstance(obj, LTTextBox):
-                        text += obj.get_text().strip() + '\n'
-                pages.append(text)
-            self.pages = pages
-            self.text = '\n'.join(pages)
+        # Ranking according to minor testing, future improvements welcome!
+        if not self.text:
+            self.text = extract_text_pdfminer(path)
+        if not self.text:
+            self.text = extract_text_pymupdf(path)
+        if not self.text:
+            self.text = extract_text_pypdf2(path)
+        if not self.text:
+            self.text = extract_text_pdfquery(path)
+        # needs Java
+            # self.text_tika = extract_text_tika(path)
+        # looks like this can't do proper text
+            # self.text_pdfrw = extract_text_pdfrw(path)
+        self.clean_text()
+        self.detect_language()
+
+    def detect_language(self):
+        # https://stackoverflow.com/questions/39142778/how-to-determine-the-language-of-a-piece-of-text
+        # TODO: All these seem to involve further libraries like Visual C++ etc., and/or are tricky to run on Windows
+        if not self.language:
+            # todo: implement actual detection once issues are resolved
+            self.language = "en"
+
+    def clean_text(self, level=3):
+        # https://tex.stackexchange.com/questions/33476/why-cant-fi-be-separated-when-being-copied-from-a-compiled-pdf
+        changes = {
+            "lvl1": {
+                "ﬁ": "fi",
+                "ﬀ": "ff",
+                "ﬁ": "fi",
+                "ﬂ": "fl",
+                "ﬃ": "ffi",
+                "ﬄ": "ffl",
+            },
+            "lvl2": {
+                "–": "--",
+                "—": "---"
+            },
+            "lvl3": {
+                "“": "‘‘",
+                "”": "’’",
+                "¡": "!‘",
+                "¿": "?‘",
+            }
+        }
+        if not self.text:
+            return None
+        for swap in list(changes.values())[:level]:
+            for wrong, right in swap.items():
+                self.text = self.text.replace(wrong, right)
 
     def iscomplete(self):
         if self.path and self.text:
@@ -75,21 +131,84 @@ class PDFDocument:
             'pages': self.pages,
         }
 
-# def get(filename, filepath):
-#     if not filename.endswith(".pdf"):
-#         filename += ".pdf"
-#     with pdfplumber.open(os.path.join(filepath, filename)) as pdf:
-#         # first_page = pdf.pages[0]
-#         # print(first_page.chars[0])
-#         text_pages = []
-#         for page_id, page in enumerate(pdf.pages):
-#             if page_id < 3:
-#                 text_pages.append(page.extract_text())
-#             else:
-#                 left = page.crop((0, 0.4 * float(page.height), 0.5 * float(page.width), 0.9 * float(page.height)))
-#                 right = page.crop((0.5 * float(page.width), 0.4 * float(page.height), page.width, 0.9 * float(page.height)))
-#                 text_pages.append(left.extract_text())
 
-#                 Extract text from the right half.
-#                 right.extract_text()
-#     return text_pages
+def extract_text_pypdf2(pdf_path):
+    try:
+        with open(pdf_path, 'rb') as pdf_file:
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            text = ''
+            for page_num in range(len(pdf_reader.pages)):
+                page_obj = pdf_reader.pages[page_num]
+                text += page_obj.extract_text()
+            return text
+    except Exception as e:
+        print(e)
+        return None
+
+
+def extract_text_tika(pdf_path):
+    try:
+        parsed_pdf = parser.from_file(pdf_path)
+        return parsed_pdf['content']
+    except Exception as e:
+        print(e)
+        return None
+
+
+def extract_text_pymupdf(pdf_path):
+    try:
+        text = ''
+        with fitz.open(pdf_path) as pdf:
+            for page in pdf:
+                text += page.get_text()
+        return text
+    except Exception as e:
+        print(e)
+        return None
+
+
+def extract_text_pdfrw(pdf_path):
+    # looks like this can't export proper Text
+    try:
+        pdf = PdfReader(pdf_path)
+        text = ''
+        for page in pdf.pages:
+            text += page.Contents.stream
+        return text
+    except Exception as e:
+        print(e)
+        return None
+
+
+def extract_text_pdfminer(pdf_path):
+    # Rank 1: appears to be the best. Formatting is nice, accuracy works.
+    try:
+        text = extract_text(pdf_path, laparams=LAParams())
+        return text
+    except Exception as e:
+        print(e)
+        return None
+
+
+def extract_text_pdfquery(pdf_path):
+    try:
+        pdf = PDFQuery(pdf_path)
+        pdf.load()
+        text = ''
+        for element in pdf.tree.iter():
+            if element.text:
+                text += element.text
+        return text
+    except Exception as e:
+        print(e)
+        return None
+
+
+paths = [
+    "D:/workspace/Zotero/SE2A-B4-2/00_PDFs/allaire_mathematical_2014/Allaire und Willcox - 2014 - A MATHEMATICAL AND COMPUTATIONAL FRAMEWORK FOR MUL.pdf",
+    "D:/workspace/Zotero/SE2A-B4-2/00_PDFs/ahmed_multifidelity_2020/Ahmed et al. - 2020 - Multifidelity Surrogate Assisted Rapid Design of T.pdf"
+]
+docs = []
+for path in paths:
+    docs.append(PDFDocument(path))
+a = 1

@@ -16,6 +16,7 @@ from termcolor import colored
 from publish import util_wordcloud
 from publish.Obsidian import nlped_whispered_folder
 from extract import util_pdf
+from extract import util_zotero
 
 from mutagen.easyid3 import EasyID3
 import importlib
@@ -343,6 +344,12 @@ class Transcript:
             'language': self.language
         }
 
+    def get(self, attr: str):
+        if attr == "dict":
+            return self.get_dict()
+        elif hasattr(self, attr):
+            return getattr(self, attr)
+
 
 class Audio:
     def __init__(self, path=None, metadata=None):
@@ -495,19 +502,27 @@ class MediaResource:
         nlp_analysis (NLPFeatureAnalysis): An instance of NLPFeatureAnalysis.
     """
 
-    def __init__(self, audio_file_path=None, transcript_file_path=None, image_file_path=None, nlp_analysis_file_path=None, nlptools: NLPTools = None, ):
-        self.audio_file = Audio(audio_file_path)
-        # todo: check if no audiofile
-        self.transcript = Transcript(transcript_file_path)
-        self.nlp_analysis = NLPFeatureAnalysis(
-            nlp_analysis_file_path, nlptools=nlptools, transcript=self.transcript)
-        self.obsidian_note = nlped_whispered_folder.ObsidianNote()
-        self.pdf = util_pdf.PDFDocument()
-        # todo: make this an actual class
-        self.image = image_file_path
+    def __init__(self, paths=None, nlptools: NLPTools = None, ):
 
-        self.basename = next((item for item in [
-                             audio_file_path, transcript_file_path, image_file_path, nlp_analysis_file_path] if item is not None), None)
+        if "audio_file_path" in paths:
+            self.audio_file = Audio(paths["audio_file_path"])
+            self.transcript = Transcript(paths["transcript_file_path"])
+            text_container = self.transcript
+
+        elif "pdf_file_path" in paths:
+            self.pdf = util_pdf.PDFDocument(paths["pdf_file_path"])
+            text_container = self.pdf
+        else:
+            print("Invalid setup for file: " + json.dumps(paths))
+            return None
+
+        self.nlp_analysis = NLPFeatureAnalysis(
+            paths["nlp_analysis_file_path"], nlptools=nlptools, transcript=text_container)
+        self.obsidian_note = nlped_whispered_folder.ObsidianNote()
+        # todo: make this an actual class
+        self.image = paths["image_file_path"]
+
+        self.basename = next((item for item in list(paths.values())), None)
         self.original_name = None
 
         self.search_original_name()
@@ -544,18 +559,21 @@ class MediaResource:
         for key in self.__dict__:
             attr = getattr(self, key)
             try:
+                # todo: remove all get_dicts
                 if hasattr(attr, 'get_dict'):
                     result_dict |= attr.get_dict()
+                elif hasattr(attr, 'get') and callable(attr.get):
+                    result_dict |= attr.get('dict')
             except:
                 continue
         return result_dict
-    
+
     def get(self, parameter):
         if parameter == 'text':
             if self.pdf is not None:
-                return self.pdf.get_text()
+                return self.pdf.get("text")
             elif self.transcript is not None:
-                return self.transcript.get_text()
+                return self.transcript.get("text")
             else:
                 return None
         elif parameter == 'url':
@@ -567,10 +585,12 @@ class MediaResource:
         else:
             raise ValueError(f"Invalid parameter '{parameter}'")
 
+
 class Subfolder:
     folder_formats = {
         "blank": [],
         # 00 Input
+        "00_PDFs": [".pdf"],
         "00_audios": [".mp3", ".mp4"],
         "00_images": [".png", ".jpg", ".jpeg"],
         # 01 Extract
@@ -586,6 +606,8 @@ class Subfolder:
         self.path = os.path.join(folder_path, type)
         self.type = type
         self.endings = self.folder_formats[type]
+        if type == "00_PDFs":
+            self.BibResources = util_zotero.BibResources(folder_path)
         os.makedirs(self.path, exist_ok=True)
 
     def lookfor(self, filename):
@@ -627,7 +649,9 @@ class Folder:
 
     def __init__(self, folder_path, nlptools=None, language=None, media_resources: List[MediaResource] = None):
         self.path = folder_path
+
         self.audio = Subfolder(folder_path, "00_audios")
+        self.pdf = Subfolder(folder_path, "00_PDFs")
         self.image = Subfolder(folder_path, "00_images")
         self.whisper = Subfolder(folder_path, "01_whisper")
         self.analyse = Subfolder(folder_path, "02_nlp")
@@ -732,18 +756,25 @@ class Folder:
         if nlptools is None:
             nlptools = NLPTools()
 
-        for audio_file in os.listdir(self.audio.path):
-            audio_file_path = os.path.join(self.audio.path, audio_file)
-            i_found, i_not = self.image.lookfor(audio_file)
-            w_found, w_not = self.whisper.lookfor(audio_file)
-            a_found, a_not = self.analyse.lookfor(audio_file)
+        queue = os.listdir(self.audio.path) + self.pdf.BibResources.pdfs
+
+        for path in queue:
+            paths = {}
+            if path.endswith(".mp3"):
+                paths["audio_file_path"] = os.path.join(self.audio.path, path)
+            elif path.endswith(".pdf"):
+                paths["pdf_file_path"] = os.path.join(self.audio.path, path)
+            image_path_found, image_path_suggested = self.image.lookfor(path)
+            whisper_path_found, whisper_path_suggested = self.whisper.lookfor(
+                path)
+            analyse_path_found, whisper_path_suggested = self.analyse.lookfor(
+                path)
             # todo: notes
             # todo: make work when multiple are found
-            image = i_found[0] if i_found else i_not[0] if i_not else None
-            whisper = w_found[0] if w_found else w_not[0] if w_not else None
-            analyse = a_found[0] if a_found else a_not[0] if a_not else None
-            mr = MediaResource(audio_file_path=audio_file_path, image_file_path=image, transcript_file_path=whisper,
-                               nlp_analysis_file_path=analyse, nlptools=nlptools)
+            paths["image_file_path"] = image_path_found[0] if image_path_found else image_path_suggested[0] if image_path_suggested else None
+            paths["whisper_file_path"] = whisper_path_found[0] if whisper_path_found else whisper_path_suggested[0] if whisper_path_suggested else None
+            paths["analyse_file_path"] = analyse_path_found[0] if analyse_path_found else whisper_path_suggested[0] if whisper_path_suggested else None
+            mr = MediaResource(paths, nlptools=nlptools)
             self.add_media_resource(mr)
         self.populate()
         self.calc_sim_matrix()
@@ -771,7 +802,7 @@ class Folder:
 def main(input_path, output_path=None):
     if os.path.isfile(input_path):
         # process single file
-        return MediaResource(transcript_file_path=input_path)
+        return MediaResource(paths={"transcript_file_path": input_path})
     elif os.path.isdir(input_path):
         # process all files in directory
         return Folder(input_path)
