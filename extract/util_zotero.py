@@ -203,6 +203,3 @@ class BibResources:
             if len(os.listdir(path)) == 0:
                 os.rmdir(path)
         print(f"We now have {len(self.pdfs)} PDFs stored at {self.pdf_path}")
-
-
-bibs = BibResources(path="D:\workspace\Zotero\SE2A-B4-2")

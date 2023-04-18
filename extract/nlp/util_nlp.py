@@ -468,6 +468,7 @@ class NLPFeatureAnalysis:
             return False
 
     def get_dict(self):
+        # Todo: consider writing 'tf' to file as well.
         return {
             'bag_of_words': self.bag_of_words.words,
             'tf_idf': self.bag_of_words.get_tf_idf(),
@@ -503,7 +504,9 @@ class MediaResource:
     """
 
     def __init__(self, paths=None, nlptools: NLPTools = None, ):
-
+        self.audio_file = None
+        self.transcript = None
+        self.pdf = None
         if "audio_file_path" in paths:
             self.audio_file = Audio(paths["audio_file_path"])
             self.transcript = Transcript(paths["transcript_file_path"])
@@ -530,7 +533,9 @@ class MediaResource:
     def search_original_name(self, force=False):
         if self.original_name and not force:
             return self.original_name
-        candidates = self.audio_file.get("title")
+        candidates = None
+        if self.audio_file:
+            candidates = self.audio_file.get("title")
         if candidates:
             self.original_name = candidates[0]
             return self.original_name
@@ -773,7 +778,7 @@ class Folder:
             # todo: make work when multiple are found
             paths["image_file_path"] = image_path_found[0] if image_path_found else image_path_suggested[0] if image_path_suggested else None
             paths["whisper_file_path"] = whisper_path_found[0] if whisper_path_found else whisper_path_suggested[0] if whisper_path_suggested else None
-            paths["analyse_file_path"] = analyse_path_found[0] if analyse_path_found else whisper_path_suggested[0] if whisper_path_suggested else None
+            paths["nlp_analysis_file_path"] = analyse_path_found[0] if analyse_path_found else whisper_path_suggested[0] if whisper_path_suggested else None
             mr = MediaResource(paths, nlptools=nlptools)
             self.add_media_resource(mr)
         self.populate()

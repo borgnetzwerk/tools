@@ -8,11 +8,12 @@ from tika import parser
 import PyPDF2
 import fitz
 import io
+import os
 # does not (really) work on windows: from polyglot.detect import Detector
 
 
 class PDFDocument:
-    def __init__(self, path=None, text=None, pages=None, language=None):
+    def __init__(self, path=None, text=None, pages=None, language=None, force=False):
         """
         A class representing a PDF document.
 
@@ -28,11 +29,21 @@ class PDFDocument:
         """
         self.path = path
         self.text = text
+        self.text_path = None
         self.pages = pages
         self.language = language
         if path:
             self.fromfile()
-        self.save()
+            self.save()
+
+    def get_text_path(self):
+        if self.text_path:
+            return self.text_path
+        if self.path:
+            self.text_path = self.path.replace(".pdf", ".txt")
+            return self.text_path
+        else:
+            return None
 
     def get_dict(self):
         return {
@@ -45,18 +56,27 @@ class PDFDocument:
         elif hasattr(self, attr):
             return getattr(self, attr)
 
-    def save(self):
+    def save(self, force=False):
         if self.text:
-            with open(self.path.replace(".pdf", ".txt"), "w", encoding="utf-8") as f:
-                f.write(self.text)
+            if force or not os.path.exists(self.text_path):
+                with open(self.text_path, "w", encoding="utf-8") as f:
+                    f.write(self.text)
 
-    def fromfile(self, path=None):
+    def from_text_file(self):
+        with open(self.text_path, "r", encoding="utf-8") as f:
+            self.text = f.read()
+
+    def fromfile(self, path=None, force=False):
         """
         Load PDF document from the given path.
 
         Args:
             path (str): Path to the PDF document.
         """
+        if os.path.exists(self.get_text_path()):
+            self.from_text_file()
+            self.detect_language()
+            return
         if path is None:
             path = self.path
         else:
@@ -202,13 +222,3 @@ def extract_text_pdfquery(pdf_path):
     except Exception as e:
         print(e)
         return None
-
-
-paths = [
-    "D:/workspace/Zotero/SE2A-B4-2/00_PDFs/allaire_mathematical_2014/Allaire und Willcox - 2014 - A MATHEMATICAL AND COMPUTATIONAL FRAMEWORK FOR MUL.pdf",
-    "D:/workspace/Zotero/SE2A-B4-2/00_PDFs/ahmed_multifidelity_2020/Ahmed et al. - 2020 - Multifidelity Surrogate Assisted Rapid Design of T.pdf"
-]
-docs = []
-for path in paths:
-    docs.append(PDFDocument(path))
-a = 1
