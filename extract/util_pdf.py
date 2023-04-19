@@ -66,7 +66,7 @@ class PDFDocument:
     def save(self, force=False):
         if self.text:
             if force or not os.path.exists(self.text_path):
-                with open(self.text_path, "w", encoding="utf-8") as f:
+                with open(self.get_text_path(), "w", encoding="utf-8") as f:
                     f.write(self.text)
 
     def from_text_file(self):
@@ -209,7 +209,7 @@ def extract_text_pdfrw(pdf_path):
         return None
 
 
-MIN_SUFFIX_LENGTH = 5
+MIN_SUFFIX_LENGTH = 3
 MAX_SUFFIX_LENGTH = 500
 HISTORY_LENGTH = 5
 
@@ -234,6 +234,10 @@ def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history
             if clean_candidate:
                 possible_endings[clean_candidate].append(idx)
         for ending, users in possible_endings.items():
+            # FIXME: current iteration struggles to handle:
+                # "beginnings", starting 
+                # "endings", ending 
+            # with different amounts of digits
             if len(users) < true_shared_threshold:
                 for user in users:
                     if user in endings and endings[user] == ending:
@@ -249,12 +253,12 @@ def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history
             return endings
 
 
-def remove_repetition(string_list: List[str], footer: bool = True, header: bool = True, merge: bool = True) -> List[str]:
+def remove_repetition(string_list: List[str], footer: bool = True, header: bool = True, merge: bool = True) -> str:
     result = ""
     endings = find_similar_ending(string_list, MIN_SUFFIX_LENGTH)
     openings = find_similar_ending(string_list, MIN_SUFFIX_LENGTH, do_endings=False)
     for i in range(len(string_list)):
-        end_limit = endings[i] if i in endings else None
+        end_limit = -endings[i] if (i in endings and endings[i]) else None
         start_limit = openings[i] if i in openings else None
         result += string_list[i][start_limit:end_limit]
     return result
@@ -263,13 +267,14 @@ def remove_repetition(string_list: List[str], footer: bool = True, header: bool 
     #     return
 
 
-def extract_text_pdfminer(pdf_path, clean=True):
+def extract_text_pdfminer(pdf_path, clean=False):
     # Rank 1: appears to be the best. Formatting is nice, accuracy works.
     # Tested: Can read multiple Columns correctly
     # Test pending: Scans
     if not clean:
         text = extract_text(pdf_path, laparams=LAParams())
         return text
+    # todo: cleaning is messy right now.
     with open(pdf_path, 'rb') as fp:
         rsrcmgr = PDFResourceManager()
         retstr = io.StringIO()
@@ -285,7 +290,7 @@ def extract_text_pdfminer(pdf_path, clean=True):
             pages.append(retstr.getvalue())
             retstr.truncate(0)
             retstr.seek(0)
-        remove_repetition(pages)
+        return remove_repetition(pages)
 
 
 
