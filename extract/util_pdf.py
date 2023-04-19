@@ -15,6 +15,7 @@ import re
 import Levenshtein
 from typing import List
 import statistics
+from collections import defaultdict
 # does not (really) work on windows: from polyglot.detect import Detector
 
 
@@ -213,69 +214,50 @@ MAX_SUFFIX_LENGTH = 500
 HISTORY_LENGTH = 5
 
 
-def keeps_getting_worse(l):
-    for el in l[1:]:
-        if el >= l[0]:
-            return False
-    return True
-
-
-def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history=HISTORY_LENGTH):
+def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history=HISTORY_LENGTH, do_endings=True):
     numbers_regex = r"\d+"
-    recent_sims = [0] * history
     x = begin
-    matched_pattern = ""
+
+    true_shared_threshold = len(string_list)/3
+    endings = defaultdict(None)
+    banished = []
     while x < MAX_SUFFIX_LENGTH:
-        dst = 1
-        candidates = [piece[-x:] for piece in string_list]
+        possible_endings = defaultdict(list)
+        if do_endings:
+            candidates = [piece[-x:] for piece in string_list]
+        else:
+            candidates = [piece[:x] for piece in string_list]
         for idx, candidate in enumerate(candidates):
-            candidates[idx] = re.sub(numbers_regex, "0", candidate)
-        similar_to = []
-        for idc, candidate in enumerate(candidates[:-dst]):
-            if candidate:
-                similar_to.append(1 - (Levenshtein.distance(
-                    candidate, candidates[idc+dst]) / x))
-        min_sim = min(similar_to)
-        max_sim = max(similar_to)
-        median_sim = statistics.median(similar_to)
-        recent_sims.pop(0)
-        recent_sims.append(median_sim)
+            if idx in banished:
+                continue
+            clean_candidate = re.sub(numbers_regex, "0", candidate)
+            if clean_candidate:
+                possible_endings[clean_candidate].append(idx)
+        for ending, users in possible_endings.items():
+            if len(users) < true_shared_threshold:
+                for user in users:
+                    if user in endings and endings[user] == ending:
+                        pass
+                    else:
+                        endings[user] = x-1 if x > begin else None
+                        banished.append(user)
+            else:
+                for user in users:
+                    endings[user] = ending
         x += 1
-        if keeps_getting_worse(recent_sims):
-            return x-history
-            # valid run
+        if len(banished) == len(string_list):
+            return endings
 
 
 def remove_repetition(string_list: List[str], footer: bool = True, header: bool = True, merge: bool = True) -> List[str]:
-    if footer:
-        even_odd_equal = False
-        len_s = find_similar_ending(string_list, MIN_SUFFIX_LENGTH)
-        if len_s == MIN_SUFFIX_LENGTH:
-            even = []
-            odd = []
-            for idx, string in enumerate(string_list):
-                if idx % 2 == 0:
-                    even.append(string)
-                else:
-                    odd.append(string)
-
-            len_s_even = find_similar_ending(even, MIN_SUFFIX_LENGTH)
-            if len_s_even == MIN_SUFFIX_LENGTH:
-                cry = True
-                # todo
-            len_s_odd = find_similar_ending(odd, MIN_SUFFIX_LENGTH)
-            if len_s_odd == MIN_SUFFIX_LENGTH:
-                cry = True
-                # todo
-            result = 0
-            for idx in range(len(string_list)):
-                if idx % 2 == 0:
-                    result += even.pop(0)[:-len_s_even]
-                else:
-                    result += odd.pop(0)[:-len_s_odd]
-
-        return result
-    return None
+    result = ""
+    endings = find_similar_ending(string_list, MIN_SUFFIX_LENGTH)
+    openings = find_similar_ending(string_list, MIN_SUFFIX_LENGTH, do_endings=False)
+    for i in range(len(string_list)):
+        end_limit = endings[i] if i in endings else None
+        start_limit = openings[i] if i in openings else None
+        result += string_list[i][start_limit:end_limit]
+    return result
     # if header:
     # if merge:
     #     return
@@ -285,33 +267,26 @@ def extract_text_pdfminer(pdf_path, clean=True):
     # Rank 1: appears to be the best. Formatting is nice, accuracy works.
     # Tested: Can read multiple Columns correctly
     # Test pending: Scans
-    try:
-        if not clean:
-            text = extract_text(pdf_path, laparams=LAParams())
-            return text
-        with open(pdf_path, 'rb') as fp:
-            rsrcmgr = PDFResourceManager()
-            retstr = io.StringIO()
-            codec = 'utf-8'
-            laparams = LAParams()
-            device = TextConverter(
-                rsrcmgr, retstr, codec=codec, laparams=laparams)
-            interpreter = PDFPageInterpreter(rsrcmgr, device)
+    if not clean:
+        text = extract_text(pdf_path, laparams=LAParams())
+        return text
+    with open(pdf_path, 'rb') as fp:
+        rsrcmgr = PDFResourceManager()
+        retstr = io.StringIO()
+        codec = 'utf-8'
+        laparams = LAParams()
+        device = TextConverter(
+            rsrcmgr, retstr, codec=codec, laparams=laparams)
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
 
-            pages = []
-            for page in PDFPage.get_pages(fp):
-                interpreter.process_page(page)
-                pages.append(retstr.getvalue())
-                retstr.truncate(0)
-                retstr.seek(0)
-        try:
-            remove_repetition(pages)
-        except Exception as e:
-            print(e)
-            return "".join(pages)
-    except Exception as e:
-        print(e)
-        return None
+        pages = []
+        for page in PDFPage.get_pages(fp):
+            interpreter.process_page(page)
+            pages.append(retstr.getvalue())
+            retstr.truncate(0)
+            retstr.seek(0)
+        remove_repetition(pages)
+
 
 
 def extract_text_pdfquery(pdf_path):
