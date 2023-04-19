@@ -105,7 +105,7 @@ class ObsidianNote:
 """
 
 
-def folder(folder: util_nlp.Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
+def folder(folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
     # loop over each file in the directory
     # build Entry Node
     # Sort all files into subfolders

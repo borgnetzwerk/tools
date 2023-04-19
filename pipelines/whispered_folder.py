@@ -5,9 +5,9 @@ import sys
 # todo: make this import cleaner
 sys.path.append(os.getcwd())
 
-from publish.Obsidian import nlped_whispered_folder
-from extract.nlp import util_nlp
 from extract import util_whisper
+from extract.nlp import util_nlp
+from publish.Obsidian import nlped_whispered_folder
 
 # test = "C:/Users/TimWittenborg/workspace/test/whispered"
 # test = "C:/Users/TimWittenborg/workspace/data"
@@ -29,21 +29,20 @@ query = [
 nlptools = util_nlp.NLPTools()
 for do in query:
     old_stdout = sys.stdout
-    #todo: make this clearer
+    # todo: make this clearer
     if "mp3" in do["folder"].lower():
         util_whisper.extract_info(do["folder"])
     if "zotero" in do["folder"].lower():
         pass
-        #todo: make this productive
+        # todo: make this productive
 
     sys.stdout = old_stdout
     ## NLP (Flair and SpaCy)
-    folder = util_nlp.Folder(do["folder"], nlptools=nlptools, language=do["language"])
+    folder = util_nlp.Folder(
+        do["folder"], nlptools=nlptools, language=do["language"])
 
     # Obsidian
     nlped_whispered_folder.folder(folder, force=True)
-
-
 
 
 # paths = [

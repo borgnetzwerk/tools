@@ -17,6 +17,7 @@ from publish import util_wordcloud
 from publish.Obsidian import nlped_whispered_folder
 from extract import util_pdf
 from extract import util_zotero
+import re
 
 from mutagen.easyid3 import EasyID3
 import importlib
@@ -71,6 +72,7 @@ class NLPTools:
         self.STOP_WORDS = {}
         self.spacy = {}
         self.WordEmbeddings = {}
+        self.DocumentPoolEmbeddings = {}
         self.SequenceTagger = {}
 
     def get_STOP_WORDS(self, language):
@@ -118,6 +120,17 @@ class NLPTools:
             print(f"Error loading WordEmbeddings for {language}: {str(e)}")
             return None
 
+    def get_DocumentPoolEmbeddings(self, language):
+        if language in self.DocumentPoolEmbeddings:
+            return self.DocumentPoolEmbeddings[language]
+        try:
+            self.DocumentPoolEmbeddings[language] = DocumentPoolEmbeddings(
+                [self.get_WordEmbeddings(language)])
+            return self.DocumentPoolEmbeddings[language]
+        except Exception as e:
+            print(f"Error loading DocumentPoolEmbeddings for {language}: {str(e)}")
+            return None
+        
     def get_SequenceTagger(self, language):
         if language in self.SequenceTagger:
             return self.SequenceTagger[language]
@@ -453,16 +466,34 @@ class NLPFeatureAnalysis:
             if not transcript.iscomplete():
                 print("You need a text in a known language to complete " + self.path)
                 return False
-            sentence = Sentence(transcript.text)
+            text = transcript.text
+            pieces = []
+            if len(text) < 50000:
+                pieces = [text]
+            else:
+                # Break text into smaller chunks so we have enough memory to solve it
+                jump = 50000
+                begin = 0
+                end = jump
+                while end != -1:
+                    end = begin + jump + text[jump:].find("\n\n")
+                    pieces.append(text[begin:end])
+                    if end != -1:
+                        begin = 0
+                        text = text[end+1:]
+            nen = NamedEntities()
 
-            # embed the sentence using the WordEmbeddings
-            document_embeddings = DocumentPoolEmbeddings(
-                [nlptools.get_WordEmbeddings(transcript.language)])
-            document_embeddings.embed(sentence)
+            for text in pieces:
+                sentence = Sentence(text)
 
-            # get the named entities
-            nlptools.get_SequenceTagger(transcript.language).predict(sentence)
-            self.named_entities = NamedEntities(text=sentence)
+                nlptools.get_DocumentPoolEmbeddings(transcript.language).embed(sentence)
+
+                # get the named entities
+                # todo: Worked
+                nlptools.get_SequenceTagger(
+                    transcript.language).predict(sentence)
+                nen.add(NamedEntities(text=sentence))
+            self.named_entities == nen
             return self.named_entities
         else:
             return False
