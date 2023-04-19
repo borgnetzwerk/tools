@@ -1,7 +1,9 @@
-from pdfminer.high_level import extract_text
+import pdfminer
+from pdfminer.high_level import extract_text, extract_pages
 from pdfminer.layout import LAParams
 from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
+from pdfminer.converter import TextConverter
 from pdfrw import PdfReader
 from pdfquery import PDFQuery
 from tika import parser
@@ -9,6 +11,10 @@ import PyPDF2
 import fitz
 import io
 import os
+import re
+import Levenshtein
+from typing import List
+import statistics
 # does not (really) work on windows: from polyglot.detect import Detector
 
 
@@ -33,8 +39,8 @@ class PDFDocument:
         self.pages = pages
         self.language = language
         if path:
-            self.fromfile()
-            self.save()
+            self.fromfile(force=force)
+            self.save(force=force)
 
     def get_text_path(self):
         if self.text_path:
@@ -73,7 +79,7 @@ class PDFDocument:
         Args:
             path (str): Path to the PDF document.
         """
-        if os.path.exists(self.get_text_path()):
+        if not force and os.path.exists(self.get_text_path()):
             self.from_text_file()
             self.detect_language()
             return
@@ -134,6 +140,8 @@ class PDFDocument:
         for swap in list(changes.values())[:level]:
             for wrong, right in swap.items():
                 self.text = self.text.replace(wrong, right)
+        # TODO: Remove lines that are not text, i.e. page numbers, Header, Footer, etc.
+        # Optional: Remove Footnotes etc., though these may provide value
 
     def iscomplete(self):
         if self.path and self.text:
@@ -200,11 +208,107 @@ def extract_text_pdfrw(pdf_path):
         return None
 
 
-def extract_text_pdfminer(pdf_path):
+MIN_SUFFIX_LENGTH = 5
+MAX_SUFFIX_LENGTH = 500
+HISTORY_LENGTH = 5
+
+
+def keeps_getting_worse(l):
+    for el in l[1:]:
+        if el >= l[0]:
+            return False
+    return True
+
+
+def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history=HISTORY_LENGTH):
+    numbers_regex = r"\d+"
+    recent_sims = [0] * history
+    x = begin
+    matched_pattern = ""
+    while x < MAX_SUFFIX_LENGTH:
+        dst = 1
+        candidates = [piece[-x:] for piece in string_list]
+        for idx, candidate in enumerate(candidates):
+            candidates[idx] = re.sub(numbers_regex, "0", candidate)
+        similar_to = []
+        for idc, candidate in enumerate(candidates[:-dst]):
+            if candidate:
+                similar_to.append(1 - (Levenshtein.distance(
+                    candidate, candidates[idc+dst]) / x))
+        min_sim = min(similar_to)
+        max_sim = max(similar_to)
+        median_sim = statistics.median(similar_to)
+        recent_sims.pop(0)
+        recent_sims.append(median_sim)
+        x += 1
+        if keeps_getting_worse(recent_sims):
+            return x-history
+            # valid run
+
+
+def remove_repetition(string_list: List[str], footer: bool = True, header: bool = True, merge: bool = True) -> List[str]:
+    if footer:
+        even_odd_equal = False
+        len_s = find_similar_ending(string_list, MIN_SUFFIX_LENGTH)
+        if len_s == MIN_SUFFIX_LENGTH:
+            even = []
+            odd = []
+            for idx, string in enumerate(string_list):
+                if idx % 2 == 0:
+                    even.append(string)
+                else:
+                    odd.append(string)
+
+            len_s_even = find_similar_ending(even, MIN_SUFFIX_LENGTH)
+            if len_s_even == MIN_SUFFIX_LENGTH:
+                cry = True
+                # todo
+            len_s_odd = find_similar_ending(odd, MIN_SUFFIX_LENGTH)
+            if len_s_odd == MIN_SUFFIX_LENGTH:
+                cry = True
+                # todo
+            result = 0
+            for idx in range(len(string_list)):
+                if idx % 2 == 0:
+                    result += even.pop(0)[:-len_s_even]
+                else:
+                    result += odd.pop(0)[:-len_s_odd]
+
+        return result
+    return None
+    # if header:
+    # if merge:
+    #     return
+
+
+def extract_text_pdfminer(pdf_path, clean=True):
     # Rank 1: appears to be the best. Formatting is nice, accuracy works.
+    # Tested: Can read multiple Columns correctly
+    # Test pending: Scans
     try:
-        text = extract_text(pdf_path, laparams=LAParams())
-        return text
+        if not clean:
+            text = extract_text(pdf_path, laparams=LAParams())
+            return text
+        with open(pdf_path, 'rb') as fp:
+            rsrcmgr = PDFResourceManager()
+            retstr = io.StringIO()
+            codec = 'utf-8'
+            laparams = LAParams()
+            device = TextConverter(
+                rsrcmgr, retstr, codec=codec, laparams=laparams)
+            interpreter = PDFPageInterpreter(rsrcmgr, device)
+
+            pages = []
+            for page in PDFPage.get_pages(fp):
+                interpreter.process_page(page)
+                pages.append(retstr.getvalue())
+                retstr.truncate(0)
+                retstr.seek(0)
+        try:
+            remove_repetition(pages)
+        except Exception as e:
+            print(e)
+            return "".join(pages)
     except Exception as e:
         print(e)
         return None
@@ -222,3 +326,8 @@ def extract_text_pdfquery(pdf_path):
     except Exception as e:
         print(e)
         return None
+
+
+filename = "D:/workspace/Zotero/SE2A-B4-2/00_PDFs/allaire_mathematical_2014/Allaire und Willcox - 2014 - A MATHEMATICAL AND COMPUTATIONAL FRAMEWORK FOR MUL.pdf"
+
+PDFDocument(filename, force=True)
