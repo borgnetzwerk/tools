@@ -895,6 +895,7 @@ class Folder:
             for path in pdfs:
                 mr = MediaResource()
                 mr.add_pdf(path=path)
+                mr.pdf.add_metadata(self.pdf.BibResources.get_metadata(path))
                 mr.add_NLPFeatureAnalysis(path=self.analyse.lookfor(
                     path), nlptools=nlptools, do_named_entities=False)
                 mr.add_obsidian_note(path=self.notes.lookfor(path))

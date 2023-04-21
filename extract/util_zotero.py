@@ -14,8 +14,16 @@ class BibTeXEntry:
                 continue
             setattr(self, key, value)
 
+    def get_dict(self):
+        res_dict = vars(self)
+        res_dict["ENTRYTYPE"] = res_dict.pop("entry_type")
+        res_dict["ID"] = res_dict.pop("citation_key")
+        return res_dict
+
     def get(self, attr: str):
         try:
+            if attr == "dict":
+                return self.get_dict()
             return getattr(self, attr)
         except:
             return None
@@ -72,8 +80,8 @@ class BibTeXEntry:
 
 class BibResources:
     def __init__(self, path=None, entries: List[BibTeXEntry] = None) -> None:
-        self.entries: List[BibTeXEntry] = entries or []
-        self.missing: List[BibTeXEntry] = []
+        self.entries: Dict[str, BibTeXEntry] = entries or {}
+        self.missing: Dict[str, BibTeXEntry] = {}
         self.folder_path = path or None
         self.files_folder_path = None
         self.bibtex_path = None
@@ -81,6 +89,12 @@ class BibResources:
         self.pdfs = []
         if path:
             self.from_path(path)
+
+    def get_metadata(self, attr: str):
+        if attr in self.pdfs:
+            i = self.pdfs.index(attr)
+            return list(self.entries.values())[i].get_dict()
+        return None
 
     def get_pdf_path(self, path=None):
         if self.pdf_path and not path:
@@ -99,8 +113,10 @@ class BibResources:
             parser.homogenize_fields = False
             parser.common_strings = False
             bib_database = bibtexparser.load(bibtex_file, parser)
-            self.entries.extend(BibTeXEntry(entry)
-                                for entry in bib_database.entries)
+            for entry in bib_database.entries:
+                value = BibTeXEntry(entry)
+                key = value.citation_key
+                self.entries[key] = value
 
     def from_path(self, path):
         self.get_pdf_path(path)
@@ -128,11 +144,11 @@ class BibResources:
         if new_file_name is None:
             new_file_name = self.bibtex_path
         with open(new_file_name, "w", encoding="utf-8") as file:
-            for entry in self.entries:
+            for entry in self.entries.values():
                 file.write(entry.save())
 
     def sort_pdf(self) -> None:
-        for entry in self.entries:
+        for entry in self.entries.values():
             old_links = entry.get_links()
             if old_links is None:
                 continue

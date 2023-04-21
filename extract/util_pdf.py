@@ -39,9 +39,17 @@ class PDFDocument:
         self.text_path = None
         self.pages = pages
         self.language = language
+        self.metadata: dict = None
         if path:
             self.fromfile(force=force)
             self.save(force=force)
+
+    def add_metadata(self, data):
+        if not self.metadata:
+            self.metadata = data
+        else:
+            self.metadata.update(data)
+        self.detect_language()
 
     def get_text_path(self):
         if self.text_path:
@@ -100,7 +108,7 @@ class PDFDocument:
             print("need path to load PDFDocument")
             return None
         # Ranking according to minor testing, future improvements welcome!
-        
+
         if not self.has_text():
             self.text = extract_text_pdfminer(path)
         if not self.has_text():
@@ -119,11 +127,31 @@ class PDFDocument:
         self.detect_language()
 
     def detect_language(self):
+        proper = {
+            "english": "en",
+            "german": "de",
+            "deutsch": "de",
+        }
         # https://stackoverflow.com/questions/39142778/how-to-determine-the-language-of-a-piece-of-text
         # TODO: All these seem to involve further libraries like Visual C++ etc., and/or are tricky to run on Windows
         if not self.language:
+            if self.metadata:
+                keywords = ["langid", "language", "lid", "languageid"]
+                for key in keywords:
+                    if key in self.metadata:
+                        value = self.metadata[key].lower()
+                        if value in proper.values():
+                            self.language = value
+                            return
+                        elif value in proper:
+                            self.language = proper[value]
+                            return
+                        else:
+                            print(f"{value} missing in language map")
+
             # todo: implement actual detection once issues are resolved
-            self.language = "en"
+            else:
+                self.language = "en"
 
     def clean_text(self, level=3):
         # https://tex.stackexchange.com/questions/33476/why-cant-fi-be-separated-when-being-copied-from-a-compiled-pdf
@@ -175,6 +203,7 @@ class PDFDocument:
         if "\n" in self.text:
             self.text = self.text.replace("-\n", "")
             self.text = self.text.replace("\n", " ")
+
 
 def extract_text_pypdf2(pdf_path):
     try:
@@ -250,8 +279,8 @@ def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history
                 possible_endings[clean_candidate].append(idx)
         for ending, users in possible_endings.items():
             # FIXME: current iteration struggles to handle:
-                # "beginnings", starting 
-                # "endings", ending 
+            # "beginnings", starting
+            # "endings", ending
             # with different amounts of digits
             if len(users) < true_shared_threshold:
                 for user in users:
@@ -271,7 +300,8 @@ def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history
 def remove_repetition(string_list: List[str], footer: bool = True, header: bool = True, merge: bool = True) -> str:
     result = ""
     endings = find_similar_ending(string_list, MIN_SUFFIX_LENGTH)
-    openings = find_similar_ending(string_list, MIN_SUFFIX_LENGTH, do_endings=False)
+    openings = find_similar_ending(
+        string_list, MIN_SUFFIX_LENGTH, do_endings=False)
     for i in range(len(string_list)):
         end_limit = -endings[i] if (i in endings and endings[i]) else None
         start_limit = openings[i] if i in openings else None
@@ -306,7 +336,6 @@ def extract_text_pdfminer(pdf_path, clean=False):
             retstr.truncate(0)
             retstr.seek(0)
         return remove_repetition(pages)
-
 
 
 def extract_text_pdfquery(pdf_path):

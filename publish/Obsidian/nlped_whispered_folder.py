@@ -76,7 +76,7 @@ class ObsidianNote:
             self.path = os.path.join(parent_path, self.get_name())
         return self.path
 
-    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, audio=None, pdf_path=None):
+    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None):
         title = name or self.get_name()
         metadata = ""
         if links:
@@ -89,13 +89,14 @@ class ObsidianNote:
         if related_notes:
             metadata += f"Related Notes:: {', '.join('[[{}]]'.format(n) for n in related_notes)}\n"
 
+        # todo: append more info here
+        # if additional_meta:
+            # metadata += f""
+
         corpus = ""
-        if audio:
-            corpus += f"## Audio\n![[{audio}]]\n\n"
-        if pdf_path:
-            # pdf_path_obs = pdf_path.replace(" ", "%20")
-            pdf_path_obs = pdf_path.replace("\\", "/")
-            corpus += f"## PDF\n![[{pdf_path_obs}]]\n\n"
+        for type, path in files.items():
+            path = path.replace("\\", "/")
+            corpus += f"## {type}\n![[{path}]]\n\n"
 
         # Replace first occurrence of each word in text with a link if it's in links or highlights
         if text:
@@ -106,13 +107,21 @@ class ObsidianNote:
                     text = text.replace(word, f"**{word}**", 1)
             corpus += f"## Transcript\n{text}\n\n"
 
+        fin_meta = ""
+        if additional_meta_data:
+            fin_meta += f"%%\n"
+            for key, value in additional_meta_data.items():
+                value = value.replace("\\", "/")
+                fin_meta += f"{key}:: {value}\n"
+            fin_meta += f"%%\n"
+
         self.text = f"""%%
 {metadata}
 %%
 
 # {title}
 
-{corpus}
+{corpus}{fin_meta}
 """
 
 
@@ -129,32 +138,32 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
 
         # Create the Obsidian directory if it does not exist,
 
-        bow = list(mr.nlp_analysis.bag_of_words.tf_idf.keys())[
+        bag_of_words = list(mr.nlp_analysis.bag_of_words.tf_idf.keys())[
             :LIMIT_BAG_OF_WORDS+LIMIT_NAMED_ENTITIES]
-        nen = list(mr.nlp_analysis.named_entities.get().keys())[
+        named_entities = list(mr.nlp_analysis.named_entities.get().keys())[
             :LIMIT_NAMED_ENTITIES]
 
-        for name in nen:
+        for name in named_entities:
             lookfor = set([name.lower()]).union(name.lower().split())
             for word in lookfor:
-                if word in bow:
-                    bow.remove(word)
-        bow = bow[:LIMIT_BAG_OF_WORDS]
+                if word in bag_of_words:
+                    bag_of_words.remove(word)
+        bag_of_words = bag_of_words[:LIMIT_BAG_OF_WORDS]
 
-        links = {
-            "named_entities":  nen
-        }
+        links = {}
+        highlights = {}
 
-        highlights = {
-            "bag_of_words":  bow
-        }
+        if named_entities:
+            links["named_entities"] = named_entities
 
-        audio_name = None
+        if bag_of_words:
+            highlights["bag_of_words"] = bag_of_words
+
+        files = {}
         if mr.audio_file:
-            audio_name = os.path.basename(mr.audio_file.path)
-        pdf_path = None
+            files["Audio"] = os.path.basename(mr.audio_file.path)
         if mr.pdf:
-            pdf_path = os.path.relpath(mr.pdf.path, folder.path)
+            files["PDF"] = os.path.relpath(mr.pdf.path, folder.path)
 
         simVec = folder.sim_matrix[idr]
         top_indices = simVec.argsort()[-6:-1]
@@ -168,8 +177,13 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
         text = None
         if mr.transcript:
             text = mr.transcript.text
+
+        meta = {}
+        if mr.pdf and mr.pdf.metadata:
+            meta.update(mr.pdf.metadata)
+
         mr.obsidian_note.build_note(
-            text, links=links, highlights=highlights, name=mr.original_name, related_notes=related_notes, audio=audio_name, pdf_path=pdf_path)
+            text, links=links, highlights=highlights, name=mr.original_name, related_notes=related_notes, files=files, additional_meta_data=meta)
 
         # create the markdown file
         mr.obsidian_note.save()
