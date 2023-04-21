@@ -40,7 +40,7 @@ def dump_json(path, output_dict):
         json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
 
 
-def data_to_attributes(instance, data):
+def data_to_attributes(instance, data, do_named_entities=True):
     if not isinstance(data, dict):
         return None
     words = None
@@ -54,7 +54,10 @@ def data_to_attributes(instance, data):
             continue
         if hasattr(instance, key):
             if key == "named_entities":
-                setattr(instance, key, NamedEntities(value))
+                if do_named_entities:
+                    setattr(instance, key, NamedEntities(value))
+                else:
+                    setattr(instance, key, NamedEntities())
             else:
                 setattr(instance, key, value)
     if words or stops:
@@ -128,9 +131,10 @@ class NLPTools:
                 [self.get_WordEmbeddings(language)])
             return self.DocumentPoolEmbeddings[language]
         except Exception as e:
-            print(f"Error loading DocumentPoolEmbeddings for {language}: {str(e)}")
+            print(
+                f"Error loading DocumentPoolEmbeddings for {language}: {str(e)}")
             return None
-        
+
     def get_SequenceTagger(self, language):
         if language in self.SequenceTagger:
             return self.SequenceTagger[language]
@@ -151,6 +155,9 @@ class BagOfWords:
         self.stops = stops or defaultdict(int)
         self.tf = tf or {}
         self.tf_idf = tf_idf or {}
+
+        if self.words and language:
+            self.update_stops(language, nlptools)
 
         if text:
             self.from_nlp_text(text, language, nlptools)
@@ -224,12 +231,25 @@ class BagOfWords:
         self.sort()
 
     def update_stops(self, language, nlptools: NLPTools = None):
+        def special_stop_rules(key, vocab):
+            if len(key) < 2:
+                return True
+            if not key.isalpha() and key not in vocab:
+                if len(re.findall('[a-zA-Z\d]', key)) < 2:
+                    return True
+            # way to harsh, not every word is in (that language's) vocab
+            # if key not in vocab:
+            #     return True
+            return False
+        
         nlptools = nlptools or NLPTools()
         to_stop = []
         to_bag = []
         for key in self.words.keys():
             vocab = nlptools.get_spacy(language).vocab
             if key in vocab and vocab[key].is_stop:
+                to_stop.append(key)
+            elif special_stop_rules(key, vocab):
                 to_stop.append(key)
         for key in self.stops.keys():
             if key in vocab and not vocab[key].is_stop:
@@ -316,10 +336,10 @@ class Transcript:
             text (str): Text content of the transcript.
             path (str): Path to the transcript file.
         """
-        self.path = path
-        self.text = text
-        self.language = language
-        self.segments = segments
+        self.path: str = path
+        self.text: str = text
+        self.language: str = language
+        self.segments: Dict[str, str] = segments
         if path:
             self.fromfile()
 
@@ -346,8 +366,10 @@ class Transcript:
         return False
 
     def complete(self, path=None):
-        if not self.iscomplete():
+        if not self.iscomplete() and path:
             self.fromfile(path)
+        else:
+            print("missing path to load transcript")
         return self.iscomplete()
 
     def get_dict(self):
@@ -363,6 +385,11 @@ class Transcript:
         elif hasattr(self, attr):
             return getattr(self, attr)
 
+    def clean(self):
+        if "\n" in self.text:
+            self.text = self.text.replace("-\n", "")
+            self.text = self.text.replace("\n", " ")
+
 
 class Audio:
     def __init__(self, path=None, metadata=None):
@@ -372,6 +399,8 @@ class Audio:
     def get(self, arg=None):
         if arg == "path":
             return self.path
+        elif arg == "title":
+            return os.path.splitext(os.path.basename(self.path))[0]
         elif arg:
             return self.metadata.get(arg)
         else:
@@ -382,7 +411,7 @@ class Audio:
 
 
 class NLPFeatureAnalysis:
-    def __init__(self, path=None, bag_of_words=None, named_entities=None, nlptools: NLPTools = None, transcript: Transcript = None):
+    def __init__(self, path=None, bag_of_words=None, named_entities=None, nlptools: NLPTools = None, transcript: Transcript = None, do_named_entities=True):
         """
         A class representing NLP feature analysis.
 
@@ -396,15 +425,16 @@ class NLPFeatureAnalysis:
             named_entities (list): A list of named entities.
             tf_idf (dict): A dictionary representing tf-idf values.
         """
-        self.path = path
-        self.bag_of_words = bag_of_words or BagOfWords()
-        self.named_entities = named_entities or NamedEntities()
+        self.path: str = path
+        self.bag_of_words: BagOfWords = bag_of_words or BagOfWords()
+        self.named_entities: NamedEntities = named_entities or NamedEntities()
         if path:
-            self.fromfile(path)
+            self.fromfile(path, do_named_entities=do_named_entities)
         if transcript:
-            self.complete(transcript, nlptools)
+            self.complete(transcript, nlptools,
+                          do_named_entities=do_named_entities)
 
-    def fromfile(self, path):
+    def fromfile(self, path, do_named_entities=True):
         """
         Load transcript from the given path.
 
@@ -413,14 +443,14 @@ class NLPFeatureAnalysis:
         """
         self.path = path
         data = get_json_data(path)
-        data_to_attributes(self, data)
+        data_to_attributes(self, data, do_named_entities)
 
     def iscomplete(self):
         if self.bag_of_words.get() and self.named_entities.get():
             return True
         return False
 
-    def complete(self, transcript: Transcript, nlptools: NLPTools = None):
+    def complete(self, transcript: Transcript, nlptools: NLPTools = None, do_named_entities=True):
         """Processes a JSON file containing text and returns a Document object.
 
         Args:
@@ -435,12 +465,14 @@ class NLPFeatureAnalysis:
         if not self.iscomplete():
             changes = True
 
-        self.fill_named_entities(transcript, nlptools)
+        transcript.clean()
+        if do_named_entities:
+            self.fill_named_entities(transcript, nlptools)
         self.fill_bag_of_words(transcript, nlptools)
 
         # create a Document object and return it
         if changes or self.bag_of_words.update_stops(transcript.language, nlptools):
-            self.save()
+            self.save(should_have_nen=do_named_entities)
         return self.iscomplete()
 
     def fill_bag_of_words(self, transcript: Transcript, nlptools: NLPTools = None):
@@ -458,6 +490,7 @@ class NLPFeatureAnalysis:
                 text=doc, nlptools=nlptools, language=transcript.language)
             return self.bag_of_words
         else:
+            self.bag_of_words.update_stops(language=transcript.language, nlptools=nlptools)
             return False
 
     def fill_named_entities(self, transcript: Transcript, nlptools: NLPTools = None):
@@ -486,7 +519,8 @@ class NLPFeatureAnalysis:
             for text in pieces:
                 sentence = Sentence(text)
 
-                nlptools.get_DocumentPoolEmbeddings(transcript.language).embed(sentence)
+                nlptools.get_DocumentPoolEmbeddings(
+                    transcript.language).embed(sentence)
 
                 # get the named entities
                 # todo: Worked
@@ -507,14 +541,14 @@ class NLPFeatureAnalysis:
             'stop_words': self.bag_of_words.stops
         }
 
-    def save(self, path=None):
+    def save(self, path=None, should_have_nen=True):
         if path is None:
             path = self.path
         output_dict = self.get_dict()
 
         if len(self.bag_of_words.words) == 0:
             print(f"No {colored('words', 'red')} in file: " + path)
-        elif len(self.named_entities) == 0:
+        elif len(self.named_entities) == 0 and should_have_nen:
             print(f"No {colored('named entities', 'red')} in file: " + path)
         dump_json(path, output_dict)
 
@@ -534,39 +568,77 @@ class MediaResource:
         nlp_analysis (NLPFeatureAnalysis): An instance of NLPFeatureAnalysis.
     """
 
-    def __init__(self, paths=None, nlptools: NLPTools = None, ):
-        self.audio_file = None
-        self.transcript = None
-        self.pdf = None
-        if "audio_file_path" in paths:
-            self.audio_file = Audio(paths["audio_file_path"])
-            self.transcript = Transcript(paths["transcript_file_path"])
-            text_container = self.transcript
+    def __init__(self, nlptools: NLPTools = None):
+        self.audio_file: Audio = None
+        self.transcript: Transcript = None
 
-        elif "pdf_file_path" in paths:
-            self.pdf = util_pdf.PDFDocument(paths["pdf_file_path"])
-            text_container = self.pdf
-        else:
-            print("Invalid setup for file: " + json.dumps(paths))
-            return None
+        self.pdf: util_pdf.PDFDocument = None
 
-        self.nlp_analysis = NLPFeatureAnalysis(
-            paths["nlp_analysis_file_path"], nlptools=nlptools, transcript=text_container)
-        self.obsidian_note = nlped_whispered_folder.ObsidianNote()
         # todo: make this an actual class
-        self.image = paths["image_file_path"]
+        self.image: str = None
 
-        self.basename = next((item for item in list(paths.values())), None)
-        self.original_name = None
+        self.nlp_analysis: NLPFeatureAnalysis = None
 
+        self.obsidian_note: nlped_whispered_folder.ObsidianNote = None
+
+        self.basename: str = None
+        self.original_name: str = None
+
+    def add_audio(self, path: str = None, file: Audio = None):
+        if file:
+            self.audio_file = file
+        elif path:
+            self.audio_file = Audio(path)
         self.search_original_name()
+
+    def add_transcript(self, path: str = None, file: Transcript = None):
+        if file:
+            self.transcript = file
+        elif path:
+            self.transcript = Transcript(path)
+
+    def add_pdf(self, path: str = None, file: util_pdf.PDFDocument = None):
+        if file:
+            self.pdf = file
+        elif path:
+            self.pdf = util_pdf.PDFDocument(path)
+        self.search_original_name()
+
+    def add_NLPFeatureAnalysis(self, path: str = None, file: NLPFeatureAnalysis = None, nlptools: NLPTools = None, do_named_entities=True):
+        if file:
+            self.nlp_analysis = file
+        elif path:
+            if self.pdf:
+                text_container = self.pdf
+            elif self.transcript:
+                text_container = self.transcript
+            else:
+                print(
+                    f"Lacking text basis, can't add NLPFeatureAnalysis for file {self.basename}")
+                return None
+            self.nlp_analysis = NLPFeatureAnalysis(
+                path, nlptools=nlptools, transcript=text_container, do_named_entities=do_named_entities)
+
+    def add_image(self, path: str = None):
+        if path:
+            self.image = path
+
+    def add_obsidian_note(self, path: str = None, file: nlped_whispered_folder.ObsidianNote = None):
+        if file:
+            self.obsidian_note = file
+        elif path:
+            self.obsidian_note = nlped_whispered_folder.ObsidianNote(path)
+        else:
+            self.obsidian_note = nlped_whispered_folder.ObsidianNote()
 
     def search_original_name(self, force=False):
         if self.original_name and not force:
             return self.original_name
-        candidates = None
+        candidates = []
+        if self.pdf:
+            candidates.append(self.pdf.get("title"))
         if self.audio_file:
-            candidates = self.audio_file.get("title")
+            candidates.append(self.audio_file.get("title"))
         if candidates:
             self.original_name = candidates[0]
             return self.original_name
@@ -574,7 +646,7 @@ class MediaResource:
     def iscomplete(self):
         return self.transcript.iscomplete() and self.nlp_analysis.iscomplete()
 
-    def complete(self, nlptools: NLPTools = None):
+    def complete(self, nlptools: NLPTools = None, do_named_entities=True):
         """Processes a JSON file containing text and returns a Document object.
 
         Args:
@@ -586,7 +658,8 @@ class MediaResource:
         nlptools = nlptools or NLPTools()
 
         self.transcript.complete()
-        self.nlp_analysis.complete(nlptools)
+        self.nlp_analysis.complete(
+            nlptools, do_named_entities=do_named_entities)
 
     def get_dict(self):
         # TODO: check if this throws errors, else revert
@@ -647,18 +720,19 @@ class Subfolder:
         os.makedirs(self.path, exist_ok=True)
 
     def lookfor(self, filename):
-        found = []
-        not_found = []
+        path_found = []
+        path_suggested = []
         basename = os.path.basename(filename)
         stem = os.path.splitext(basename)[0]
         for ending in self.endings:
             path = os.path.join(self.path, stem+ending)
             if os.path.exists(path):
-                found.append(path)
+                path_found.append(path)
             else:
-                not_found.append(path)
-
-        return found, not_found
+                path_suggested.append(path)
+        best_fit = path_found[0] if path_found else path_suggested[0] if path_suggested else None
+        return best_fit
+        # return found, not_found
 
 
 class Folder:
@@ -720,7 +794,10 @@ class Folder:
         self.sim_matrix = bag_sim_mat
         similarity.print_sim_matrix(self.sim_matrix, self.path)
         for mr in self.media_resources:
-            mr.nlp_analysis.save()
+            should_have_nen = True
+            if not mr.transcript:
+                should_have_nen = False
+            mr.nlp_analysis.save(should_have_nen=should_have_nen)
 
     def add_media_resource(self, media_resource: MediaResource):
         if media_resource:
@@ -761,16 +838,20 @@ class Folder:
             'documents': [os.path.basename(mr.nlp_analysis.path) for mr in self.media_resources]
         }
 
-    def save(self, output_path=None):
+    def save(self, output_path=None, do_named_entities=True):
         if output_path is None:
             output_path = os.path.join(self.path, "rep_Folder")
         output_dict = self.get_dict()
 
-        if any(len(attr) == 0 for attr in [self.media_resources, self.bag_of_words, self.named_entities]):
+        relevant = [len(self.media_resources), len(self.bag_of_words)]
+        if do_named_entities:
+            relevant.append(len(self.named_entities))
+
+        if any(count == 0 for count in relevant):
             print("Error on Folder: " + output_path)
         dump_json(output_path, output_dict)
 
-    def save_summary(self, output_path):
+    def save_summary(self, output_path, do_named_entities=True):
         if not len(self.media_resources):
             print(f"No Documents found in folder: {output_path}")
             return None
@@ -784,39 +865,46 @@ class Folder:
             'documents': [os.path.basename(doc.nlp_analysis.path) for doc in self.media_resources]
         }
 
-        if any(len(attr) == 0 for attr in [self.media_resources, self.bag_of_words, self.named_entities]):
+        relevant = [len(self.media_resources), len(self.bag_of_words)]
+        if do_named_entities:
+            relevant.append(len(self.named_entities))
+
+        if any(count == 0 for count in relevant):
             print("Error on Folder: " + output_path)
         dump_json(output_path, output_dict)
 
     def process(self, nlptools=None):
         if nlptools is None:
             nlptools = NLPTools()
+        audios = os.listdir(self.audio.path)
+        pdfs = self.pdf.BibResources.pdfs
+        do_named_entities = False
+        if audios:
+            do_named_entities = True
+            for path in audios:
+                mr = MediaResource()
+                mr.add_audio(path=path)
+                mr.add_transcript(path=self.whisper.lookfor(path))
+                mr.add_image(path=self.image.lookfor(path))
+                mr.add_NLPFeatureAnalysis(
+                    path=self.analyse.lookfor(path), nlptools=nlptools)
 
-        queue = os.listdir(self.audio.path) + self.pdf.BibResources.pdfs
+                mr.add_obsidian_note(path=self.notes.lookfor(path))
+                self.add_media_resource(mr)
+        if pdfs:
+            for path in pdfs:
+                mr = MediaResource()
+                mr.add_pdf(path=path)
+                mr.add_NLPFeatureAnalysis(path=self.analyse.lookfor(
+                    path), nlptools=nlptools, do_named_entities=False)
+                mr.add_obsidian_note(path=self.notes.lookfor(path))
+                self.add_media_resource(mr)
 
-        for path in queue:
-            paths = {}
-            if path.endswith(".mp3"):
-                paths["audio_file_path"] = os.path.join(self.audio.path, path)
-            elif path.endswith(".pdf"):
-                paths["pdf_file_path"] = os.path.join(self.audio.path, path)
-            image_path_found, image_path_suggested = self.image.lookfor(path)
-            whisper_path_found, whisper_path_suggested = self.whisper.lookfor(
-                path)
-            analyse_path_found, whisper_path_suggested = self.analyse.lookfor(
-                path)
-            # todo: notes
-            # todo: make work when multiple are found
-            paths["image_file_path"] = image_path_found[0] if image_path_found else image_path_suggested[0] if image_path_suggested else None
-            paths["whisper_file_path"] = whisper_path_found[0] if whisper_path_found else whisper_path_suggested[0] if whisper_path_suggested else None
-            paths["nlp_analysis_file_path"] = analyse_path_found[0] if analyse_path_found else whisper_path_suggested[0] if whisper_path_suggested else None
-            mr = MediaResource(paths, nlptools=nlptools)
-            self.add_media_resource(mr)
         self.populate()
         self.calc_sim_matrix()
-        self.save(os.path.join(self.path, "00_Folder.json"))
+        self.save(os.path.join(self.path, "00_Folder.json"), do_named_entities=do_named_entities)
         self.save_summary(os.path.join(
-            self.path, "00_Folder_summary.json"))
+            self.path, "00_Folder_summary.json"), do_named_entities=do_named_entities)
 
     # Wordcloud
     def wordcloud(self):

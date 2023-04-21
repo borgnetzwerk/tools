@@ -60,6 +60,8 @@ class PDFDocument:
     def get(self, attr: str):
         if attr == "dict":
             return self.get_dict()
+        elif attr == "title":
+            return os.path.splitext(os.path.basename(self.path))[0]
         elif hasattr(self, attr):
             return getattr(self, attr)
 
@@ -73,6 +75,11 @@ class PDFDocument:
         with open(self.text_path, "r", encoding="utf-8") as f:
             self.text = f.read()
 
+    def has_text(self):
+        if self.text and re.search('[a-zA-Z]', self.text):
+            return True
+        return False
+
     def fromfile(self, path=None, force=False):
         """
         Load PDF document from the given path.
@@ -83,7 +90,8 @@ class PDFDocument:
         if not force and os.path.exists(self.get_text_path()):
             self.from_text_file()
             self.detect_language()
-            return
+            if self.has_text():
+                return
         if path is None:
             path = self.path
         else:
@@ -92,14 +100,17 @@ class PDFDocument:
             print("need path to load PDFDocument")
             return None
         # Ranking according to minor testing, future improvements welcome!
-        if not self.text:
+        
+        if not self.has_text():
             self.text = extract_text_pdfminer(path)
-        if not self.text:
+        if not self.has_text():
             self.text = extract_text_pymupdf(path)
-        if not self.text:
+        if not self.has_text():
             self.text = extract_text_pypdf2(path)
-        if not self.text:
+        if not self.has_text():
             self.text = extract_text_pdfquery(path)
+        if not self.has_text():
+            print("No way to extract text from: " + path)
         # needs Java
             # self.text_tika = extract_text_tika(path)
         # looks like this can't do proper text
@@ -160,6 +171,10 @@ class PDFDocument:
             'pages': self.pages,
         }
 
+    def clean(self):
+        if "\n" in self.text:
+            self.text = self.text.replace("-\n", "")
+            self.text = self.text.replace("\n", " ")
 
 def extract_text_pypdf2(pdf_path):
     try:
@@ -308,6 +323,6 @@ def extract_text_pdfquery(pdf_path):
         return None
 
 
-filename = "D:/workspace/Zotero/SE2A-B4-2/00_PDFs/allaire_mathematical_2014/Allaire und Willcox - 2014 - A MATHEMATICAL AND COMPUTATIONAL FRAMEWORK FOR MUL.pdf"
+# filename = "D:/workspace/Zotero/SE2A-B4-2/00_PDFs/allaire_mathematical_2014/Allaire und Willcox - 2014 - A MATHEMATICAL AND COMPUTATIONAL FRAMEWORK FOR MUL.pdf"
 
-PDFDocument(filename, force=True)
+# PDFDocument(filename, force=True)

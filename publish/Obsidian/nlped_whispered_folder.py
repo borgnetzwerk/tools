@@ -1,9 +1,15 @@
+# controllers.py
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from extract.nlp.util_nlp import Folder
+from core import helper
+
 import os
 import json
 import re
 
-from extract.nlp import util_nlp
-from core import helper
 
 LIMIT_BAG_OF_WORDS = 10
 LIMIT_NAMED_ENTITIES = 5
@@ -32,8 +38,9 @@ class ObsidianNote:
         """
         self.path = path
         try:
-            with open(path, 'r', encoding='utf8') as f:
-                self.text = f.read()
+            if os.path.exists(path):
+                with open(path, 'r', encoding='utf8') as f:
+                    self.text = f.read()
         except Exception as e:
             print(e)
 
@@ -69,7 +76,7 @@ class ObsidianNote:
             self.path = os.path.join(parent_path, self.get_name())
         return self.path
 
-    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, audio=None):
+    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, audio=None, pdf_path=None):
         title = name or self.get_name()
         metadata = ""
         if links:
@@ -85,6 +92,10 @@ class ObsidianNote:
         corpus = ""
         if audio:
             corpus += f"## Audio\n![[{audio}]]\n\n"
+        if pdf_path:
+            # pdf_path_obs = pdf_path.replace(" ", "%20")
+            pdf_path_obs = pdf_path.replace("\\", "/")
+            corpus += f"## PDF\n![[{pdf_path_obs}]]\n\n"
 
         # Replace first occurrence of each word in text with a link if it's in links or highlights
         if text:
@@ -105,12 +116,14 @@ class ObsidianNote:
 """
 
 
-def folder(folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
+def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
     # loop over each file in the directory
     # build Entry Node
     # Sort all files into subfolders
 
     for idr, mr in enumerate(folder.media_resources):
+        if not mr.obsidian_note:
+            mr.add_obsidian_note()
         mr.obsidian_note.get_name(mr.original_name, fallback=mr.basename)
         mr.obsidian_note.get_path(folder.notes.path)
 
@@ -136,7 +149,12 @@ def folder(folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, f
             "bag_of_words":  bow
         }
 
-        audio_name = os.path.basename(mr.audio_file.path)
+        audio_name = None
+        if mr.audio_file:
+            audio_name = os.path.basename(mr.audio_file.path)
+        pdf_path = None
+        if mr.pdf:
+            pdf_path = os.path.relpath(mr.pdf.path, folder.path)
 
         simVec = folder.sim_matrix[idr]
         top_indices = simVec.argsort()[-6:-1]
@@ -147,8 +165,11 @@ def folder(folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, f
                 break
             cr = folder.media_resources[i]
             related_notes.append(cr.obsidian_note.get_name(cr.original_name))
+        text = None
+        if mr.transcript:
+            text = mr.transcript.text
         mr.obsidian_note.build_note(
-            mr.transcript.text, links=links, highlights=highlights, name=mr.original_name, related_notes=related_notes, audio=audio_name)
+            text, links=links, highlights=highlights, name=mr.original_name, related_notes=related_notes, audio=audio_name, pdf_path=pdf_path)
 
         # create the markdown file
         mr.obsidian_note.save()
