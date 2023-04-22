@@ -390,6 +390,8 @@ class Transcript:
     def clean(self):
         if self.text and self.text.startswith("1\n00:00:"):
             # is vtt transcript
+            # make sure empty vtt lines are not "truly" emtpy
+            self.text = self.text.replace("\n\n\n", "\n \n\n")
             segments = self.text.split("\n\n")
             sentences = [s.split("\n")[2] for s in segments]
             # todo: detect when speaker is given like "Speaker a: ..."

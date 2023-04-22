@@ -76,19 +76,22 @@ class YouTubeInfo:
             "de": 3,
             "en": 4,
         }
-        sim_map = {
-            "en_US": "en",
-            "en-US": "en",
-            "en US": "en",
-        }
+
+        def get_accepted(candidate):
+            candidate = candidate.replace("a.", "")
+            if len(candidate) > 2:
+                if candidate[:2] in score:
+                    return candidate[:2]
+            return candidate
         best = ["", 0]
 
         for candidate in self.cap_codes.keys():
             c_score = 1
             key = candidate
-            if candidate in sim_map:
-                candidate = sim_map[candidate]
-            if candidate in score:
+            candidate = get_accepted(candidate)
+            if key in score:
+                c_score = score[key]
+            elif candidate in score:
                 c_score = score[candidate]
             # Todo: support more than german and english
             # elif "a." in candidate:
@@ -98,9 +101,7 @@ class YouTubeInfo:
             if c_score > best[1]:
                 best = [key, c_score]
 
-        res_language = best[0].replace("a.", "")
-        if res_language in sim_map:
-            res_language = sim_map[res_language]
+        res_language = get_accepted(best[0])
 
         res_text = self.cap_codes[best[0]] if best[0] in self.cap_codes else ""
         if not res_language:

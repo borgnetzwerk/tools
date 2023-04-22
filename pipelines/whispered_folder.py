@@ -27,16 +27,16 @@ queue = [
 channels = {
     # "UCwBT6zl54_cP0mOrVPFH-qg": "BorgNetzWerk",
     # "UCoYvhMd-3LbORHvBVkC0hSw": "orkg7258",
-    "cinematherapysolutions": "CinemaTherapyShow",
-    "UCyHDQ5C6z1NDmJ4g6SerW8g": "maiLab",
-    "inanutshell": "kurzgesagt",
-    "sciphi635": "sciphi635",
-    "unbubble": "unbubble",
-    "georgiadow": "GeorgiaDow",
+    # "cinematherapysolutions": "CinemaTherapyShow",
+    # "UCyHDQ5C6z1NDmJ4g6SerW8g": "maiLab",
+    # "inanutshell": "kurzgesagt",
+    # "sciphi635": "sciphi635",
+    # "unbubble": "unbubble",
+    # "georgiadow": "GeorgiaDow",
     "LegalEagle": "LegalEagle",
     "coldmirror": "coldmirror",
     "UCPtUzxTfdaxAmr4ie9bXZVA": "MathebyDanielJung",
-    "ROCKETBEANSTV": "ROCKETBEANSTV",
+    # "ROCKETBEANSTV": "ROCKETBEANSTV",
 }
 
 YT_root = "D:/workspace/YouTube"
