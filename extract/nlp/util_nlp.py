@@ -246,8 +246,8 @@ class BagOfWords:
         nlptools = nlptools or NLPTools()
         to_stop = []
         to_bag = []
+        vocab = nlptools.get_spacy(language).vocab
         for key in self.words.keys():
-            vocab = nlptools.get_spacy(language).vocab
             if key in vocab and vocab[key].is_stop:
                 to_stop.append(key)
             elif special_stop_rules(key, vocab):

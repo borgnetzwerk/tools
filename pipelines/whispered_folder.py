@@ -33,9 +33,9 @@ channels = {
     # "sciphi635": "sciphi635",
     # "unbubble": "unbubble",
     # "georgiadow": "GeorgiaDow",
-    "LegalEagle": "LegalEagle",
-    "coldmirror": "coldmirror",
-    "UCPtUzxTfdaxAmr4ie9bXZVA": "MathebyDanielJung",
+    # "LegalEagle": "LegalEagle",
+    # "coldmirror": "coldmirror",
+    # "UCPtUzxTfdaxAmr4ie9bXZVA": "MathebyDanielJung",
     # "ROCKETBEANSTV": "ROCKETBEANSTV",
 }
 

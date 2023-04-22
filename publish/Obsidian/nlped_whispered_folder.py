@@ -111,9 +111,13 @@ class ObsidianNote:
         if additional_meta_data:
             fin_meta += f"%%\n"
             for key, value in additional_meta_data.items():
-                value = value.replace("\\", "/")
-                fin_meta += f"{key}:: {value}\n"
-            fin_meta += f"%%\n"
+                if value:
+                    value = value.replace("\\", "/")
+                    fin_meta += f"{key}:: {value}\n"
+            if fin_meta != f"%%\n":
+                fin_meta += f"%%\n"
+            else:
+                fin_meta = ""
 
         self.text = f"""%%
 {metadata}

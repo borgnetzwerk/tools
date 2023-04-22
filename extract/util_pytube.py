@@ -65,8 +65,9 @@ class YouTubeInfo:
         }
 
         self.thumbnail_urls = []
-        for thumbnail in json_data['videoDetails']['thumbnail']['thumbnails']:
-            self.thumbnail_urls.append(thumbnail['url'])
+        if json_data and 'videoDetails' in json_data and 'thumbnail' in json_data['videoDetails']:
+            for thumbnail in json_data['videoDetails']['thumbnail']['thumbnails']:
+                self.thumbnail_urls.append(thumbnail['url'])
 
     def get_transcript(self):
         score = {
@@ -274,8 +275,10 @@ def do_channels(root_path, channel_id, channel_name):
     found = ""
     for this in try_this:
         try:
-            link = f'https://www.youtube.com/{this}/videos'
+            # link = f'https://www.youtube.com/{this}/videos'
+            link = f'https://www.youtube.com/{this}'
             c = Channel(link)
+            # c = Channel(this)
             # c = Channel('https://www.youtube.com/c/ProgrammingKnowledge/videos')
             if c.videos:
                 found = this
