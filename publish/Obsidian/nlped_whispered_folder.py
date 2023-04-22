@@ -139,7 +139,7 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
         # Create the Obsidian directory if it does not exist,
 
         bag_of_words = list(mr.nlp_analysis.bag_of_words.tf_idf.keys())[
-            :LIMIT_BAG_OF_WORDS+LIMIT_NAMED_ENTITIES]
+            :LIMIT_BAG_OF_WORDS + LIMIT_NAMED_ENTITIES]
         named_entities = list(mr.nlp_analysis.named_entities.get().keys())[
             :LIMIT_NAMED_ENTITIES]
 
@@ -181,6 +181,11 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
         meta = {}
         if mr.pdf and mr.pdf.metadata:
             meta.update(mr.pdf.metadata)
+        if mr.info:
+            block = mr.info.__dict__
+            del block['thumbnail_urls']
+            del block['cap_codes']
+            meta.update(block)
 
         mr.obsidian_note.build_note(
             text, links=links, highlights=highlights, name=mr.original_name, related_notes=related_notes, files=files, additional_meta_data=meta)

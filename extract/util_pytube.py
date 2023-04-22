@@ -7,21 +7,6 @@ from pytube import YouTube
 
 OVERWRITE = True
 
-channels = {
-    "UCwBT6zl54_cP0mOrVPFH-qg": "BorgNetzWerk",
-    "UCoYvhMd-3LbORHvBVkC0hSw": "orkg7258",
-    "UCyHDQ5C6z1NDmJ4g6SerW8g": "maiLab",
-    "sciphi635": "sciphi635",
-    "unbubble": "unbubble",
-    "georgiadow": "GeorgiaDow",
-    "LegalEagle": "LegalEagle",
-    "coldmirror": "coldmirror",
-    "cinematherapysolutions": "CinemaTherapyShow",
-    "inanutshell": "kurzgesagt",
-    "UCPtUzxTfdaxAmr4ie9bXZVA": "MathebyDanielJung",
-    "ROCKETBEANSTV": "ROCKETBEANSTV",
-}
-
 noFileChars = '":\<>*?/|,#.\'$^;~%'
 
 
@@ -30,10 +15,10 @@ def subtitle_clean(subtitle_text):
     sent_num = 1
 
     result = ""
-    for i in range((len(subtitle_text)-1) // 2):
-        _, temp_time, temp_text = subtitle_text[i*2].split('\n')
+    for i in range((len(subtitle_text) - 1) // 2):
+        _, temp_time, temp_text = subtitle_text[i * 2].split('\n')
         temp_start = temp_time.strip().split(' --> ')[0]
-        _, next_time, _ = subtitle_text[(i+1)*2].split('\n')
+        _, next_time, _ = subtitle_text[(i + 1) * 2].split('\n')
         temp_end = next_time.strip().split(' --> ')[0]
         result += str(sent_num) + '\n'
         result += temp_start + ' --> ' + temp_end + '\n'
@@ -58,10 +43,76 @@ def subtitle_clean(subtitle_text):
 # Infos
 
 
+class YouTubeInfo:
+    def __init__(self, path: str = None, json_data: dict[str, str] = None):
+        if path:
+            if os.path.exists(path):
+                if not json_data:
+                    json_data = {}
+                with open(path, "r", encoding="utf-8") as json_file:
+                    json_data.update(json.load(json_file))
+
+        self.video_id = json_data['videoDetails']['videoId'] if json_data else None
+        self.title = json_data['videoDetails']['title'] if json_data else None
+        self.length_seconds = json_data['videoDetails']['lengthSeconds'] if json_data else None
+        self.channel_id = json_data['videoDetails']['channelId'] if json_data else None
+        self.short_description = json_data['videoDetails']['shortDescription'] if json_data else None
+        self.view_count = json_data['videoDetails']['viewCount'] if json_data else None
+        self.author = json_data['videoDetails']['author'] if json_data else None
+        self.publish_date = json_data['videoDetails']['publish_date'] if json_data else None
+
+        self.cap_codes = json_data['cap_codes'] if json_data and "cap_codes" in json_data else {
+        }
+
+        self.thumbnail_urls = []
+        for thumbnail in json_data['videoDetails']['thumbnail']['thumbnails']:
+            self.thumbnail_urls.append(thumbnail['url'])
+
+    def get_transcript(self):
+        score = {
+            "": 0,
+            "a.de": 1,
+            "a.en": 2,
+            "de": 3,
+            "en": 4,
+        }
+        sim_map = {
+            "en_US": "en",
+            "en-US": "en",
+            "en US": "en",
+        }
+        best = ["", 0]
+
+        for candidate in self.cap_codes.keys():
+            c_score = 1
+            key = candidate
+            if candidate in sim_map:
+                candidate = sim_map[candidate]
+            if candidate in score:
+                c_score = score[candidate]
+            # Todo: support more than german and english
+            # elif "a." in candidate:
+            #     c_score = c_score / 2
+            else:
+                continue
+            if c_score > best[1]:
+                best = [key, c_score]
+
+        res_language = best[0].replace("a.", "")
+        if res_language in sim_map:
+            res_language = sim_map[res_language]
+
+        res_text = self.cap_codes[best[0]] if best[0] in self.cap_codes else ""
+        if not res_language:
+            print("Supported languages: " + ", ".join(score.keys()))
+            print("Given languages: " + ", ".join(self.cap_codes.keys()))
+        return res_text, res_language
+
+
 def print_infos(video, infos_dir):
 
     # TODO: check if file already exists
-    'D:\\AVC\\BorgNetzWerk\\audio\\Über 70 Tage in unter 70 Minuten: 9000 Seiten auf Knopfdruck.json'
+    'D:/AVC/BorgNetzWerk/audio/Über 70 Tage in unter 70 Minuten: 9000 Seiten auf Knopfdruck.json'
     filename = video.title
     for char in noFileChars:
         filename = filename.replace(char, "")
@@ -126,7 +177,7 @@ def print_audio(video, audio_dir):
     test += ".mp4"
     if not os.path.exists(os.path.join(audio_dir, test)):
         print("\t" + test)
-        video.streams.get_audio_only().download(output_path = audio_dir)
+        video.streams.get_audio_only().download(output_path=audio_dir)
 
     return
 
@@ -185,18 +236,20 @@ def print_channel(c, channel_dir):
         json.dump(infos, json_file, ensure_ascii=False, indent=4)
 
 
-my_path = os.getcwd()
+def do_channels(root_path, channel_id, channel_name):
 
-
-old_stdout = sys.stdout
-log_file = open("logfile.log", "a", encoding='utf-8')
-sys.stdout = log_file
-
-for channel, name in channels.items():
     # Check whether the specified path exists or not
-    channel_dir = os.path.join(my_path, name)
-    audio_dir = os.path.join(channel_dir, "audio")
-    infos_dir = os.path.join(channel_dir, "infos")
+    channel_dir = os.path.join(root_path, channel_name)
+    audio_dir_old = os.path.join(channel_dir, "audio")
+    audio_dir = os.path.join(channel_dir, "00_audios")
+    if os.path.exists(audio_dir_old):
+        os.rename(audio_dir_old, audio_dir)
+
+    infos_dir_old = os.path.join(channel_dir, "infos")
+    infos_dir = os.path.join(channel_dir, "00_infos")
+    if os.path.exists(infos_dir_old):
+        os.rename(infos_dir_old, infos_dir)
+
     paths = [channel_dir, audio_dir, infos_dir]
     for path_ in paths:
         if not os.path.exists(path_):
@@ -204,12 +257,19 @@ for channel, name in channels.items():
     os.chdir(channel_dir)
 
     try_this = [
-        f"c/{channel}",
-        f"channel/{channel}",
-        f"user/{channel}",
-        f"@{channel}",
-        f"@{name}",
+        f"c/{channel_name}",
+        f"channel/{channel_id}",
+        f"u/{channel_name}",
+        f"user/{channel_id}",
+
+        f"c/{channel_id}",
+        f"channel/{channel_name}",
+        f"u/{channel_id}",
+        f"user/{channel_name}",
+        f"@{channel_id}",
+        f"@{channel_name}"
     ]
+
     found = ""
     for this in try_this:
         try:
@@ -223,10 +283,12 @@ for channel, name in channels.items():
             continue
     print("---")
     if not found:
-        print(f"https://www.youtube.com/{channel} (@{name}) did not work")
-        continue
+        print(
+            f"https://www.youtube.com/{channel_id} (@{channel_name}) did not work")
+        return None
     video_count = len(c.videos)
-    print(f"Now working on {video_count} videos from {name} at {found}", flush=True)
+    print(
+        f"Now working on {video_count} videos from {channel_name} at {found}", flush=True)
     # TODO: methods to skip a channel
     # like:
     # check if newest video is already in files (what if you lost some other or an older got unblocked or sth)
@@ -234,10 +296,11 @@ for channel, name in channels.items():
     info_count = len(os.listdir(infos_dir))
     audio_count = len(os.listdir(audio_dir))
     if video_count == info_count:
-        print(f"We already have {info_count} infos & {audio_count} audios.")
+        print(
+            f"We already have all {info_count} infos & {audio_count} audios.")
     # if video_count == audio_count and video_count == info_count:
         # print(f"We already have {video_count} infos & audios.")
-        continue
+        return None
     else:
         print(f"We currently have {info_count} infos & {audio_count} audios.")
     print_channel(c, channel_dir)
@@ -257,10 +320,9 @@ for channel, name in channels.items():
             print(f"\t\tError at {idx}:")
             try:
                 print("\t\t" + video.title)
-            except Exception as e:
-                print(e, flush=True)
+            except Exception as e2:
+                print(e2, flush=True)
             print(e, flush=True)
     print('Download is complete')
-log_file.close()
-
-# todo: Make it so same named files do not overwrite eachother
+    return True
+    # todo: Make it so same named files do not overwrite eachother

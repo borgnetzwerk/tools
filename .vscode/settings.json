@@ -2,4 +2,8 @@
     "[csv][dynamic csv][tsv][csv (semicolon)]": {
         "editor.stickyScroll.enabled": true
     },
+    "python.formatting.autopep8Args": [
+        "--ignore",
+        "E402"
+    ],
 }

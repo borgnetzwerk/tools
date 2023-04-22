@@ -17,8 +17,9 @@ from publish import util_wordcloud
 from publish.Obsidian import nlped_whispered_folder
 from extract import util_pdf
 from extract import util_zotero
+from extract import util_pytube
 import re
-
+import urllib.request
 from mutagen.easyid3 import EasyID3
 import importlib
 
@@ -167,12 +168,12 @@ class BagOfWords:
 
     def calc_tf(self):
         total = sum(self.words.values())
-        self.tf = {word: count/total for word, count in self.words.items()}
+        self.tf = {word: count / total for word, count in self.words.items()}
         self.sort(do_words=False, do_tf=True)
         return self.tf
 
     def calc_tf_idf(self, idf: Dict[str, float]):
-        self.tf_idf = {word: frequency*idf[word]
+        self.tf_idf = {word: frequency * idf[word]
                        for word, frequency in self.get_tf().items()}
         self.sort(do_words=False, do_tf_idf=True)
         return self.tf_idf
@@ -241,7 +242,7 @@ class BagOfWords:
             # if key not in vocab:
             #     return True
             return False
-        
+
         nlptools = nlptools or NLPTools()
         to_stop = []
         to_bag = []
@@ -259,7 +260,7 @@ class BagOfWords:
         for key in to_bag:
             self.words[key] = self.stops.pop(key)
         self.sort()
-        return len(to_bag)+len(to_stop)
+        return len(to_bag) + len(to_stop)
 
     # bag_of_words = {k: v for k, v in sorted(bag_of_words.items(), key=lambda item: item[1], reverse=True)}
 
@@ -338,6 +339,7 @@ class Transcript:
         """
         self.path: str = path
         self.text: str = text
+        # todo: eventually have a "clean_text" variable
         self.language: str = language
         self.segments: Dict[str, str] = segments
         if path:
@@ -386,7 +388,32 @@ class Transcript:
             return getattr(self, attr)
 
     def clean(self):
-        if "\n" in self.text:
+        if self.text and self.text.startswith("1\n00:00:"):
+            # is vtt transcript
+            segments = self.text.split("\n\n")
+            sentences = [s.split("\n")[2] for s in segments]
+            # todo: detect when speaker is given like "Speaker a: ..."
+            openings = defaultdict(int)
+            for sentence in sentences:
+                pieces = sentence.split(": ")
+                if len(pieces) > 1:
+                    openings[pieces[0]] += 1
+
+            speakers = False
+            # see if there are regular speakers:
+            for opening, count in openings.items():
+                if count > 5:
+                    speakers = True
+            if speakers:
+                for idx, sentence in enumerate(sentences):
+                    pieces = sentence.split(": ")
+                    if len(pieces) > 1:
+                        pieces.pop(0)
+                    sentences[idx] = ": ".join(pieces)
+
+            self.text = " ".join(sentences)
+
+        elif "\n" in self.text:
             self.text = self.text.replace("-\n", "")
             self.text = self.text.replace("\n", " ")
 
@@ -394,7 +421,12 @@ class Transcript:
 class Audio:
     def __init__(self, path=None, metadata=None):
         self.path = path
-        self.metadata = metadata or EasyID3(path)
+        self.metadata = metadata
+        if self.path:
+            try:
+                self.metadata = EasyID3(path)
+            except:
+                pass
 
     def get(self, arg=None):
         if arg == "path":
@@ -490,7 +522,8 @@ class NLPFeatureAnalysis:
                 text=doc, nlptools=nlptools, language=transcript.language)
             return self.bag_of_words
         else:
-            self.bag_of_words.update_stops(language=transcript.language, nlptools=nlptools)
+            self.bag_of_words.update_stops(
+                language=transcript.language, nlptools=nlptools)
             return False
 
     def fill_named_entities(self, transcript: Transcript, nlptools: NLPTools = None):
@@ -501,19 +534,28 @@ class NLPFeatureAnalysis:
                 return False
             text = transcript.text
             pieces = []
-            if len(text) < 50000:
+            jump = 50000
+
+            if len(text) < jump * 2:
                 pieces = [text]
             else:
                 # Break text into smaller chunks so we have enough memory to solve it
-                jump = 50000
+                # FIXME: doesn't properly break
+                candidates = ["\n\n", "\n", ".", "!", "?", ",", " "]
+
                 begin = 0
                 end = jump
-                while end != -1:
-                    end = begin + jump + text[jump:].find("\n\n")
+                while end < len(text):
+                    next_stop = 0
+                    for fi in candidates:
+                        pos = text[begin + jump:end + jump].find(fi)
+                        if pos >= 0 and pos <= jump * 2:
+                            next_stop = pos
+                            break
+                    end = begin + jump + next_stop + 1
                     pieces.append(text[begin:end])
-                    if end != -1:
-                        begin = 0
-                        text = text[end+1:]
+                    begin = end
+                pieces.append(text[begin:])
             nen = NamedEntities()
 
             for text in pieces:
@@ -527,7 +569,7 @@ class NLPFeatureAnalysis:
                 nlptools.get_SequenceTagger(
                     transcript.language).predict(sentence)
                 nen.add(NamedEntities(text=sentence))
-            self.named_entities == nen
+            self.named_entities = nen
             return self.named_entities
         else:
             return False
@@ -596,6 +638,12 @@ class MediaResource:
             self.transcript = file
         elif path:
             self.transcript = Transcript(path)
+
+    def add_info(self, path: str = None, file: util_pytube.YouTubeInfo = None):
+        if file:
+            self.info = file
+        elif path:
+            self.info = util_pytube.YouTubeInfo(path=path)
 
     def add_pdf(self, path: str = None, file: util_pdf.PDFDocument = None):
         if file:
@@ -702,6 +750,7 @@ class Subfolder:
         "00_PDFs": [".pdf"],
         "00_audios": [".mp3", ".mp4"],
         "00_images": [".png", ".jpg", ".jpeg"],
+        "00_infos": [".json"],
         # 01 Extract
         "01_whisper": [".json"],  # todo: vtt
         # 02 Analyse
@@ -725,7 +774,7 @@ class Subfolder:
         basename = os.path.basename(filename)
         stem = os.path.splitext(basename)[0]
         for ending in self.endings:
-            path = os.path.join(self.path, stem+ending)
+            path = os.path.join(self.path, stem + ending)
             if os.path.exists(path):
                 path_found.append(path)
             else:
@@ -763,6 +812,7 @@ class Folder:
         self.audio = Subfolder(folder_path, "00_audios")
         self.pdf = Subfolder(folder_path, "00_PDFs")
         self.image = Subfolder(folder_path, "00_images")
+        self.infos = Subfolder(folder_path, "00_infos")
         self.whisper = Subfolder(folder_path, "01_whisper")
         self.analyse = Subfolder(folder_path, "02_nlp")
         self.notes = Subfolder(folder_path, "03_notes")
@@ -780,6 +830,26 @@ class Folder:
 
         if nlptools:
             self.process(nlptools)
+
+    def get_image(self):
+        candidates = []
+        if self.image and self.image.path:
+            candidates = os.listdir(self.image.path)
+        if candidates:
+            return os.path.join(self.image.path, candidates[0])
+
+        for mr in self.media_resources:
+            if mr.image:
+                if os.path.exists(mr.image):
+                    return mr.image
+            if mr.info:
+                if mr.info.thumbnail_urls:
+                    # handle "if not mr.image"
+                    file_path = mr.image
+                    urllib.request.urlretrieve(
+                        mr.info.thumbnail_urls[-1], file_path)
+
+                    return file_path
 
     def calc_sim_matrix(self):
         # bag_sim_mat = similarity.compute_similarity_matrix(
@@ -804,7 +874,7 @@ class Folder:
             self.media_resources.append(media_resource)
 
     def calc_idf(self):
-        self.idf = {word: math.log(len(self.media_resources)/(frequency))
+        self.idf = {word: math.log(len(self.media_resources) / (frequency))
                     for word, frequency in self.df.items()}
         return self.idf
 
@@ -876,7 +946,8 @@ class Folder:
     def process(self, nlptools=None):
         if nlptools is None:
             nlptools = NLPTools()
-        audios = os.listdir(self.audio.path)
+        audios = [os.path.join(self.audio.path, f)
+                  for f in os.listdir(self.audio.path)]
         pdfs = self.pdf.BibResources.pdfs
         do_named_entities = False
         if audios:
@@ -885,7 +956,11 @@ class Folder:
                 mr = MediaResource()
                 mr.add_audio(path=path)
                 mr.add_transcript(path=self.whisper.lookfor(path))
+                mr.add_info(path=self.infos.lookfor(path))
+                if not mr.transcript.text:
+                    mr.transcript.text, mr.transcript.language = mr.info.get_transcript()
                 mr.add_image(path=self.image.lookfor(path))
+                # todo: eventually load thumbnails here
                 mr.add_NLPFeatureAnalysis(
                     path=self.analyse.lookfor(path), nlptools=nlptools)
 
@@ -901,11 +976,13 @@ class Folder:
                 mr.add_obsidian_note(path=self.notes.lookfor(path))
                 self.add_media_resource(mr)
 
-        self.populate()
-        self.calc_sim_matrix()
-        self.save(os.path.join(self.path, "00_Folder.json"), do_named_entities=do_named_entities)
-        self.save_summary(os.path.join(
-            self.path, "00_Folder_summary.json"), do_named_entities=do_named_entities)
+        if self.media_resources:
+            self.populate()
+            self.calc_sim_matrix()
+            self.save(os.path.join(self.path, "00_Folder.json"),
+                      do_named_entities=do_named_entities)
+            self.save_summary(os.path.join(
+                self.path, "00_Folder_summary.json"), do_named_entities=do_named_entities)
 
     # Wordcloud
     def wordcloud(self):
