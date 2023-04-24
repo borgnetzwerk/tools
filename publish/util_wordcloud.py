@@ -23,6 +23,8 @@ def generate_wordcloud(dict_word_count, output_file_path='wordcloud.png', width=
     Returns:
         None.
     """
+    if not dict_word_count:
+        return None
 
     if not output_file_path.endswith(".png"):
         output_file_path += ".png"

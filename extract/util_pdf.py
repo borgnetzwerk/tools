@@ -44,6 +44,34 @@ class PDFDocument:
             self.fromfile(force=force)
             self.save(force=force)
 
+    def get_manageable_text_sizes(self):
+        # todo: make text container so this function has a better place to be stored just once
+        text = self.text
+        pieces = []
+        jump = 50000
+
+        if len(text) < jump * 2:
+            pieces = [text]
+        else:
+            # Break text into smaller chunks so we have enough memory to solve it
+            # FIXME: doesn't properly break
+            candidates = ["\n\n", "\n", ".", "!", "?", ",", " "]
+
+            begin = 0
+            end = jump
+            while end < len(text):
+                next_stop = 0
+                for fi in candidates:
+                    pos = text[begin + jump:end + jump].find(fi)
+                    if pos >= 0 and pos <= jump * 2:
+                        next_stop = pos
+                        break
+                end = begin + jump + next_stop + 1
+                pieces.append(text[begin:end])
+                begin = end
+            pieces.append(text[begin:])
+        return pieces
+
     def add_metadata(self, data):
         if not self.metadata:
             self.metadata = data
@@ -109,14 +137,17 @@ class PDFDocument:
             return None
         # Ranking according to minor testing, future improvements welcome!
 
-        if not self.has_text():
-            self.text = extract_text_pdfminer(path)
-        if not self.has_text():
-            self.text = extract_text_pymupdf(path)
-        if not self.has_text():
-            self.text = extract_text_pypdf2(path)
-        if not self.has_text():
-            self.text = extract_text_pdfquery(path)
+        try:
+            if not self.has_text():
+                self.text = extract_text_pdfminer(path)
+            if not self.has_text():
+                self.text = extract_text_pymupdf(path)
+            if not self.has_text():
+                self.text = extract_text_pypdf2(path)
+            if not self.has_text():
+                self.text = extract_text_pdfquery(path)
+        except Exception as e:
+            print(e)
         if not self.has_text():
             print("No way to extract text from: " + path)
         # needs Java
@@ -262,7 +293,7 @@ def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history
     numbers_regex = r"\d+"
     x = begin
 
-    true_shared_threshold = len(string_list)/3
+    true_shared_threshold = len(string_list) / 3
     endings = defaultdict(None)
     banished = []
     while x < MAX_SUFFIX_LENGTH:
@@ -287,7 +318,7 @@ def find_similar_ending(string_list: List[str], begin=MIN_SUFFIX_LENGTH, history
                     if user in endings and endings[user] == ending:
                         pass
                     else:
-                        endings[user] = x-1 if x > begin else None
+                        endings[user] = x - 1 if x > begin else None
                         banished.append(user)
             else:
                 for user in users:

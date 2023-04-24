@@ -345,6 +345,33 @@ class Transcript:
         if path:
             self.fromfile()
 
+    def get_manageable_text_sizes(self):
+        text = self.text
+        pieces = []
+        jump = 50000
+
+        if len(text) < jump * 2:
+            pieces = [text]
+        else:
+            # Break text into smaller chunks so we have enough memory to solve it
+            # FIXME: doesn't properly break
+            candidates = ["\n\n", "\n", ".", "!", "?", ",", " "]
+
+            begin = 0
+            end = jump
+            while end < len(text):
+                next_stop = 0
+                for fi in candidates:
+                    pos = text[begin + jump:end + jump].find(fi)
+                    if pos >= 0 and pos <= jump * 2:
+                        next_stop = pos
+                        break
+                end = begin + jump + next_stop + 1
+                pieces.append(text[begin:end])
+                begin = end
+            pieces.append(text[begin:])
+        return pieces
+
     def fromfile(self, path=None):
         """
         Load transcript from the given path.
@@ -464,7 +491,7 @@ class NLPFeatureAnalysis:
         self.named_entities: NamedEntities = named_entities or NamedEntities()
         if path:
             self.fromfile(path, do_named_entities=do_named_entities)
-        if transcript:
+        if transcript and transcript.text:
             self.complete(transcript, nlptools,
                           do_named_entities=do_named_entities)
 
@@ -498,7 +525,9 @@ class NLPFeatureAnalysis:
         changes = False
         if not self.iscomplete():
             changes = True
-
+        if not transcript or not transcript.text:
+            print("No Text in: " + self.path)
+            return False
         transcript.clean()
         if do_named_entities:
             self.fill_named_entities(transcript, nlptools)
@@ -517,11 +546,16 @@ class NLPFeatureAnalysis:
                 return False
             # create a Sentence object from the text
 
-            doc = nlptools.get_spacy(transcript.language)(transcript.text)
+            bow = BagOfWords()
+
+            for text in transcript.get_manageable_text_sizes():
+                doc = nlptools.get_spacy(transcript.language)(text)
+
+                bow.add(BagOfWords(
+                    text=doc, nlptools=nlptools, language=transcript.language))
 
             # get the bag of words and non-stop-words
-            self.bag_of_words = BagOfWords(
-                text=doc, nlptools=nlptools, language=transcript.language)
+            self.bag_of_words = bow
             return self.bag_of_words
         else:
             self.bag_of_words.update_stops(
@@ -534,33 +568,10 @@ class NLPFeatureAnalysis:
             if not transcript.iscomplete():
                 print("You need a text in a known language to complete " + self.path)
                 return False
-            text = transcript.text
-            pieces = []
-            jump = 50000
 
-            if len(text) < jump * 2:
-                pieces = [text]
-            else:
-                # Break text into smaller chunks so we have enough memory to solve it
-                # FIXME: doesn't properly break
-                candidates = ["\n\n", "\n", ".", "!", "?", ",", " "]
-
-                begin = 0
-                end = jump
-                while end < len(text):
-                    next_stop = 0
-                    for fi in candidates:
-                        pos = text[begin + jump:end + jump].find(fi)
-                        if pos >= 0 and pos <= jump * 2:
-                            next_stop = pos
-                            break
-                    end = begin + jump + next_stop + 1
-                    pieces.append(text[begin:end])
-                    begin = end
-                pieces.append(text[begin:])
             nen = NamedEntities()
 
-            for text in pieces:
+            for text in transcript.get_manageable_text_sizes():
                 sentence = Sentence(text)
 
                 nlptools.get_DocumentPoolEmbeddings(
@@ -620,6 +631,7 @@ class MediaResource:
 
         # todo: make this an actual class
         self.image: str = None
+        self.info: str = None
 
         self.nlp_analysis: NLPFeatureAnalysis = None
 
