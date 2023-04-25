@@ -118,14 +118,23 @@ class BibResources:
                 key = value.citation_key
                 self.entries[key] = value
 
-    def from_path(self, path):
-        self.get_pdf_path(path)
-        folder_name = os.path.basename(path)
+    def look_for_export(self, path, folder_name):
         for entry in os.listdir(path):
-            if entry == "files" and os.path.isdir(os.path.join(path, entry)):
+            if entry == folder_name and os.path.isdir(os.path.join(path, entry)):
+                new_path = os.path.join(path, entry)
+                self.look_for_export(new_path, folder_name)
+                if self.files_folder_path and self.bibtex_path:
+                    return
+            # todo: make an implementation where the og bibtex file is written on
+            elif entry == "files" and os.path.isdir(os.path.join(path, entry)):
                 self.files_folder_path = os.path.join(path, entry)
             elif entry == folder_name + ".bib" and os.path.isfile(os.path.join(path, entry)):
                 self.bibtex_path = os.path.join(path, entry)
+
+    def from_path(self, path):
+        self.get_pdf_path(path)
+        folder_name = os.path.basename(path)
+        self.look_for_export(path, folder_name)
 
         if not self.bibtex_path or not self.files_folder_path:
             print(f"Found no new Zotero export at {path}:")
@@ -165,7 +174,10 @@ class BibResources:
                 failed = False
                 if not os.path.isabs(src_path) and src_path.startswith("files"):
                     # relative -> copy
-                    src_path = os.path.join(self.folder_path, src_path)
+                    prefix = self.files_folder_path
+                    if src_path.startswith("files"):
+                        prefix = os.path.dirname(prefix)
+                    src_path = os.path.join(prefix, src_path)
                     move = True
 
                 if os.path.exists(dst_path):
