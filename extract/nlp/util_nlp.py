@@ -608,6 +608,74 @@ class NLPFeatureAnalysis:
         dump_json(path, output_dict)
 
 
+class ResearchQuestion:
+    def __init__(self, title: str = None, keywords: dict[str, int] = None, queries: dict[str, str] = None):
+        self.title = title
+        self.keywords = keywords
+        self.queries = queries
+
+    def from_file(self, filename):
+        with open(filename, "r") as f:
+            lines = f.readlines()
+        while "\n" in lines:
+            lines.remove("\n")
+        while "```\n" in lines:
+            lines.remove("```\n")
+        self.title = lines.pop(0).strip().split("::")[1].strip()
+
+        self.keywords = {}
+        self.queries = {}
+        in_keywords = False
+        in_queries = False
+        current_name = ""
+        current_group = {}
+        current_query = ""
+
+        for line in lines:
+            if line.startswith("## "):
+                if in_keywords:
+                    if current_name:
+                        self.keywords[current_name] = current_group
+                        current_name = ""
+                        current_group = {}
+                    in_keywords = False
+                    in_queries = True
+                elif in_queries:
+                    if current_name:
+                        self.queries[current_name] = current_query
+                        current_name = ""
+                        current_query = ""
+                    in_queries = False
+                    # whatever_comes_next = True
+                else:
+                    in_keywords = True
+            elif in_keywords:
+                if line.startswith("### "):
+
+                    if current_name:
+                        self.keywords[current_name] = current_group
+                        current_name = ""
+                        current_group = {}
+                    current_name = line.strip().split("::")[0].split("### ")[1]
+                else:
+                    keyword, weight = line.strip().split("::")
+                    current_group[keyword.strip()] = int(weight.strip())
+            elif in_queries:
+                if line.startswith("### "):
+                    if current_name:
+                        self.queries[current_name] = current_query
+                        current_name = ""
+                        current_query = ""
+                    current_name = line.strip().split("::")[0].split("### ")[1]
+                else:
+                    current_query += line.strip()
+
+        if current_name:
+            self.queries[current_name] = current_query
+            current_name = ""
+            current_query = ""
+
+
 class MediaResource:
     """
     A class representing a media resource.
@@ -751,6 +819,21 @@ class MediaResource:
             return self.url
         elif parameter == 'dict':
             return self.get_dict()
+        elif parameter == 'basename':
+            if self.basename:
+                return self.basename
+            else:
+                path = None
+                if self.nlp_analysis:
+                    path = self.nlp_analysis.path
+                elif self.pdf:
+                    path = self.info.pdf
+                elif self.audio_file:
+                    path = self.info.audio_file
+                elif self.info:
+                    path = self.info.path
+                self.basename = os.path.splitext(os.path.basename(path))[0]
+                return self.basename
         elif parameter == 'type':
             return self.__class__.__name__
         else:
@@ -765,6 +848,7 @@ class Subfolder:
         "00_audios": [".mp3", ".mp4"],
         "00_images": [".png", ".jpg", ".jpeg"],
         "00_infos": [".json"],
+        "00_RQs": [".md", ".json"],
         # 01 Extract
         "01_whisper": [".json"],  # todo: vtt
         # 02 Analyse
@@ -776,11 +860,14 @@ class Subfolder:
 
     def __init__(self, folder_path, type="blank"):
         self.path = os.path.join(folder_path, type)
+        os.makedirs(self.path, exist_ok=True)
         self.type = type
         self.endings = self.folder_formats[type]
         if type == "00_PDFs":
             self.BibResources = util_zotero.BibResources(folder_path)
-        os.makedirs(self.path, exist_ok=True)
+        if type == "00_RQs":
+            self.research_questions: list[ResearchQuestion] = None
+            self.get()
 
     def lookfor(self, filename):
         path_found = []
@@ -796,6 +883,24 @@ class Subfolder:
         best_fit = path_found[0] if path_found else path_suggested[0] if path_suggested else None
         return best_fit
         # return found, not_found
+
+    def get(self, arg: str = None):
+        if arg == None or arg.lower() == "rqs" or arg.lower() == "research_questions":
+            if self.research_questions:
+                return self.research_questions
+            files = self.get("files")
+            if not files:
+                return None
+            else:
+                if not self.research_questions:
+                    self.research_questions: list[ResearchQuestion] = []
+                for file in self.get("files"):
+                    rq = ResearchQuestion()
+                    rq.from_file(os.path.join(self.path, file))
+                    self.research_questions.append(rq)
+                return self.research_questions
+        elif arg == "files":
+            return os.listdir(self.path)
 
 
 class Folder:
@@ -827,6 +932,7 @@ class Folder:
         self.pdf = Subfolder(folder_path, "00_PDFs")
         self.image = Subfolder(folder_path, "00_images")
         self.infos = Subfolder(folder_path, "00_infos")
+        self.rq = Subfolder(folder_path, "00_RQs")
         self.whisper = Subfolder(folder_path, "01_whisper")
         self.analyse = Subfolder(folder_path, "02_nlp")
         self.notes = Subfolder(folder_path, "03_notes")
@@ -882,6 +988,57 @@ class Folder:
             if not mr.transcript:
                 should_have_nen = False
             mr.nlp_analysis.save(should_have_nen=should_have_nen)
+
+    def calc_rq_sim(self):
+        relevant_keys = set()
+        for rq in self.rq.get():
+            for group in rq.keywords.values():
+                # todo: see
+                relevant_keys.update(group)
+                # for keyword in group:
+                # relevant_keys.update(keyword.split(" "))
+        reduced_research_questions = []
+        for rq in self.rq.get():
+            res = {}
+            ungrouped = {}
+            for group in rq.keywords.values():
+                ungrouped.update(group)
+            for key in relevant_keys:
+                value = 0
+                if key in ungrouped:
+                    # todo: utilize weight
+                    # value = ungrouped[key]
+                    value = 1
+                res[key] = value
+            reduced_research_questions.append(res)
+
+        reduced_media_resources = []
+        for mr in self.media_resources:
+            res = {}
+            for key in relevant_keys:
+                # Todo: synonyms / related words
+                key = key.lower()
+                if key in mr.nlp_analysis.bag_of_words.tf:
+                    res[key] = mr.nlp_analysis.bag_of_words.tf[key]
+                else:
+                    subwords = key.split(" ")
+                    found = []
+                    for word in subwords:
+                        if word in mr.nlp_analysis.bag_of_words.tf:
+                            found.append(mr.nlp_analysis.bag_of_words.tf[word])
+                        else:
+                            found = None
+                            break
+                    if found:
+                        res[key] = min(found)
+                    else:
+                        res[key] = 0
+            reduced_media_resources.append(res)
+        self.rq_sim_mat = similarity.compute_similarity_from_vectors(
+            reduced_media_resources, reduced_research_questions)
+
+        similarity.print_rq([mr.get("basename") for mr in self.media_resources], self.rq_sim_mat,
+                            self.path, filename="RQ", additional_info=self.rq.research_questions)
 
     def add_media_resource(self, media_resource: MediaResource):
         if media_resource:
@@ -993,6 +1150,7 @@ class Folder:
         if self.media_resources:
             self.populate()
             self.calc_sim_matrix()
+            self.calc_rq_sim()
             self.save(os.path.join(self.path, "00_Folder.json"),
                       do_named_entities=do_named_entities)
             self.save_summary(os.path.join(

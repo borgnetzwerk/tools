@@ -1,12 +1,18 @@
+# controllers.py
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import os
 import numpy as np
 import pandas as pd
 from typing import List, Dict
 import matplotlib
+# If you want to debug:
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
-
+if TYPE_CHECKING:
+    from extract.nlp.util_nlp import ResearchQuestion
 from wordfreq import word_frequency
 
 MAX_LABELS = 15
@@ -44,9 +50,23 @@ def create_word_vectors(dictionaries: List[Dict[str, int]], sum_dict: Dict[str, 
     return vectors
 
 
-def compute_similarity_matrix(vectors):
-    # todo: Include weighed cosine similarity
-    return cosine_similarity(vectors)
+def normalize(vectors):
+    max_values = np.max(vectors, axis=0)
+    vectors /= max_values
+    return vectors
+
+
+# def compute_similarity_matrix(vectors):
+#     # todo: Include weighed cosine similarity
+#     return cosine_similarity(vectors)
+
+
+def compute_similarity_from_vectors(vector_a: List[Dict[str, int]], vector_b: List[Dict[str, int]]):
+    np_vectors_a = create_word_vectors(vector_a)
+    np_vectors_a = normalize(np_vectors_a)
+    np_vectors_b = create_word_vectors(vector_b)
+    sim_matrix = cosine_similarity(np_vectors_a, np_vectors_b)
+    return sim_matrix
 
 
 def compute_similarity_matrix(dictionaries: List[Dict[str, int]], sum_dict: Dict[str, int] = None):
@@ -55,56 +75,88 @@ def compute_similarity_matrix(dictionaries: List[Dict[str, int]], sum_dict: Dict
     return sim_matrix
 
 
-def print_sim_matrix(sim_matrix, path, prefix="", filename="", suffix="_similarity_matrix", xlabel='Documents', ylabel='Documents', dpi=300, vmin=None, vmax=None, cmap=None):
-    # If i want to see the figure:
+def print_rq(names: list[str], sim_matrix, path, prefix="", filename="", suffix="_similarity_matrix", xlabel='Documents', ylabel='Documents', dpi=300, vmin=None, vmax=None, cmap=None, additional_info: list[ResearchQuestion] = None):
+    species = ('Adelie', 'Chinstrap', 'Gentoo')
+
+    sex_counts = {
+        'Male': np.array([73, 34, 61]),
+        'Female': np.array([73, 34, 58]),
+    }
+    width = 0.6  # the width of the bars: can also be len(x) sequence
+    n_documents, n_questions = sim_matrix.shape
+
     fig, ax = plt.subplots()
-    np.fill_diagonal(sim_matrix, np.nan)
+    bottom = np.zeros(n_documents)
+
+    # for sex, sex_count in sex_counts.items():
+    #     p = ax.bar(species, sex_count, label=sex, bottom=bottom)
+    #     bottom += sex_count
+
+    #     ax.bar_label(p, label_type='center')
+
+    # every_nth_x = max(1, n_documents // MAX_LABELS)
+
+    for i, rq in enumerate(additional_info):
+        name = rq.title
+        p = ax.bar(names, sim_matrix[:, 0], label=name, bottom=bottom)
+        bottom += sim_matrix[:, 0]
+        ax.bar_label(p, label_type='center')
+
+    # ax.set_xticklabels(range(1, n_documents + 1, every_nth_x), rotation=90)
+    ax.set_xlabel(xlabel)
+
+    ax.set_title('Importance to our Research question')
+    ax.legend()
+
+    # Save heatmap as PNG
+    filename = prefix + filename + suffix
+    png_file = os.path.join(path, filename) + '.png'
+    plt.savefig(png_file, dpi=dpi)
+
+    # Save similarity matrix as CSV
+    csv_file = os.path.join(path, filename) + '.csv'
+    pd.DataFrame(sim_matrix).to_csv(csv_file, index=False,
+                                    header=False, sep=";", decimal=",")
+
+    # ax.legend()
+
+    print(f"Similarity matrix saved as {png_file} and {csv_file}.")
+
+
+def print_sim_matrix(sim_matrix, path, prefix="", filename="", suffix="_similarity_matrix", xlabel='Documents', ylabel='Documents', dpi=300, vmin=None, vmax=None, cmap=None, additional_info: ResearchQuestion = None):
+    # If i want to see the figure:
+    # fig, ax = plt.subplots()
+    fig, ax = plt.subplots()
+    # plt.show()
+    len_y, len_x = sim_matrix.shape
+    if len_x == len_y:
+        np.fill_diagonal(sim_matrix, np.nan)
+
+    # todo: fix
+
     if vmin is None:
         vmin = np.nanmin(sim_matrix)
-    if vmin is None:
+    if vmax is None:
         vmax = np.nanmax(sim_matrix)
     if cmap is None:
-        # cmap = 'coolwarm'
         cmap = 'Greens'
-        # cmap = 'Blues'
-        # Options:
-        # 'Accent', 'Accent_r', 'Blues', 'Blues_r', 'BrBG', 'BrBG_r', 'BuGn', 'BuGn_r', 'BuPu', 'BuPu_r',
-        # 'CMRmap', 'CMRmap_r', 'Dark2', 'Dark2_r', 'GnBu', 'GnBu_r', 'Greens', 'Greens_r', 'Greys', 'Greys_r',
-        # 'OrRd', 'OrRd_r', 'Oranges', 'Oranges_r', 'PRGn', 'PRGn_r', 'Paired', 'Paired_r',
-        # 'Pastel1', 'Pastel1_r', 'Pastel2', 'Pastel2_r', 'PiYG', 'PiYG_r', 'PuBu', 'PuBuGn',
-        # 'PuBuGn_r', 'PuBu_r', 'PuOr', 'PuOr_r', 'PuRd', 'PuRd_r', 'Purples', 'Purples_r',
-        # 'RdBu', 'RdBu_r', 'RdGy', 'RdGy_r', 'RdPu', 'RdPu_r', 'RdYlBu', 'RdYlBu_r', 'RdYlGn', 'RdYlGn_r',
-        # 'Reds', 'Reds_r', 'Set1', 'Set1_r', 'Set2', 'Set2_r', 'Set3', 'Set3_r', 'Spectral', 'Spectral_r',
-        # 'Wistia', 'Wistia_r', 'YlGn', 'YlGnBu', 'YlGnBu_r', 'YlGn_r', 'YlOrBr', 'YlOrBr_r', 'YlOrRd', 'YlOrRd_r',
-        # 'afmhot', 'afmhot_r', 'autumn', 'autumn_r', 'binary', 'binary_r', 'bone', 'bone_r', 'brg', 'brg_r', 'bwr',
-        # 'bwr_r', 'cividis', 'cividis_r', 'cool', 'cool_r', 'coolwarm', 'coolwarm_r', 'copper', 'copper_r', 'cubehelix',
-        # 'cubehelix_r', 'flag', 'flag_r', 'gist_earth', 'gist_earth_r', 'gist_gray', 'gist_gray_r', 'gist_heat',
-        # 'gist_heat_r', 'gist_ncar', 'gist_ncar_r', 'gist_rainbow', 'gist_rainbow_r', 'gist_stern', 'gist_stern_r',
-        # 'gist_yarg', 'gist_yarg_r', 'gnuplot', 'gnuplot2', 'gnuplot2_r', 'gnuplot_r', 'gray', 'gray_r', 'hot', 'hot_r',
-        # 'hsv', 'hsv_r', 'inferno', 'inferno_r', 'jet', 'jet_r', 'magma', 'magma_r', 'nipy_spectral',
-        # 'nipy_spectral_r', 'ocean', 'ocean_r', 'pink', 'pink_r', 'plasma', 'plasma_r', 'prism', 'prism_r',
-        # 'rainbow', 'rainbow_r', 'seismic', 'seismic_r', 'spring', 'spring_r', 'summer', 'summer_r', 'tab10',
-        #  'tab10_r', 'tab20', 'tab20_r', 'tab20b', 'tab20b_r', 'tab20c', 'tab20c_r', 'terrain', 'terrain_r',
-        # 'turbo', 'turbo_r', 'twilight', 'twilight_r', 'twilight_shifted', 'twilight_shifted_r', 'viridis',
-        # 'viridis_r', 'winter', 'winter_r'
-    im = ax.imshow(sim_matrix*100, cmap=cmap, vmin=vmin, vmax=vmax)
+    im = ax.imshow(sim_matrix * 100, cmap=cmap, vmin=vmin, vmax=vmax)
     # if len(sim_matrix) < 10:
     #     ax.set_xticks(range(len(sim_matrix)))
     #     ax.set_yticks(range(len(sim_matrix)))
     #     ax.set_xticklabels(range(1, len(sim_matrix)+1), rotation=90)
     #     ax.set_yticklabels(range(1, len(sim_matrix)+1), rotation=90)
-    n = len(sim_matrix)
-    every_nth = max(1, n // MAX_LABELS)
-    ax.set_xticks(range(0, len(sim_matrix), every_nth))
-    ax.set_yticks(range(0, len(sim_matrix), every_nth))
-    ax.set_xticklabels(range(1, len(sim_matrix)+1, every_nth), rotation=90)
-    ax.set_yticklabels(range(1, len(sim_matrix)+1, every_nth), rotation=0)
+    every_nth_x = max(1, len_x // MAX_LABELS)
+    every_nth_y = max(1, len_y // MAX_LABELS)
+    ax.set_xticks(range(0, len_x, every_nth_x))
+    ax.set_yticks(range(0, len_y, every_nth_y))
+    ax.set_xticklabels(range(1, len_x + 1, every_nth_x), rotation=90)
+    ax.set_yticklabels(range(1, len_y + 1, every_nth_y), rotation=0)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title('Cosine Similarity Matrix')
     cbar = plt.colorbar(im, format='%.1f%%')
     cbar.ax.set_ylabel('Similarity (%)')
-
     # Save heatmap as PNG
     filename = prefix + filename + suffix
     png_file = os.path.join(path, filename) + '.png'
