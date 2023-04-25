@@ -11,6 +11,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
+from scipy.spatial import distance
 if TYPE_CHECKING:
     from extract.nlp.util_nlp import ResearchQuestion
 from wordfreq import word_frequency
@@ -64,8 +65,26 @@ def normalize(vectors):
 def compute_similarity_from_vectors(vector_a: List[Dict[str, int]], vector_b: List[Dict[str, int]]):
     np_vectors_a = create_word_vectors(vector_a)
     np_vectors_a = normalize(np_vectors_a)
+
     np_vectors_b = create_word_vectors(vector_b)
     sim_matrix = cosine_similarity(np_vectors_a, np_vectors_b)
+    return sim_matrix
+
+
+def compute_weighed_similarity(vector_a: List[Dict[str, int]], vector_b: List[Dict[str, int]]):
+    np_vectors_a = create_word_vectors(vector_a)
+    np_vectors_a = normalize(np_vectors_a)
+
+    np_vectors_b = create_word_vectors(vector_b)
+    sim_matrix = np.zeros((len(np_vectors_a), len(np_vectors_b)))
+    target = np.ones(len(np_vectors_b[0]))
+    for c_a, vector_a in enumerate(np_vectors_a):
+        for c_b, weight in enumerate(np_vectors_b):
+            if sum(vector_a) == 0:
+                sim_matrix[c_a][c_b] = 0
+            else:
+                sim_matrix[c_a][c_b] = 1 - \
+                    distance.cosine(vector_a, target, weight)
     return sim_matrix
 
 

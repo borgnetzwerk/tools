@@ -111,9 +111,11 @@ class ObsidianNote:
         if additional_meta_data:
             fin_meta += f"%%\n"
             for key, value in additional_meta_data.items():
-                if value:
+                if value == "" or value is None:
+                    continue
+                if isinstance(value, str):
                     value = value.replace("\\", "/")
-                    fin_meta += f"{key}:: {value}\n"
+                fin_meta += f"{key}:: {value}\n"
             if fin_meta != f"%%\n":
                 fin_meta += f"%%\n"
             else:
@@ -190,6 +192,14 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             del block['thumbnail_urls']
             del block['cap_codes']
             meta.update(block)
+        try:
+            if folder.rq:
+                for id_rq, rq in enumerate(folder.rq.research_questions):
+                    tag = helper.get_clean_title(
+                        rq.title, obsidian=True).replace(" ", "_")
+                    meta.update({tag: round(folder.rq_sim_mat[idr][id_rq], 3)})
+        except Exception as e:
+            print(e)
 
         mr.obsidian_note.build_note(
             text, links=links, highlights=highlights, name=mr.original_name, related_notes=related_notes, files=files, additional_meta_data=meta)

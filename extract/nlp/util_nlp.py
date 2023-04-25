@@ -1007,8 +1007,8 @@ class Folder:
                 value = 0
                 if key in ungrouped:
                     # todo: utilize weight
-                    # value = ungrouped[key]
-                    value = 1
+                    value = ungrouped[key]
+                    # value = 1
                 res[key] = value
             reduced_research_questions.append(res)
 
@@ -1034,7 +1034,7 @@ class Folder:
                     else:
                         res[key] = 0
             reduced_media_resources.append(res)
-        self.rq_sim_mat = similarity.compute_similarity_from_vectors(
+        self.rq_sim_mat = similarity.compute_weighed_similarity(
             reduced_media_resources, reduced_research_questions)
 
         similarity.print_rq([mr.get("basename") for mr in self.media_resources], self.rq_sim_mat,
