@@ -201,8 +201,17 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
         except Exception as e:
             print(e)
 
+        name = mr.original_name
+
+        if mr.pdf and mr.pdf.metadata:
+            if 'title' in mr.pdf.metadata:
+                name = mr.pdf.metadata['title']
+        if mr.info:
+            if 'title' in mr.info:
+                name = mr.info['title']
+
         mr.obsidian_note.build_note(
-            text, links=links, highlights=highlights, name=mr.original_name, related_notes=related_notes, files=files, additional_meta_data=meta)
+            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta)
 
         # create the markdown file
         mr.obsidian_note.save()

@@ -237,7 +237,7 @@ def include_episodes(edited_path, obs_pl_path, episodes_info, playlist_info):
     # similar episodes
     sim_matrix = np.zeros((len(episodes_info), len(episodes_info)))
     for idx, eID in enumerate(episodes_info):
-        for idy, ieID in enumerate(list(episodes_info)[idx+1:], idx+1):
+        for idy, ieID in enumerate(list(episodes_info)[idx + 1:], idx + 1):
             if eID not in words_by_ep or ieID not in words_by_ep:
                 sim_matrix[idx][idy] = 0
             else:

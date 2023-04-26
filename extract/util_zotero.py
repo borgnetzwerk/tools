@@ -16,8 +16,10 @@ class BibTeXEntry:
 
     def get_dict(self):
         res_dict = vars(self)
-        res_dict["ENTRYTYPE"] = res_dict.pop("entry_type")
-        res_dict["ID"] = res_dict.pop("citation_key")
+        if "entry_type" in res_dict:
+            res_dict["ENTRYTYPE"] = res_dict.pop("entry_type")
+        if "citation_key" in res_dict:
+            res_dict["ID"] = res_dict.pop("citation_key")
         return res_dict
 
     def get(self, attr: str):
@@ -90,10 +92,22 @@ class BibResources:
         if path:
             self.from_path(path)
 
-    def get_metadata(self, attr: str):
-        if attr in self.pdfs:
-            i = self.pdfs.index(attr)
-            return list(self.entries.values())[i].get_dict()
+    def get_metadata(self, path: str):
+        if path in self.pdfs:
+            i = self.pdfs.index(path)
+            basename = os.path.basename(os.path.dirname(path))
+            if basename in self.entries:
+                data = self.entries[basename].get_dict()
+                return data
+            else:
+                print("Error adding metadata for " + path)
+
+            # data = list(self.entries.values())[i].get_dict()
+
+            # if data and 'file' in data:
+            #     if path not in data['file']:
+            #         print("Error adding metadata for " + path)
+            # return data
         return None
 
     def get_pdf_path(self, path=None):
@@ -174,11 +188,12 @@ class BibResources:
                 failed = False
                 if not os.path.isabs(src_path) and src_path.startswith("files"):
                     # relative -> copy
-                    prefix = self.files_folder_path
-                    if src_path.startswith("files"):
-                        prefix = os.path.dirname(prefix)
-                    src_path = os.path.join(prefix, src_path)
-                    move = True
+                    if self.files_folder_path:
+                        prefix = self.files_folder_path
+                        if src_path.startswith("files"):
+                            prefix = os.path.dirname(prefix)
+                        src_path = os.path.join(prefix, src_path)
+                        move = True
 
                 if os.path.exists(dst_path):
                     if dst_path not in links:

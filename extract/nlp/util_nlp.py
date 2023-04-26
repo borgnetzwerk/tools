@@ -656,10 +656,12 @@ class ResearchQuestion:
                         self.keywords[current_name] = current_group
                         current_name = ""
                         current_group = {}
-                    current_name = line.strip().split("::")[0].split("### ")[1]
+                    current_name = line.strip().split(
+                        "::")[0].split("### ")[1].lower()
                 else:
                     keyword, weight = line.strip().split("::")
-                    current_group[keyword.strip()] = int(weight.strip())
+                    current_group[keyword.lower().strip()] = int(
+                        weight.strip())
             elif in_queries:
                 if line.startswith("### "):
                     if current_name:
@@ -990,6 +992,39 @@ class Folder:
             mr.nlp_analysis.save(should_have_nen=should_have_nen)
 
     def calc_rq_sim(self):
+        def get_min_match(words: list[str], match_dict: dict[str, float]):
+            found = []
+            for word in words:
+                if "-" in word:
+                    value = 0
+                    if word in mr.nlp_analysis.bag_of_words.tf:
+                        value += mr.nlp_analysis.bag_of_words.tf[word]
+                    synonyms = [
+                        word.replace("-", " "),
+                        word.replace("-", "")
+                    ]
+                    for syn in synonyms:
+                        if syn in mr.nlp_analysis.bag_of_words.tf:
+                            value += mr.nlp_analysis.bag_of_words.tf[syn]
+                    splits = word.split("-")
+                    value += get_min_match(splits, match_dict)
+                    if value:
+                        found.append(value)
+                    else:
+                        found = None
+                        break
+                else:
+                    if word in mr.nlp_analysis.bag_of_words.tf:
+                        found.append(
+                            mr.nlp_analysis.bag_of_words.tf[word])
+                    else:
+                        found = None
+                        break
+            if found:
+                return min(found)
+            else:
+                return 0
+
         relevant_keys = set()
         for rq in self.rq.get():
             for group in rq.keywords.values():
@@ -1021,18 +1056,12 @@ class Folder:
                 if key in mr.nlp_analysis.bag_of_words.tf:
                     res[key] = mr.nlp_analysis.bag_of_words.tf[key]
                 else:
-                    subwords = key.split(" ")
-                    found = []
-                    for word in subwords:
-                        if word in mr.nlp_analysis.bag_of_words.tf:
-                            found.append(mr.nlp_analysis.bag_of_words.tf[word])
-                        else:
-                            found = None
-                            break
-                    if found:
-                        res[key] = min(found)
+                    if " " in key:
+                        subwords = key.split(" ")
                     else:
-                        res[key] = 0
+                        subwords = [key]
+                    res[key] = get_min_match(
+                        subwords, mr.nlp_analysis.bag_of_words.tf)
             reduced_media_resources.append(res)
         self.rq_sim_mat = similarity.compute_weighed_similarity(
             reduced_media_resources, reduced_research_questions)

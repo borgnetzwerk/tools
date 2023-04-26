@@ -95,23 +95,10 @@ def compute_similarity_matrix(dictionaries: List[Dict[str, int]], sum_dict: Dict
 
 
 def print_rq(names: list[str], sim_matrix, path, prefix="", filename="", suffix="_similarity_matrix", xlabel='Documents', ylabel='Documents', dpi=300, vmin=None, vmax=None, cmap=None, additional_info: list[ResearchQuestion] = None):
-    species = ('Adelie', 'Chinstrap', 'Gentoo')
-
-    sex_counts = {
-        'Male': np.array([73, 34, 61]),
-        'Female': np.array([73, 34, 58]),
-    }
-    width = 0.6  # the width of the bars: can also be len(x) sequence
     n_documents, n_questions = sim_matrix.shape
 
     fig, ax = plt.subplots()
     bottom = np.zeros(n_documents)
-
-    # for sex, sex_count in sex_counts.items():
-    #     p = ax.bar(species, sex_count, label=sex, bottom=bottom)
-    #     bottom += sex_count
-
-    #     ax.bar_label(p, label_type='center')
 
     # every_nth_x = max(1, n_documents // MAX_LABELS)
 
@@ -119,7 +106,8 @@ def print_rq(names: list[str], sim_matrix, path, prefix="", filename="", suffix=
         name = rq.title
         p = ax.bar(names, sim_matrix[:, 0], label=name, bottom=bottom)
         bottom += sim_matrix[:, 0]
-        ax.bar_label(p, label_type='center')
+        if n_documents < MAX_LABELS:
+            ax.bar_label(p, label_type='center')
 
     # ax.set_xticklabels(range(1, n_documents + 1, every_nth_x), rotation=90)
     ax.set_xlabel(xlabel)
