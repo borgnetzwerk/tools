@@ -206,7 +206,7 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
         if mr.pdf and mr.pdf.metadata:
             if 'title' in mr.pdf.metadata:
                 name = mr.pdf.metadata['title']
-        if mr.info:
+        elif mr.info:
             if 'title' in mr.info:
                 name = mr.info['title']
 
