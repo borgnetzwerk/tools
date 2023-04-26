@@ -620,6 +620,8 @@ class ResearchQuestion:
             self.path = filename
         with open(filename, "r", encoding="utf-8") as f:
             lines = f.readlines()
+            if not lines or not lines[0].startswith("RQ::"):
+                return None
         while "\n" in lines:
             lines.remove("\n")
         while "```\n" in lines:
@@ -695,6 +697,8 @@ SORT {tag} DESC
             self.queries[current_name] = current_query
             current_name = ""
             current_query = ""
+        # creation successful
+        return True
 
 
 class MediaResource:
@@ -917,8 +921,8 @@ class Subfolder:
                     self.research_questions: list[ResearchQuestion] = []
                 for file in self.get("files"):
                     rq = ResearchQuestion()
-                    rq.from_file(os.path.join(self.path, file))
-                    self.research_questions.append(rq)
+                    if rq.from_file(os.path.join(self.path, file)):
+                        self.research_questions.append(rq)
                 return self.research_questions
         elif arg == "files":
             return os.listdir(self.path)

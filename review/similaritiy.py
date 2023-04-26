@@ -51,11 +51,52 @@ def create_word_vectors(dictionaries: List[Dict[str, int]], sum_dict: Dict[str, 
     return vectors
 
 
-def normalize(vectors):
+def normalize(vectors, log_level=5):
+    """
+    Normalize a list of vectors and reward higher word counts logarithmically.
+
+    Parameters:
+    ----------
+    vectors : numpy.ndarray
+        A 2D numpy array of shape (n_samples, n_features) containing the vectors to normalize.
+    log : bool, optional (default=True)
+        Whether to apply logarithmic scaling to the values in the input array.
+
+    Returns:
+    -------
+    numpy.ndarray
+        A 2D numpy array of shape (n_samples, n_features) containing the normalized vectors.
+
+    Notes:
+    -----
+    This function normalizes each element in the input array by dividing it by its maximum value in its column.
+    If the `log` argument is True, it applies logarithmic scaling to the values in the input array by scaling up the
+    values by a large constant (9999 in this case) to avoid negative values, adding 1 to each element to avoid taking
+    the logarithm of 0 or negative numbers, and applying logarithmic scaling using base 10, before dividing by 4
+    to reduce the magnitude of the resulting values.
+
+    Examples:
+    --------
+    >>> vectors = np.array(
+63        [[0.010,  0.03,   0.004], 
+285        [0.14,   0.002,  0.005], 
+max        [0.232,  0.118,  0.242]])
+    >>> normalize(vectors, log_level=0)
+    array([[0.427,  0.262,  0.018], 
+285        [0.613,  0.017,  0.023], 
+           [1.0,    1.0,    1.0]])
+    >>> normalize(vectors, log_level=5)
+    array([[0,908,  0.855, 0.564],
+           [0,947,  0.555, 0.591],
+           [1.0,    1.0,    1.0]])
+    """
     max_values = np.max(vectors, axis=0)
     vectors /= max_values
+    if log_level:
+        vectors *= 10 ** (log_level - 1)
+        vectors += 1
+        vectors = np.log10(vectors) / (log_level - 1)
     return vectors
-
 
 # def compute_similarity_matrix(vectors):
 #     # todo: Include weighed cosine similarity
