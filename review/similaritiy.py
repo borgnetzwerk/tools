@@ -80,7 +80,7 @@ def compute_weighed_similarity(vector_a: List[Dict[str, int]], vector_b: List[Di
     target = np.ones(len(np_vectors_b[0]))
     for c_a, vector_a in enumerate(np_vectors_a):
         for c_b, weight in enumerate(np_vectors_b):
-            if sum(vector_a) == 0:
+            if sum(vector_a * weight) == 0:
                 sim_matrix[c_a][c_b] = 0
             else:
                 sim_matrix[c_a][c_b] = 1 - \

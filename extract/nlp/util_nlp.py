@@ -609,19 +609,26 @@ class NLPFeatureAnalysis:
 
 
 class ResearchQuestion:
-    def __init__(self, title: str = None, keywords: dict[str, int] = None, queries: dict[str, str] = None):
+    def __init__(self, title: str = None, path: str = None, keywords: dict[str, int] = None, queries: dict[str, str] = None):
+        self.path = None
         self.title = title
         self.keywords = keywords
         self.queries = queries
 
     def from_file(self, filename):
-        with open(filename, "r") as f:
+        if not self.path:
+            self.path = filename
+        with open(filename, "r", encoding="utf-8") as f:
             lines = f.readlines()
         while "\n" in lines:
             lines.remove("\n")
         while "```\n" in lines:
             lines.remove("```\n")
         self.title = lines.pop(0).strip().split("::")[1].strip()
+
+        tag = helper.get_clean_title(
+            self.title, obsidian=True).replace(" ", "_")
+        tag_found = False
 
         self.keywords = {}
         self.queries = {}
@@ -632,6 +639,8 @@ class ResearchQuestion:
         current_query = ""
 
         for line in lines:
+            if tag in line:
+                tag_found = True
             if line.startswith("## "):
                 if in_keywords:
                     if current_name:
@@ -672,6 +681,16 @@ class ResearchQuestion:
                 else:
                     current_query += line.strip()
 
+        if not tag_found:
+            with open(filename, "a", encoding="utf-8") as f:
+                f.write(f"""
+# Files
+```dataview
+Table
+{tag} as "Fit"
+SORT {tag} DESC
+```
+""")
         if current_name:
             self.queries[current_name] = current_query
             current_name = ""
