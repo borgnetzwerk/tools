@@ -288,7 +288,7 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             meta.update(block)
         rq_scores = {}
         try:
-            if folder.rq:
+            if folder.rq and folder.rq.research_questions:
                 for id_rq, rq in enumerate(folder.rq.research_questions):
                     rq_scores.update(
                         {rq.tag: round(folder.rq_sim_mat[idr][id_rq], 3)})

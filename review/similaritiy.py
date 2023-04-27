@@ -185,7 +185,7 @@ def print_sim_matrix(sim_matrix, path, prefix="", filename="", suffix="_similari
     if vmin is None:
         vmin = np.nanmin(sim_matrix)
     if vmax is None:
-        vmax = np.nanmax(sim_matrix)
+        vmax = np.nanmax(sim_matrix) * 100
     if cmap is None:
         cmap = 'Greens'
     im = ax.imshow(sim_matrix * 100, cmap=cmap, vmin=vmin, vmax=vmax)

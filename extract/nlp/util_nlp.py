@@ -1017,6 +1017,9 @@ class Folder:
             mr.nlp_analysis.save(should_have_nen=should_have_nen)
 
     def calc_rq_sim(self):
+        if not self.rq.research_questions:
+            return None
+
         def get_min_match(words: list[str], match_dict: dict[str, float]):
             found = []
             for word in words:
