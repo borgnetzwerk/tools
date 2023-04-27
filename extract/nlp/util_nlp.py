@@ -610,10 +610,11 @@ class NLPFeatureAnalysis:
 
 class ResearchQuestion:
     def __init__(self, title: str = None, path: str = None, keywords: dict[str, int] = None, queries: dict[str, str] = None):
-        self.path = None
-        self.title = title
-        self.keywords = keywords
-        self.queries = queries
+        self.path: str = None
+        self.title: str = title
+        self.keywords: dict[str, int] = keywords
+        self.queries: dict[str, str] = queries
+        self.tag: str = None
 
     def from_file(self, filename):
         if not self.path:
@@ -628,7 +629,7 @@ class ResearchQuestion:
             lines.remove("```\n")
         self.title = lines.pop(0).strip().split("::")[1].strip()
 
-        tag = helper.get_clean_title(
+        self.tag = helper.get_clean_title(
             self.title, obsidian=True).replace(" ", "_")
         tag_found = False
 
@@ -641,7 +642,7 @@ class ResearchQuestion:
         current_query = ""
 
         for line in lines:
-            if tag in line:
+            if self.tag in line:
                 tag_found = True
             if line.startswith("## "):
                 if in_keywords:
@@ -689,8 +690,9 @@ class ResearchQuestion:
 # Files
 ```dataview
 Table
-{tag} as "Fit"
-SORT {tag} DESC
+{self.tag} as "Fit"
+from "00_notes"
+SORT {self.tag} DESC
 ```
 """)
         if current_name:
