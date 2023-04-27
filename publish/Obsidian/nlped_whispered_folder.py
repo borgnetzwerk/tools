@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from extract.nlp.util_nlp import Folder
 from core import helper
 
+import urllib.parse
 import os
 import json
 import re
@@ -76,22 +77,45 @@ class ObsidianNote:
             self.path = os.path.join(parent_path, self.get_name())
         return self.path
 
-    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None):
-        title = name or self.get_name()
-        metadata = ""
-        if links:
-            for link_name, words in links.items():
-                metadata += f"{link_name}:: {', '.join('[[{}]]'.format(w) for w in words)}\n"
-        if highlights:
-            for highlight_name, words in highlights.items():
-                metadata += f"{highlight_name}:: {', '.join('**{}**'.format(w) for w in words)}\n"
+    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None, rq_scores=None):
+        def dict_to_dataview(input_dict: dict[str, any], title="", join_char=", ", fromat_group="", open=True, end=True):
+            res = ""
+            is_empty = True
+            if input_dict:
+                if open:
+                    res += f"%%{title}\n"
+                elif title:
+                    res += f"{title}\n"
+                for key, value in input_dict.items():
+                    if value == "" or value is None:
+                        continue
+                    if isinstance(value, str):
+                        value = value.replace("\\", "/")
+                    if fromat_group:
+                        value = ', '.join(fromat_group.format(w)
+                                          for w in value)
+                    res += f"{key}:: {value}\n"
+                    is_empty = False
+                if is_empty:
+                    res = ""
+                elif end:
+                    res += f"%%\n\n"
+            return res
 
-        if related_notes:
-            metadata += f"Related Notes:: {', '.join('[[{}]]'.format(n) for n in related_notes)}\n"
+        title = name or self.get_name()
+        # if links:
+        #     for link_name, words in links.items():
+        #         metadata += f"{link_name}:: {', '.join('[[{}]]'.format(w) for w in words)}\n"
+        # if highlights:
+        #     for highlight_name, words in highlights.items():
+        #         metadata += f"{highlight_name}:: {', '.join('**{}**'.format(w) for w in words)}\n"
+
+        # if related_notes:
+        #     metadata += f"Related Notes:: {', '.join('[[{}]]'.format(n) for n in related_notes)}\n"
 
         # todo: append more info here
         # if additional_meta:
-            # metadata += f""
+        # metadata += f""
 
         corpus = ""
         for type, path in files.items():
@@ -107,6 +131,16 @@ class ObsidianNote:
                     text = text.replace(word, f"**{word}**", 1)
             corpus += f"## Transcript\n{text}\n\n"
 
+        metadata = ""
+        metadata += dict_to_dataview(links,
+                                     fromat_group='[[{}]]', open=False, end=False)
+        metadata += dict_to_dataview(highlights,
+                                     fromat_group='**{}**', open=False, end=False)
+        metadata += dict_to_dataview(related_notes,
+                                     fromat_group='[[{}]]', open=False, end=False)
+        if metadata:
+            metadata = "%%\n" + metadata + "%%\n\n"
+
         fin_meta = ""
         if additional_meta_data:
             fin_meta += f"%%\n"
@@ -121,13 +155,72 @@ class ObsidianNote:
             else:
                 fin_meta = ""
 
-        self.text = f"""%%
-{metadata}
-%%
+        fin_meta += dict_to_dataview(rq_scores, title="RQ Scores")
 
-# {title}
+        related_cols = ""
+        related_sort = ""
+        if rq_scores:
+            pieces = []
+            for i, key in enumerate(rq_scores.keys()):
+                pieces.append(f"{key} as RQ{i}")
+            rq_sum = " + ".join(rq_scores.keys())
+            pieces.append(f"{rq_sum} as SUM")
+            related_cols = "\n" + ", ".join(pieces)
+            related_sort = f"\nSORT {rq_sum} desc"
 
-{corpus}{fin_meta}
+        # ORKG block:
+        ORKG_data = {}
+        if additional_meta_data:
+            url_suffix = None
+            look_at = ["doi", "title"]
+            while look_at and not url_suffix:
+                check = look_at.pop(0)
+                if check in additional_meta_data:
+                    url_suffix = additional_meta_data[check].replace(
+                        "/", "%2F")
+            if url_suffix:
+                ORKG_data[
+                    "ORKG_search"] = f"https://orkg.org/search/{urllib.parse.quote(url_suffix)}"
+        fin_meta += dict_to_dataview(ORKG_data, title="ORKG")
+
+        ORKG_Document_Properties = ""
+        if ORKG_data:
+            for key in ORKG_data.keys():
+                ORKG_Document_Properties += f"\n| {key} | `=this.{key}` |"
+
+# Rank according to age of paper
+
+        property_block = ""
+        if additional_meta_data:
+            property_block = f"""
+            
+## Document Properties
+| Property | Value |
+| --- | --- |
+| Research field | `=this.research_field` |
+| Publication month | `=this.publication_month` |
+| Publication year | `=this.publication_year` |
+| Authors | `=this.author` |
+| DOI | `=this.doi` |
+| Published in | `=this.published_in` |
+| Paper URL | `=this.url` |{ORKG_Document_Properties}
+
+## Contribution Properties
+### Contribution 1
+research_problem:: 
+result:: 
+method:: 
+material:: """
+
+        self.text = f"""# {title}{property_block}
+
+### Related Documents:
+```dataview
+TABLE{related_cols}
+WHERE contains(file.inlinks, this.file.link){related_sort}
+```
+
+{corpus}{metadata}{fin_meta}
 """
 
 
@@ -180,6 +273,7 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
                 break
             cr = folder.media_resources[i]
             related_notes.append(cr.obsidian_note.get_name(cr.original_name))
+        related_notes = {"Related Notes": related_notes}
         text = None
         if mr.transcript:
             text = mr.transcript.text
@@ -192,12 +286,12 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             del block['thumbnail_urls']
             del block['cap_codes']
             meta.update(block)
+        rq_scores = {}
         try:
             if folder.rq:
                 for id_rq, rq in enumerate(folder.rq.research_questions):
-                    tag = helper.get_clean_title(
-                        rq.title, obsidian=True).replace(" ", "_")
-                    meta.update({tag: round(folder.rq_sim_mat[idr][id_rq], 3)})
+                    rq_scores.update(
+                        {rq.tag: round(folder.rq_sim_mat[idr][id_rq], 3)})
         except Exception as e:
             print(e)
 
@@ -211,7 +305,7 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
                 name = mr.info['title']
 
         mr.obsidian_note.build_note(
-            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta)
+            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores)
 
         # create the markdown file
         mr.obsidian_note.save()
