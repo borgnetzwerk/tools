@@ -19,6 +19,39 @@ from collections import defaultdict
 # does not (really) work on windows: from polyglot.detect import Detector
 
 
+# https://stackoverflow.com/questions/21827874/timeout-a-function-windows
+from threading import Thread
+import functools
+
+
+def timeout(timeout):
+    def deco(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (
+                func.__name__, timeout))]
+
+            def newFunc():
+                try:
+                    res[0] = func(*args, **kwargs)
+                except Exception as e:
+                    res[0] = e
+            t = Thread(target=newFunc)
+            t.daemon = True
+            try:
+                t.start()
+                t.join(timeout)
+            except Exception as je:
+                print('error starting thread')
+                raise je
+            ret = res[0]
+            if isinstance(ret, BaseException):
+                raise ret
+            return ret
+        return wrapper
+    return deco
+
+
 class PDFDocument:
     def __init__(self, path=None, text=None, pages=None, language=None, force=False):
         """
@@ -137,22 +170,26 @@ class PDFDocument:
             return None
         # Ranking according to minor testing, future improvements welcome!
 
-        try:
-            if not self.has_text():
-                self.text = extract_text_pdfminer(path)
-            if not self.has_text():
-                self.text = extract_text_pymupdf(path)
-            if not self.has_text():
-                self.text = extract_text_pypdf2(path)
-            if not self.has_text():
-                self.text = extract_text_pdfquery(path)
-        except Exception as e:
-            print(e)
+        error_path = self.get_text_path().replace(".txt", "_ERROR.txt")
+        if not os.path.exists(error_path):
+            try:
+                if not self.has_text():
+                    self.text = extract_text_pdfminer(path)
+                if not self.has_text():
+                    self.text = extract_text_pymupdf(path)
+                if not self.has_text():
+                    self.text = extract_text_pypdf2(path)
+                if not self.has_text():
+                    self.text = extract_text_pdfquery(path)
+            except Exception as e:
+                print(e)
         if not self.has_text():
             print("No way to extract text from: " + path)
-        # needs Java
+            open(error_path, "a", encoding="utf8").close()
+
+            # needs Java
             # self.text_tika = extract_text_tika(path)
-        # looks like this can't do proper text
+            # looks like this can't do proper text
             # self.text_pdfrw = extract_text_pdfrw(path)
         self.clean_text()
         self.detect_language()
@@ -236,6 +273,7 @@ class PDFDocument:
             self.text = self.text.replace("\n", " ")
 
 
+@timeout(30)
 def extract_text_pypdf2(pdf_path):
     try:
         with open(pdf_path, 'rb') as pdf_file:
@@ -250,6 +288,7 @@ def extract_text_pypdf2(pdf_path):
         return None
 
 
+@timeout(30)
 def extract_text_tika(pdf_path):
     try:
         parsed_pdf = parser.from_file(pdf_path)
@@ -259,6 +298,7 @@ def extract_text_tika(pdf_path):
         return None
 
 
+@timeout(30)
 def extract_text_pymupdf(pdf_path):
     try:
         text = ''
@@ -271,6 +311,7 @@ def extract_text_pymupdf(pdf_path):
         return None
 
 
+@timeout(30)
 def extract_text_pdfrw(pdf_path):
     # looks like this can't export proper Text
     try:
@@ -343,6 +384,7 @@ def remove_repetition(string_list: List[str], footer: bool = True, header: bool 
     #     return
 
 
+@timeout(30)
 def extract_text_pdfminer(pdf_path, clean=False):
     # Rank 1: appears to be the best. Formatting is nice, accuracy works.
     # Tested: Can read multiple Columns correctly
@@ -369,6 +411,7 @@ def extract_text_pdfminer(pdf_path, clean=False):
         return remove_repetition(pages)
 
 
+@timeout(30)
 def extract_text_pdfquery(pdf_path):
     try:
         pdf = PDFQuery(pdf_path)

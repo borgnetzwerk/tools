@@ -1192,7 +1192,7 @@ class Folder:
                 mr.add_obsidian_note(path=self.notes.lookfor(path))
                 self.add_media_resource(mr)
         if pdfs:
-            for path in pdfs:
+            for idx, path in enumerate(pdfs):
                 mr = MediaResource()
                 mr.add_pdf(path=path)
                 mr.pdf.add_metadata(self.pdf.BibResources.get_metadata(path))
@@ -1200,6 +1200,9 @@ class Folder:
                     path), nlptools=nlptools, do_named_entities=False)
                 mr.add_obsidian_note(path=self.notes.lookfor(path))
                 self.add_media_resource(mr)
+                if idx % 100 == 99:
+                    print(f"{idx+1} out of {len(pdfs)} added.")
+            print(f"All {len(pdfs)} PDFs added.")
 
         if self.media_resources:
             self.populate()
