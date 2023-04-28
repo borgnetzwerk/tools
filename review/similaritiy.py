@@ -91,7 +91,10 @@ max        [0.232,  0.118,  0.242]])
            [1.0,    1.0,    1.0]])
     """
     max_values = np.max(vectors, axis=0)
+    indices_zero = max_values == 0
+    max_values[indices_zero] = 1  # replacing 0s with 1s
     vectors /= max_values
+
     if log_level:
         vectors *= 10 ** (log_level - 1)
         vectors += 1

@@ -691,7 +691,7 @@ class ResearchQuestion:
 ```dataview
 Table
 {self.tag} as "Fit"
-from "00_notes"
+from "03_notes"
 SORT {self.tag} DESC
 ```
 """)

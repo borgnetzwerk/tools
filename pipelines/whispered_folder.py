@@ -15,8 +15,8 @@ from extract import util_whisper
 queue = [
     {"folder": "D:/workspace/Zotero/pipelines",
      "language": "en"},
-    {"folder": "D:/workspace/Zotero/SE2A-B4-2",
-     "language": "en"},
+    # {"folder": "D:/workspace/Zotero/SE2A-B4-2",
+    #  "language": "en"},
     # {"folder": "D:/workspace/raw (MP3)/Weltverbesserer",
     #  "image": "D:/workspace/raw (MP3)/Weltverbesserer/mask/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg",
     #  "language": "de"},

@@ -162,7 +162,7 @@ class ObsidianNote:
         if rq_scores:
             pieces = []
             for i, key in enumerate(rq_scores.keys()):
-                pieces.append(f"{key} as RQ{i}")
+                pieces.append(f"{key} as RQ{i+1}")
             rq_sum = " + ".join(rq_scores.keys())
             pieces.append(f"{rq_sum} as SUM")
             related_cols = "\n" + ", ".join(pieces)
