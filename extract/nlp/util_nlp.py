@@ -306,6 +306,21 @@ class NamedEntities:
             else:
                 self.entities[key] = value
 
+    def update(self):
+        move_to = {}
+        for key in self.entities.keys():
+            if key.lower() == key:
+                for other_key in self.entities.keys():
+                    if other_key != key and other_key.lower() == key:
+                        move_to[key] = other_key
+                        break
+        for source, dest in move_to.items():
+            if isinstance(self.entities[dest], list):
+                self.entities[dest] += self.entities[source]
+            else:
+                self.entities[dest].update(self.entities[source])
+            del self.entities[source]
+
     def get(self):
         return self.entities
 
@@ -422,24 +437,26 @@ class Transcript:
             segments = self.text.split("\n\n")
             sentences = [s.split("\n")[2] for s in segments]
             # todo: detect when speaker is given like "Speaker a: ..."
-            openings = defaultdict(int)
-            for sentence in sentences:
-                pieces = sentence.split(": ")
-                if len(pieces) > 1:
-                    openings[pieces[0]] += 1
-
-            speakers = False
-            # see if there are regular speakers:
-            for opening, count in openings.items():
-                if count > 5:
-                    speakers = True
-            if speakers:
-                for idx, sentence in enumerate(sentences):
-                    pieces = sentence.split(": ")
+            speaker_splitter = [":", "]"]
+            for s_c in speaker_splitter:
+                openings = defaultdict(int)
+                for sentence in sentences:
+                    pieces = sentence.split(s_c)
                     if len(pieces) > 1:
-                        pieces.pop(0)
-                    sentences[idx] = ": ".join(pieces)
+                        openings[pieces[0]] += 1
 
+                speakers = False
+                # see if there are regular speakers:
+                for opening, count in openings.items():
+                    if count > 5:
+                        speakers = True
+                if speakers:
+                    for idx, sentence in enumerate(sentences):
+                        pieces = sentence.split(s_c)
+                        if len(pieces) > 1:
+                            pieces.pop(0)
+                        sentences[idx] = s_c.join(pieces)
+            sentences = [s for s in sentences if s.count(" ") != len(s)]
             self.text = " ".join(sentences)
 
         elif "\n" in self.text:
@@ -534,7 +551,10 @@ class NLPFeatureAnalysis:
         self.fill_bag_of_words(transcript, nlptools)
 
         # create a Document object and return it
-        if changes or self.bag_of_words.update_stops(transcript.language, nlptools):
+        entity_change = self.named_entities.update()
+        BagOfWords_change = self.bag_of_words.update_stops(
+            transcript.language, nlptools)
+        if changes or BagOfWords_change or entity_change:
             self.save(should_have_nen=do_named_entities)
         return self.iscomplete()
 
@@ -726,7 +746,7 @@ class MediaResource:
 
         # todo: make this an actual class
         self.image: str = None
-        self.info: str = None
+        self.info: util_pytube.YouTubeInfo = None
 
         self.nlp_analysis: NLPFeatureAnalysis = None
 
@@ -1124,6 +1144,8 @@ class Folder:
 
         for mr in self.media_resources:
             mr.nlp_analysis.bag_of_words.calc_tf_idf(self.get_idf())
+        # self.bag_of_words.update_stops()
+        self.named_entities.update()
         self.bag_of_words.sort()
         self.named_entities.sort()
 
@@ -1180,7 +1202,7 @@ class Folder:
         do_named_entities = False
         if audios:
             do_named_entities = True
-            for path in audios:
+            for idx, path in enumerate(audios):
                 mr = MediaResource()
                 mr.add_audio(path=path)
                 mr.add_transcript(path=self.whisper.lookfor(path))

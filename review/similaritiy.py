@@ -51,7 +51,7 @@ def create_word_vectors(dictionaries: List[Dict[str, int]], sum_dict: Dict[str, 
     return vectors
 
 
-def normalize(vectors, log_level=5):
+def normalize(vectors, log_level=False, sqrt_level=2):
     """
     Normalize a list of vectors and reward higher word counts logarithmically.
 
@@ -96,9 +96,13 @@ max        [0.232,  0.118,  0.242]])
     vectors /= max_values
 
     if log_level:
+        # Recommended: False, not fully tested.
+        # If used: ~5, between 2 and 10
         vectors *= 10 ** (log_level - 1)
         vectors += 1
         vectors = np.log10(vectors) / (log_level - 1)
+    if sqrt_level:
+        vectors = np.sqrt(vectors)
     return vectors
 
 # def compute_similarity_matrix(vectors):

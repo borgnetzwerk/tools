@@ -13,13 +13,13 @@ from extract import util_whisper
 
 
 queue = [
-    {"folder": "D:/workspace/Zotero/pipelines",
-     "language": "en"},
+    # {"folder": "D:/workspace/Zotero/pipelines",
+    #  "language": "en"},
     # {"folder": "D:/workspace/Zotero/SE2A-B4-2",
     #  "language": "en"},
-    # {"folder": "D:/workspace/raw (MP3)/Weltverbesserer",
-    #  "image": "D:/workspace/raw (MP3)/Weltverbesserer/mask/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg",
-    #  "language": "de"},
+    {"folder": "D:/workspace/raw (MP3)/Weltverbesserer",
+     #  "image": "D:/workspace/raw (MP3)/Weltverbesserer/mask/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg",
+     "language": "de"},
     # {"folder": "D:/workspace/raw (MP3)/HoP",
     #  "image": "D:/workspace/raw (MP3)/HoP/mask/ab67656300005f1fcabcff3dcfa8fbd5f5b0fa04.jpeg",
     #  "language": "en"},

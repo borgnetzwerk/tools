@@ -32,6 +32,11 @@ def generate_wordcloud(dict_word_count, output_file_path='wordcloud.png', width=
     wc.generate_from_frequencies(dict_word_count)
     wc.to_file(output_file_path)
 
+    new = min(height, width)
+    wc2 = WordCloud(width=new, height=new)
+    wc2.generate_from_frequencies(dict_word_count)
+    wc2.to_file(output_file_path.replace(".png", "_square.png"))
+
 
 def generate_wordcloud_mask(dict_word_count, mask_path, output_file_path='wordcloud_mask.png', width=1920, height=1080):
     """

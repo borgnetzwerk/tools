@@ -175,7 +175,7 @@ class ObsidianNote:
             look_at = ["doi", "title"]
             while look_at and not url_suffix:
                 check = look_at.pop(0)
-                if check in additional_meta_data:
+                if check in additional_meta_data and additional_meta_data[check]:
                     url_suffix = additional_meta_data[check].replace(
                         "/", "%2F")
             if url_suffix:
@@ -301,8 +301,8 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             if 'title' in mr.pdf.metadata:
                 name = mr.pdf.metadata['title']
         elif mr.info:
-            if 'title' in mr.info:
-                name = mr.info['title']
+            if hasattr(mr.info, 'title'):
+                name = mr.info.title
 
         mr.obsidian_note.build_note(
             text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores)
