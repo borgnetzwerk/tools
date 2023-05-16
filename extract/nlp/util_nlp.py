@@ -629,6 +629,37 @@ class NLPFeatureAnalysis:
 
 
 class ResearchQuestion:
+    def get_total_note(research_questions):
+        pieces = []
+        tags = []
+        for i, key in enumerate(research_questions):
+            tags.append(key.tag)
+            pieces.append(f"{key.tag} as RQ{i+1}")
+        rq_sum = " + ".join(tags)
+        pieces.append(f"round({rq_sum},3) as \"Sum\"")
+        total_cols = ", ".join(pieces)
+        total_sort = f"SORT {rq_sum} desc"
+
+        note = f"""## Research Questions
+```dataview
+Table
+RQ as "RQ"
+where RQ
+SORT file.name
+```
+
+## Best Candidates
+```dataview
+Table
+{total_cols}
+From "03_notes"
+{total_sort}
+WHERE contains(file.tasks.completed,false)
+LIMIT 100
+```
+"""
+        return note
+
     def __init__(self, title: str = None, path: str = None, keywords: dict[str, int] = None, queries: dict[str, str] = None):
         self.path: str = None
         self.title: str = title
@@ -713,6 +744,7 @@ Table
 {self.tag} as "Fit"
 from "03_notes"
 SORT {self.tag} DESC
+LIMIT 100
 ```
 """)
         if current_name:
@@ -945,6 +977,9 @@ class Subfolder:
                     rq = ResearchQuestion()
                     if rq.from_file(os.path.join(self.path, file)):
                         self.research_questions.append(rq)
+                with open(os.path.join(self.path, file), "w", encoding="utf8") as f:
+                    f.write(ResearchQuestion.get_total_note(
+                        self.research_questions))
                 return self.research_questions
         elif arg == "files":
             return os.listdir(self.path)

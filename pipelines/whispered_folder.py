@@ -15,14 +15,14 @@ from extract import util_whisper
 queue = [
     # {"folder": "D:/workspace/Zotero/pipelines",
     #  "language": "en"},
-    # {"folder": "D:/workspace/Zotero/SE2A-B4-2",
-    #  "language": "en"},
-    {"folder": "D:/workspace/raw (MP3)/Weltverbesserer",
-     #  "image": "D:/workspace/raw (MP3)/Weltverbesserer/mask/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg",
-     "language": "de"},
+    {"folder": "D:/workspace/Zotero/SE2A-B4-2",
+     "language": "en"},
+    # {"folder": "D:/workspace/raw (MP3)/Weltverbesserer",
+    #  "image": "D:/workspace/raw (MP3)/Weltverbesserer/mask/49faa272-1663-44cb-ae49-6c7a7356cc12 - Kopie - Kopie.jpg",
+    # "language": "de"},
     # {"folder": "D:/workspace/raw (MP3)/HoP",
     #  "image": "D:/workspace/raw (MP3)/HoP/mask/ab67656300005f1fcabcff3dcfa8fbd5f5b0fa04.jpeg",
-    #  "language": "en"},
+    #  "language": "en"}
 ]
 
 
@@ -50,7 +50,7 @@ for channel_id, channel_name in channels.items():
     queue.append(entry)
 
 # Extract
-## Transcribe (Whisper)
+# Transcribe (Whisper)
 nlptools = util_nlp.NLPTools()
 for do in queue:
     folder_path = do["folder"]
@@ -77,7 +77,7 @@ for do in queue:
         # todo: make this productive
 
     sys.stdout = old_stdout
-    ## NLP (Flair and SpaCy)
+    # NLP (Flair and SpaCy)
     folder = util_nlp.Folder(
         folder_path, nlptools=nlptools, language=language)
 

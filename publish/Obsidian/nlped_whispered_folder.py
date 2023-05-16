@@ -120,16 +120,17 @@ class ObsidianNote:
         corpus = ""
         for type, path in files.items():
             path = path.replace("\\", "/")
-            corpus += f"## {type}\n![[{path}]]\n\n"
+            corpus += f"\n\n## {type}\n![[{path}]]"
 
         # Replace first occurrence of each word in text with a link if it's in links or highlights
+        transcript = ""
         if text:
             for word in text.split():
                 if word in links:
                     text = text.replace(word, f"[[{word}]]", 1)
                 elif word in highlights:
                     text = text.replace(word, f"**{word}**", 1)
-            corpus += f"## Transcript\n{text}\n\n"
+            transcript += f"\n\n## Transcript\n{text}"
 
         metadata = ""
         metadata += dict_to_dataview(links,
@@ -139,11 +140,11 @@ class ObsidianNote:
         metadata += dict_to_dataview(related_notes,
                                      fromat_group='[[{}]]', open=False, end=False)
         if metadata:
-            metadata = "%%\n" + metadata + "%%\n\n"
+            metadata = "\n\n%%\n" + metadata + "%%"
 
         fin_meta = ""
         if additional_meta_data:
-            fin_meta += f"%%\n"
+            fin_meta += f"\n\n%%\n"
             for key, value in additional_meta_data.items():
                 if value == "" or value is None:
                     continue
@@ -156,6 +157,9 @@ class ObsidianNote:
                 fin_meta = ""
 
         fin_meta += dict_to_dataview(rq_scores, title="RQ Scores")
+        rq_colon = ""
+        for i in range(len(rq_scores)):
+            rq_colon += f"\nRQ{i+1}:: "
 
         related_cols = ""
         related_sort = ""
@@ -164,7 +168,7 @@ class ObsidianNote:
             for i, key in enumerate(rq_scores.keys()):
                 pieces.append(f"{key} as RQ{i+1}")
             rq_sum = " + ".join(rq_scores.keys())
-            pieces.append(f"{rq_sum} as SUM")
+            pieces.append(f"round({rq_sum},3) as \"Sum\"")
             related_cols = "\n" + ", ".join(pieces)
             related_sort = f"\nSORT {rq_sum} desc"
 
@@ -191,37 +195,148 @@ class ObsidianNote:
 # Rank according to age of paper
 
         property_block = ""
-        if additional_meta_data:
-            property_block = f"""
-            
+        property_view = f"""
+
 ## Document Properties
 | Property | Value |
 | --- | --- |
-| Research field | `=this.research_field` |
-| Publication month | `=this.publication_month` |
-| Publication year | `=this.publication_year` |
+| Date | `=this.date` |
 | Authors | `=this.author` |
 | DOI | `=this.doi` |
 | Published in | `=this.published_in` |
 | Paper URL | `=this.url` |{ORKG_Document_Properties}
+	(You can update this in edit mode at the end of the document)"""
+        if additional_meta_data:
+            property_block = f"""
 
-## Contribution Properties
+## Contributions
 ### Contribution 1
 research_problem:: 
 result:: 
 method:: 
-material:: """
+material:: {rq_colon}
+- [ ] Paper read and Contribution completed"""
 
-        self.text = f"""# {title}{property_block}
+        self.text = f"""# {title}{property_view}{property_block}{corpus}
 
 ### Related Documents:
 ```dataview
 TABLE{related_cols}
 WHERE contains(file.inlinks, this.file.link){related_sort}
-```
-
-{corpus}{metadata}{fin_meta}
+```{transcript}{metadata}{fin_meta}
 """
+
+
+# Directly from dictionary
+with open('ORKG/ResearchFields.json') as json_file:
+    meta = json.load(json_file)
+
+RF_map = {}
+for rf in list(meta.values())[0]:
+    RF_map.update({rf['id']: rf['label']})
+RF_map = {k: v for k, v in sorted(
+    RF_map.items(), key=lambda item: int(item[0][1:]))}
+
+with open('ORKG/RF_Map.json', 'w') as outfile:
+    json.dump(RF_map, outfile, indent=4)
+
+RF_patterns = {}
+for raw_field in RF_map.values():
+    pot_fields = raw_field
+    if " " not in raw_field:
+        continue
+    fields = []
+    master = ""
+    patterns = []
+    if " of " in raw_field:
+        master = raw_field.split(" of ", 1)[0]
+        pot_fields.replace(f"{master} of ", "")
+        master = re.escape(master) + r"*"
+    elif " and " in raw_field:
+        temp = raw_field.split(" and ", 1)[1]
+        if " " in temp:
+            temp = " " .join(temp.split(" ", 1)[1:])
+            master = re.escape(temp) + r"*"
+    fields = re.split(',|/| and ', raw_field)
+    fields = [field.strip(' ') for field in fields]
+    if "" in fields:
+        fields.remove("")
+    if len(fields) > 1:
+        for field in fields:
+            pat = r"\b" + re.escape(field) + r"\b"
+            patterns.append(pat + r".*" + master)
+            patterns.append(master + r".*" + pat)
+    if patterns:
+        RF_patterns[raw_field] = patterns
+
+
+def identify_field_weight(field, content):
+    if field in content:
+        return 1
+    elif field in RF_patterns:
+        # Is: "Electrical Engineering"
+        # Field: "Electrical and Computer Engineering"
+        for pattern in RF_patterns[field]:
+            if re.search(pattern, content):
+                return 1  # maybe weigh this less?
+
+
+def update_RF(meta):
+    # TODO
+    # Attempt to get RF:
+    weights = {
+        "booktitle": 10,
+        "journaltitle": 10,
+        "title": 4,
+        # "abstract": 1,
+    }
+    assume = {}
+    for search_key, weight in weights.items():
+        if search_key in meta:
+            for RF_id, field in RF_map.items():
+                # TODO:
+                value = identify_field_weight(field, meta[search_key])
+                if value:
+                    if RF_id not in assume:
+                        assume[RF_id] = 0
+                    assume[RF_id] = value * weight
+    assume = {k: v for k, v in sorted(
+        assume.items(), key=lambda item: item[1], reverse=True)}
+    highest = 0
+    results = []
+    for RF_id, value in assume.items():
+        # TODO multiple matches?
+
+        for result in results:
+            # check if "Engineering" could be made "Computer Engineering"
+            comp = identify_field_weight(RF_map[result], RF_map[RF_id])
+            if comp:
+                # "Engineering" is in "Computer Engineering"
+                results.remove(result)
+                results.append(RF_id)
+                highest = value
+                continue
+
+        if value >= highest:
+            if RF_id not in results:
+                results.append(RF_id)
+            highest = value
+
+            # 'R137': 10,     "R137": "Numerical Analysis/Scientific Computing",
+            # 'R194': 10,     "R194": "Engineering",
+            # 'R237': 10,     "R237": "Electrical and Computer Engineering",
+            # 'R241': 10,     "R241": "Electrical and Electronics",
+            # 'R254': 10,     "R254": "Materials Science and Engineering",
+            # 'R201': 4     "R201": "Structures and Materials",
+    # If you want to be able to read the results
+    # results = [RF_map[x] for x in results]
+    if results:
+        # data.update({f"paper:{key}": "orkg:" + "; orkg:".join(results)})
+        # data.update({f"paper:{key}": "; ".join(results)})
+        # data.update({f"paper:{key}" : f"orkg:{results[-1]}"})
+        meta.update({f"research_field": f"{results[-1]}"})
+        meta.update({f"research_field_label": f"{RF_map[results[-1]]}"})
+    return meta
 
 
 def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
@@ -286,6 +401,23 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             del block['thumbnail_urls']
             del block['cap_codes']
             meta.update(block)
+
+        if meta:
+            # research field:
+            # update_RF(meta)
+
+            # date
+            if "date" in meta:
+                values = meta["date"].split("-")
+                meta.update({"publication_year": values[0]})
+                if len(values) > 1:
+                    meta.update({"publication_month": values[1]})
+
+            # date
+            for key in ["booktitle", "journaltitle"]:
+                if key in meta:
+                    meta.update({"published_in": meta[key]})
+                    break
         rq_scores = {}
         try:
             if folder.rq and folder.rq.research_questions:

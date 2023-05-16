@@ -14,7 +14,7 @@ def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/m
         sys.stdout = log_file
 
         checkpoint = time.time()
-        print(str(time.time()-checkpoint) + '\n')
+        print(str(time.time() - checkpoint) + '\n')
 
         model = whisper.load_model("tiny")
         result = model.transcribe(filename)
@@ -22,7 +22,7 @@ def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/m
             json.dump(result, file, ensure_ascii=False, indent=4)
 
         checkpoint = time.time()
-        print(str(time.time()-checkpoint) + '\n')
+        print(str(time.time() - checkpoint) + '\n')
 
         model = whisper.load_model("base")
         result = model.transcribe(filename)
@@ -30,7 +30,7 @@ def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/m
             json.dump(result, file, ensure_ascii=False, indent=4)
 
         checkpoint = time.time()
-        print(str(time.time()-checkpoint) + '\n')
+        print(str(time.time() - checkpoint) + '\n')
 
         model = whisper.load_model("small")
         result = model.transcribe(filename)
@@ -38,7 +38,7 @@ def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/m
             json.dump(result, file, ensure_ascii=False, indent=4)
 
         checkpoint = time.time()
-        print(str(time.time()-checkpoint) + '\n')
+        print(str(time.time() - checkpoint) + '\n')
 
         model = whisper.load_model("medium")
         result = model.transcribe(filename)
@@ -46,7 +46,7 @@ def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/m
             json.dump(result, file, ensure_ascii=False, indent=4)
 
         checkpoint = time.time()
-        print(str(time.time()-checkpoint) + '\n')
+        print(str(time.time() - checkpoint) + '\n')
 
         # if graphics card is strong enough:
 
@@ -123,7 +123,7 @@ def extract_info(input_path, playlist_name=None):
     old_stdout = sys.stdout
     # todo: make this cleaner and load the name from central place
     audio_path = os.path.join(input_path, "00_audios")
-    whisper_path = os.path.join(input_path, "01_extract")
+    whisper_path = os.path.join(input_path, "01_whisper")
     with open("logfile.log", "a", encoding='utf-8') as log_file:
         sys.stdout = log_file
         try:

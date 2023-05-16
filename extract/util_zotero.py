@@ -6,6 +6,8 @@ import shutil
 
 
 class BibTeXEntry:
+    # To Debug:
+    # keys = set()
     def __init__(self, bib_entry: Dict[str, Any]) -> None:
         self.entry_type: str = bib_entry['ENTRYTYPE']
         self.citation_key: str = bib_entry['ID']
@@ -13,6 +15,8 @@ class BibTeXEntry:
             if value is None or key in ['entry_type', 'citation_key', 'ENTRYTYPE', 'ID']:
                 continue
             setattr(self, key, value)
+            # To Debug:
+            # BibTeXEntry.keys.add(key)
 
     def get_dict(self):
         res_dict = vars(self)
@@ -131,6 +135,8 @@ class BibResources:
                 value = BibTeXEntry(entry)
                 key = value.citation_key
                 self.entries[key] = value
+        # To Debug:
+        # print(BibTeXEntry.keys)
 
     def look_for_export(self, path, folder_name):
         for entry in os.listdir(path):
