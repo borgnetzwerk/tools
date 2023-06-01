@@ -206,7 +206,20 @@ class ObsidianNote:
 | Published in | `=this.published_in` |
 | Paper URL | `=this.url` |{ORKG_Document_Properties}
 	(You can update this in edit mode at the end of the document)"""
-        if additional_meta_data:
+
+        if os.path.exists(self.path):
+            with open(self.path, 'r', encoding='utf8') as f:
+                text = f.read()
+                pieces = text.split("\n## Contributions\n")
+                if len(pieces) > 1:
+                    pieces = pieces[1].split(
+                        "Paper read and Contribution completed")
+                if len(pieces) > 1:
+                    property_block = "\n\n## Contributions\n" + pieces[0] + \
+                        "Paper read and Contribution completed"
+
+        # todo see if i can compare these property_blocks better
+        if not property_block:
             property_block = f"""
 
 ## Contributions
