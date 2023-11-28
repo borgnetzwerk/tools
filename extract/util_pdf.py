@@ -6,7 +6,7 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfrw import PdfReader
 from pdfquery import PDFQuery
-from tika import parser
+# from tika import parser
 import PyPDF2
 import fitz
 import io
@@ -288,14 +288,14 @@ def extract_text_pypdf2(pdf_path):
         return None
 
 
-@timeout(30)
-def extract_text_tika(pdf_path):
-    try:
-        parsed_pdf = parser.from_file(pdf_path)
-        return parsed_pdf['content']
-    except Exception as e:
-        print(e)
-        return None
+# @timeout(30)
+# def extract_text_tika(pdf_path):
+#     try:
+#         parsed_pdf = parser.from_file(pdf_path)
+#         return parsed_pdf['content']
+#     except Exception as e:
+#         print(e)
+#         return None
 
 
 @timeout(30)

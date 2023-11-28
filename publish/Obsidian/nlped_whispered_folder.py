@@ -241,7 +241,7 @@ WHERE contains(file.inlinks, this.file.link){related_sort}
 
 
 # Directly from dictionary
-with open('ORKG/ResearchFields.json') as json_file:
+with open('./ORKG/ResearchFields.json') as json_file:
     meta = json.load(json_file)
 
 RF_map = {}
