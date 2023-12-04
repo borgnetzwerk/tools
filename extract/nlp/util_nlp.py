@@ -6,7 +6,7 @@ from flair.data import Sentence, Token
 from flair.models import SequenceTagger
 from flair.embeddings import WordEmbeddings, DocumentPoolEmbeddings
 from collections import defaultdict
-from typing import List, Dict
+from typing import List, Dict, Union, Optional
 import inspect
 import review.similaritiy as similarity
 import core.helper as helper
@@ -296,16 +296,6 @@ class NamedEntities:
             else:
                 self.entities[key] = value
 
-    def merge(self, other, path=None):
-        for key, value in other.entities.items():
-            if path:
-                path = os.path.basename(path)
-                value = [f"{path}: {x}" for x in value]
-            if key in self.entities:
-                self.entities[key] += value
-            else:
-                self.entities[key] = value
-
     def update(self):
         move_to = {}
         for key in self.entities.keys():
@@ -358,7 +348,7 @@ class Transcript:
         self.language: str = language
         self.segments: Dict[str, str] = segments
         if path:
-            self.fromfile()
+            self.from_file()
 
     def get_manageable_text_sizes(self):
         text = self.text
@@ -387,7 +377,7 @@ class Transcript:
             pieces.append(text[begin:])
         return pieces
 
-    def fromfile(self, path=None):
+    def from_file(self, path=None):
         """
         Load transcript from the given path.
 
@@ -411,7 +401,7 @@ class Transcript:
 
     def complete(self, path=None):
         if not self.iscomplete() and path:
-            self.fromfile(path)
+            self.from_file(path)
         else:
             print("missing path to load transcript")
         return self.iscomplete()
@@ -507,28 +497,31 @@ class NLPFeatureAnalysis:
         self.bag_of_words: BagOfWords = bag_of_words or BagOfWords()
         self.named_entities: NamedEntities = named_entities or NamedEntities()
         if path:
-            self.fromfile(path, do_named_entities=do_named_entities)
+            self.from_file(path, do_named_entities=do_named_entities)
         if transcript and transcript.text:
             self.complete(transcript, nlptools,
                           do_named_entities=do_named_entities)
 
-    def fromfile(self, path, do_named_entities=True):
+    def from_file(self, path: str = None, do_named_entities: bool=True) -> None:
         """
         Load transcript from the given path.
 
         Args:
             path (str): Path to the transcript file.
         """
-        self.path = path
+        if path is None:
+            path = self.path
+        else:
+            self.path = path
         data = get_json_data(path)
         data_to_attributes(self, data, do_named_entities)
 
-    def iscomplete(self):
+    def iscomplete(self) -> bool:
         if self.bag_of_words.get() and self.named_entities.get():
             return True
         return False
 
-    def complete(self, transcript: Transcript, nlptools: NLPTools = None, do_named_entities=True):
+    def complete(self, transcript: Transcript, nlptools: NLPTools = None, do_named_entities: bool = True) -> bool:
         """Processes a JSON file containing text and returns a Document object.
 
         Args:
@@ -558,7 +551,7 @@ class NLPFeatureAnalysis:
             self.save(should_have_nen=do_named_entities)
         return self.iscomplete()
 
-    def fill_bag_of_words(self, transcript: Transcript, nlptools: NLPTools = None):
+    def fill_bag_of_words(self, transcript: Transcript, nlptools: NLPTools = None) -> Union[BagOfWords, bool]:
         if not self.bag_of_words.get():
             nlptools = nlptools or NLPTools()
             if not transcript.iscomplete():
@@ -582,7 +575,7 @@ class NLPFeatureAnalysis:
                 language=transcript.language, nlptools=nlptools)
             return False
 
-    def fill_named_entities(self, transcript: Transcript, nlptools: NLPTools = None):
+    def fill_named_entities(self, transcript: Transcript, nlptools: NLPTools = None) -> Union[NamedEntities, bool]:
         if not self.named_entities.get():
             nlptools = nlptools or NLPTools()
             if not transcript.iscomplete():
@@ -607,7 +600,7 @@ class NLPFeatureAnalysis:
         else:
             return False
 
-    def get_dict(self):
+    def get_dict(self) -> dict:
         # Todo: consider writing 'tf' to file as well.
         return {
             'bag_of_words': self.bag_of_words.words,
@@ -616,7 +609,7 @@ class NLPFeatureAnalysis:
             'stop_words': self.bag_of_words.stops
         }
 
-    def save(self, path=None, should_have_nen=True):
+    def save(self, path: Optional[str] = None, should_have_nen: bool = True) -> None:
         if path is None:
             path = self.path
         output_dict = self.get_dict()
@@ -629,37 +622,6 @@ class NLPFeatureAnalysis:
 
 
 class ResearchQuestion:
-    def get_total_note(research_questions):
-        pieces = []
-        tags = []
-        for i, key in enumerate(research_questions):
-            tags.append(key.tag)
-            pieces.append(f"{key.tag} as RQ{i+1}")
-        rq_sum = " + ".join(tags)
-        pieces.append(f"round({rq_sum},3) as \"Sum\"")
-        total_cols = ", ".join(pieces)
-        total_sort = f"SORT {rq_sum} desc"
-
-        note = f"""## Research Questions
-```dataview
-Table
-RQ as "RQ"
-where RQ
-SORT file.name
-```
-
-## Best Candidates
-```dataview
-Table
-{total_cols}
-From "03_notes"
-{total_sort}
-WHERE contains(file.tasks.completed,false)
-LIMIT 100
-```
-"""
-        return note
-
     def __init__(self, title: str = None, path: str = None, keywords: dict[str, int] = None, queries: dict[str, str] = None):
         self.path: str = None
         self.title: str = title
@@ -667,10 +629,12 @@ LIMIT 100
         self.queries: dict[str, str] = queries
         self.tag: str = None
 
-    def from_file(self, filename):
-        if not self.path:
-            self.path = filename
-        with open(filename, "r", encoding="utf-8") as f:
+    def from_file(self, path: str = None):
+        if path is None:
+            path = self.path
+        else:
+            self.path = path
+        with open(path, "r", encoding="utf-8") as f:
             lines = f.readlines()
             if not lines or not lines[0].startswith("RQ::"):
                 return None
@@ -736,7 +700,7 @@ LIMIT 100
                     current_query += line.strip()
 
         if not tag_found:
-            with open(filename, "a", encoding="utf-8") as f:
+            with open(path, "a", encoding="utf-8") as f:
                 f.write(f"""
 # Files
 ```dataview
@@ -753,6 +717,37 @@ LIMIT 100
             current_query = ""
         # creation successful
         return True
+
+    def get_total_note(research_questions):
+        pieces = []
+        tags = []
+        for i, key in enumerate(research_questions):
+            tags.append(key.tag)
+            pieces.append(f"{key.tag} as RQ{i+1}")
+        rq_sum = " + ".join(tags)
+        pieces.append(f"round({rq_sum},3) as \"Sum\"")
+        total_cols = ", ".join(pieces)
+        total_sort = f"SORT {rq_sum} desc"
+
+        note = f"""## Research Questions
+```dataview
+Table
+RQ as "RQ"
+where RQ
+SORT file.name
+```
+
+## Best Candidates
+```dataview
+Table
+{total_cols}
+From "03_notes"
+{total_sort}
+WHERE contains(file.tasks.completed,false)
+LIMIT 100
+```
+"""
+        return note
 
 
 class MediaResource:
@@ -946,8 +941,8 @@ class Subfolder:
             self.BibResources = util_zotero.BibResources(folder_path)
         if type == "00_RQs":
             self.research_questions: list[ResearchQuestion] = None
-            self.get()
-
+            self.get("research_questions")
+            
     def lookfor(self, filename):
         path_found = []
         path_suggested = []
@@ -964,7 +959,7 @@ class Subfolder:
         # return found, not_found
 
     def get(self, arg: str = None):
-        if arg == None or arg.lower() == "rqs" or arg.lower() == "research_questions":
+        if arg.lower() == "rqs" or arg.lower() == "research_questions":
             if self.research_questions:
                 return self.research_questions
             files = self.get("files")
@@ -1109,14 +1104,14 @@ class Folder:
                 return 0
 
         relevant_keys = set()
-        for rq in self.rq.get():
+        for rq in self.rq.get("rqs"):
             for group in rq.keywords.values():
                 # todo: see
                 relevant_keys.update(group)
                 # for keyword in group:
                 # relevant_keys.update(keyword.split(" "))
         reduced_research_questions = []
-        for rq in self.rq.get():
+        for rq in self.rq.get("rqs"):
             res = {}
             ungrouped = {}
             for group in rq.keywords.values():

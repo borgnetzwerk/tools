@@ -53,9 +53,6 @@ class BibTeXEntry:
                 }
                 })
         return links
-    bib_real = {
-        ""
-    }
 
     def set_links(self, links: Dict[str, str]):
         res = []

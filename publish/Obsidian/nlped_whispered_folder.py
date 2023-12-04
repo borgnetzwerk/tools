@@ -24,13 +24,14 @@ class ObsidianNote:
         self.text = text or None
         self.related_note_ids = None
         if path and text is None:
-            self.fromfile(path)
+            self.from_file(path)
         # if not self.iscomplete() and text:
         #     self.complete(text)
         if simVec:
+            #TODO: Establish this function
             self.get_related_note_ids(simVec)
 
-    def fromfile(self, path):
+    def from_file(self, path):
         """
         Load transcript from the given path.
 

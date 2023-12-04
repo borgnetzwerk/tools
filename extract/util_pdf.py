@@ -53,7 +53,7 @@ def timeout(timeout):
 
 
 class PDFDocument:
-    def __init__(self, path=None, text=None, pages=None, language=None, force=False):
+    def __init__(self, path:str =None, text=None, pages=None, language=None, force=False):
         """
         A class representing a PDF document.
 
@@ -67,14 +67,14 @@ class PDFDocument:
             text (str): Text content of the PDF document.
             pages (list): A list of strings, where each string is the text content of a single page.
         """
-        self.path = path
+        self.path:str = path
         self.text = text
         self.text_path = None
         self.pages = pages
         self.language = language
         self.metadata: dict = None
         if path:
-            self.fromfile(force=force)
+            self.from_file(force=force)
             self.save(force=force)
 
     def get_manageable_text_sizes(self):
@@ -149,7 +149,7 @@ class PDFDocument:
             return True
         return False
 
-    def fromfile(self, path=None, force=False):
+    def from_file(self, path=None, force=False):
         """
         Load PDF document from the given path.
 
@@ -258,7 +258,7 @@ class PDFDocument:
 
     def complete(self, path=None):
         if not self.iscomplete():
-            self.fromfile(path)
+            self.from_file(path)
         return self.iscomplete()
 
     def get_dict(self):
