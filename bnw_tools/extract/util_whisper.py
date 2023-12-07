@@ -71,6 +71,8 @@ def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/m
 
 def grab(input_path, filename, output_path=None, device='cuda'):
     model = whisper.load_model("medium", device=device)
+    # result = model.transcribe("D:/test.mp4")
+
     result = model.transcribe(os.path.join(input_path, filename))
     if filename.endswith(".mp4"):
         newfilename_new = filename.replace('.mp4', '.json')

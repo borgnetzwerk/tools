@@ -242,7 +242,8 @@ WHERE contains(file.inlinks, this.file.link){related_sort}
 
 
 # Directly from dictionary
-with open('ORKG/ResearchFields.json') as json_file:
+#TODO: Make this package-worthy
+with open(os.path.join("bnw_tools","ORKG", "ResearchFields.json")) as json_file:
     meta = json.load(json_file)
 
 RF_map = {}
@@ -251,7 +252,7 @@ for rf in list(meta.values())[0]:
 RF_map = {k: v for k, v in sorted(
     RF_map.items(), key=lambda item: int(item[0][1:]))}
 
-with open('ORKG/RF_Map.json', 'w') as outfile:
+with open(os.path.join("bnw_tools","ORKG", "RF_Map.json"), 'w') as outfile:
     json.dump(RF_map, outfile, indent=4)
 
 RF_patterns = {}

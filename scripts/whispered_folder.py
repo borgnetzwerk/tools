@@ -3,7 +3,8 @@ import os
 import sys
 
 # todo: make this import cleaner
-sys.path.append(os.getcwd())
+# sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), "bnw_tools"))
 
 from extract import util_pytube
 from publish.Obsidian import nlped_whispered_folder
@@ -15,12 +16,12 @@ from extract import util_whisper
 queue = [
     # {"folder": "D:/workspace/Zotero/pipelines",
     #  "language": "en"},
-    {"folder": "D:/workspace/Zotero/SE2A-B4-2",
-     "language": "en"},
+    # {"folder": "D:/workspace/Zotero/SE2A-B4-2",
+    #  "language": "en"},
     # "language": "de"},
-    # {"folder": "D:/workspace/raw (MP3)/HoP",
-    #  "image": "D:/workspace/raw (MP3)/HoP/mask/ab67656300005f1fcabcff3dcfa8fbd5f5b0fa04.jpeg",
-    #  "language": "en"}
+    {"folder": "D:/workspace/raw (MP3)/HoP",
+     "image": "D:/workspace/raw (MP3)/HoP/mask/ab67656300005f1fcabcff3dcfa8fbd5f5b0fa04.jpeg",
+     "language": "en"}
 ]
 
 

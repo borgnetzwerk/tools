@@ -1,0 +1,1 @@
+Experiments using source codes (by scripts and notebooks) are inside ```scripts/``` within the root folder (top-level scripts). It has its own configuration package for one-stop configuring how the experiments are run (with hyper-parameters/meta-data).
