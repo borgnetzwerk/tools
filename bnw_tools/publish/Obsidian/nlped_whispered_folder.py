@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from extract.nlp.util_nlp import Folder
-from core import helper
+    from ...extract.nlp.util_nlp import Folder
+from ...core import helper
 
 import urllib.parse
 import os

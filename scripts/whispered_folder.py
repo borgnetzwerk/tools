@@ -1,16 +1,25 @@
 import yaml
 import os
 import sys
+import importlib
+
+bnw_tools_spec = importlib.util.find_spec('bnw_tools')
+
+if bnw_tools_spec is None:
+    sys.path.append(os.getcwd())
+    import bnw_tools
+
+# import bnw_tools
 
 # todo: make this import cleaner
 # sys.path.append(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), "bnw_tools"))
 
-from extract import util_pytube
-from publish.Obsidian import nlped_whispered_folder
-from publish import util_wordcloud
-from extract.nlp import util_nlp
-from extract import util_whisper
+from bnw_tools.extract import util_pytube
+from bnw_tools.publish.Obsidian import nlped_whispered_folder
+from bnw_tools.publish import util_wordcloud
+from bnw_tools.extract.nlp import util_nlp
+from bnw_tools.extract import util_whisper
 
 
 queue = [

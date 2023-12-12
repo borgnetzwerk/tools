@@ -3,12 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "example_package_YOUR_USERNAME_HERE"
-version = "0.0.1"
+name = "bnw_tools"
+version = "0.0.1.1"
 authors = [
-  { name="Example Author", email="author@example.com" },
+  { name="BorgNetzWerk", email="info@borgnetzwerk.de" },
+  { name="Tim Wittenborg", email="tim.wittenborg@l3s.uni-hannover.de" },
 ]
-description = "A small example package"
+description = "Tools developed in the BorgNetzWerk project for the extraction, analysis and publication of knowledge."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
@@ -18,5 +19,5 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://github.com/borgnetzwerk/tools"
+Issues = "https://github.com/borgnetzwerk/tools/issues"
