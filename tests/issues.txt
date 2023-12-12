@@ -1,0 +1,9 @@
+# Issues:
+1. Old files are terribly maintained
+
+# Tasks:
+1. Wrap package
+2. Write tests for the modules.
+3. Convert "path/to/file" to "os.path.join(path, to, file)
+    a. Use Regex: ["'].*/
+    b. Change path + "to/" + file as well, where some filenames and paths already have the "/" in it.
