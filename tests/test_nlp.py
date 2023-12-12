@@ -1,14 +1,19 @@
 import yaml
 import os
 import sys
+import importlib
 
-# todo: make this import cleaner
-sys.path.append(os.getcwd())
 
-from publish import util_wordcloud
-from publish.Obsidian import nlped_whispered_folder
-from extract.nlp import util_nlp
-from extract import util_whisper
+bnw_tools_spec = importlib.util.find_spec('bnw_tools')
+
+if bnw_tools_spec is None:
+    sys.path.append(os.getcwd())
+    import bnw_tools
+
+from bnw_tools.publish import util_wordcloud
+from bnw_tools.publish.Obsidian import nlped_whispered_folder
+from bnw_tools.extract.nlp import util_nlp
+from bnw_tools.extract import util_whisper
 
 # test = "C:/Users/TimWittenborg/workspace/test/whispered"
 # test = "C:/Users/TimWittenborg/workspace/data"

@@ -25,7 +25,7 @@ for rf in list(data.values())[0]:
 RF_map = {k: v for k, v in sorted(
     RF_map.items(), key=lambda item: int(item[0][1:]))}
 
-with open('ORKG/RF_Map.json', 'w') as outfile:
+with open(os.path.join('ORKG', 'RF_Map.json'), 'w') as outfile:
     json.dump(RF_map, outfile, indent=4)
 
 RF_patterns = {}
