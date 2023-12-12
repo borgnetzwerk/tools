@@ -1,7 +1,7 @@
-import core.helper as helper
-import publish.Obsidian.obsidize as obsidize
-import publish.MediaWiki.mediaWiki as mediaWiki
-import extract.nlp.nlp as nlp
+from ...core import helper
+from ...publish.Obsidian import obsidize
+from ...publish.MediaWiki import mediaWiki
+from ...extract.nlp import nlp
 
 import re
 import csv

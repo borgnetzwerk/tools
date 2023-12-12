@@ -1,5 +1,5 @@
-import core.helper as helper
-import wiki.main as wiki_helpers
+from ...core import helper
+from wiki import main as wiki_helpers
 import wiki_bot
 
 import json

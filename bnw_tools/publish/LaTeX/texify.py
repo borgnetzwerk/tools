@@ -1,5 +1,5 @@
-import core.helper as helper
-import review.spellcheck as s_check
+from  core import helper
+from review import spellcheck as s_check
 
 import os
 import re

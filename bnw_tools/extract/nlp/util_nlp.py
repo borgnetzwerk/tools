@@ -8,22 +8,22 @@ from flair.embeddings import WordEmbeddings, DocumentPoolEmbeddings
 from collections import defaultdict
 from typing import List, Dict, Union, Optional
 import inspect
-import review.similaritiy as similarity
-import core.helper as helper
 import numpy as np
 import math
-from termcolor import colored
-from publish import util_wordcloud
-from publish.Obsidian import nlped_whispered_folder
-from extract import util_pdf
-from extract import util_zotero
-from extract import util_pytube
 import re
 import urllib.request
 from mutagen.easyid3 import EasyID3
 import importlib
+from termcolor import colored
 
-from extract.nlp.my_stop_words import MY_STOP_WORDS
+from ...review import similarity
+from ...core import helper
+from ...publish import util_wordcloud
+from ...publish.Obsidian import nlped_whispered_folder
+from ...extract import util_pdf
+from ...extract import util_zotero
+from ...extract import util_pytube
+from ...extract.nlp.my_stop_words import MY_STOP_WORDS
 
 
 def get_json_data(path):

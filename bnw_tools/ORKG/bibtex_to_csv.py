@@ -1,7 +1,5 @@
-import sys
 import os
-sys.path.append(os.getcwd())
-import core.helper as helper
+from ..core import helper
 import bibtexparser
 
 import csv

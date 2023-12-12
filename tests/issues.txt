@@ -7,3 +7,8 @@
 3. Convert "path/to/file" to "os.path.join(path, to, file)
     a. Use Regex: ["'].*/
     b. Change path + "to/" + file as well, where some filenames and paths already have the "/" in it.
+
+# Local Debugging:
+pip uninstall -y bnw_tools
+py -m build
+pip install dist\bnw_tools-0.0.1.1.tar.gz

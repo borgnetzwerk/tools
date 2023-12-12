@@ -12,9 +12,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.spatial import distance
-if TYPE_CHECKING:
-    from extract.nlp.util_nlp import ResearchQuestion
 from wordfreq import word_frequency
+
+if TYPE_CHECKING:
+    from ..extract.nlp.util_nlp import ResearchQuestion
 
 MAX_LABELS = 15
 

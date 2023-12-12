@@ -1,8 +1,8 @@
-import core.helper as helper
-import config.personal as personal
-import ORKG.bibtex_to_csv as ORKG_csv
-import review.k_score as k_score
-import extract.util_bibtex as util_bibtex
+from ...core import helper
+from ...ORKG import bibtex_to_csv as ORKG_csv
+from ...review import k_score
+#TODO: this file no longer exists. Need to be re-checked before this code is revived.
+from ...extract import util_bibtex
 
 import re
 import os
@@ -11,6 +11,10 @@ from typing import Dict
 from os import listdir
 from os.path import isfile, join
 import markdown
+
+#TODO This is an old import, is now part of config
+# from ...config import personal
+
 
 LITERATURE = "Reading notes"
 
@@ -398,7 +402,7 @@ def create_zotero_notes(files, cfg):
     return files
 
 
-def check_cfg(cfg):
+def check_cfg(cfg, personal):
     def merge(cfg):
         return os.path.join(cfg["obsidian_path"], cfg["vault_name"])
     assume = {

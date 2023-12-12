@@ -1,5 +1,5 @@
-import core.helper as helper
-import publish.MediaWiki.mediaWiki as mediaWiki
+from ...core import helper
+from publish.MediaWiki import mediaWiki
 
 import re
 import csv

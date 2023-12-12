@@ -1,3 +1,7 @@
+#TODO: This file is deprecated and should be removed
+
+
+
 import stanza
 import publish.util_networkx as nx
 import extract.util_pdf as util_pdf
