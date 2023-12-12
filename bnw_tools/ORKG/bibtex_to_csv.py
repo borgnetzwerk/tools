@@ -16,7 +16,7 @@ import re
 # RF_WEB = json.loads(page.text)
 
 # Directly from dictionary
-with open('ORKG/ResearchFields.json') as json_file:
+with open(os.path.join('ORKG', 'ResearchFields.json')) as json_file:
     data = json.load(json_file)
 
 RF_map = {}

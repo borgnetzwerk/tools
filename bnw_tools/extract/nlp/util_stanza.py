@@ -7,24 +7,10 @@ import os
 # This sets up a default neural pipeline in English
 nlp = stanza.Pipeline('de')
 
+#TODO: Check if this needs to be removed
 try_pages = True
 with open("input.txt", encoding="utf8") as f:
     text = f.read()
-
-
-text = """
-Täglich gibt es Forschungsergebnisse, die unmittelbar für die Menschen relevant sind, aber auch andere, deren Wert sich erst nach Jahrzehnten erschließt.
-Die Wissenschaft durchdringt fast alle Bereiche des Lebens.
-"""
-
-pdf_name = "factory_wisskomm_publikation"
-# pdf_path = "G:/.shortcut-targets-by-id/1Sxc0Ojy1-WTltHt2m2l2h-pHM7ToyAsc/ORKG/Proposals/2023-03-01_wit/"
-# text_pages = util_pdf.get(pdf_name, pdf_path)
-# # Täglich gibt es Forschungsergebnisse, die unmittelbar für die Menschen relevant sind, aber auch andere, deren Wert sich erst nach Jahrzehnten erschließt.
-# # """
-# text_pages.append("\n\n".join(text_pages))
-# doc = nlp("Barack Obama was born in Hawaii.  He was elected president in 2008.")
-
 
 def connect_words(text, page_id, doc):
     data = []
@@ -60,7 +46,7 @@ def connect_words(text, page_id, doc):
     filename = f"{page_id}_{pdf_name}.dot"
     # if page_id == len(text_pages)-1:
     #     filename == f"{pdf_name}_full.dot"
-    directory = "output/"
+    directory = "output"
     if not os.path.exists(directory):
         os.mkdir(directory)
     with open(directory + filename, "w", encoding="utf8") as f:
@@ -161,7 +147,7 @@ def create_kg(text, page_id, doc):
     filename = f"{page_id}_{pdf_name}.dot"
     # if page_id == len(text_pages)-1:
     #     filename == f"{pdf_name}_full.dot"
-    directory = "output/"
+    directory = "output"
     if not os.path.exists(directory):
         os.mkdir(directory)
     with open(directory + filename, "w", encoding="utf8") as f:

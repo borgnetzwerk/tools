@@ -112,9 +112,7 @@ class YouTubeInfo:
 
 
 def print_infos(video, infos_dir):
-
     # TODO: check if file already exists
-    'D:/AVC/BorgNetzWerk/audio/Über 70 Tage in unter 70 Minuten: 9000 Seiten auf Knopfdruck.json'
     filename = video.title
     for char in noFileChars:
         filename = filename.replace(char, "")

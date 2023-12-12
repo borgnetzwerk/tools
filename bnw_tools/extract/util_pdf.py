@@ -424,8 +424,3 @@ def extract_text_pdfquery(pdf_path):
     except Exception as e:
         print(e)
         return None
-
-
-# filename = "D:/workspace/Zotero/SE2A-B4-2/00_PDFs/allaire_mathematical_2014/Allaire und Willcox - 2014 - A MATHEMATICAL AND COMPUTATIONAL FRAMEWORK FOR MUL.pdf"
-
-# PDFDocument(filename, force=True)

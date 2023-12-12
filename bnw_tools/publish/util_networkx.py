@@ -37,7 +37,7 @@ def graph_from_list(data):
     # plt.show()
 
 
-def dot_plot(filename="file.dot", directory="output/"):
+def dot_plot(filename="file.dot", directory="output"):
     engines = ["dot", "fdp"]
     all_engines = ["dot", "neato", "fdp", "sfdp", "circo",
                    "twopi", "osage", "patchwork"]
@@ -50,9 +50,9 @@ def dot_plot(filename="file.dot", directory="output/"):
             s.engine = engine
             new_filename= f"{filename}_{engine}"
             s.render(filename=new_filename, directory=directory)
-            if os.path.exists(directory + new_filename):
+            if os.path.exists(os.path.join(directory, new_filename)):
                 # remove the non-pdf file
-                os.remove(directory + new_filename)
+                os.remove(os.path.join(directory, new_filename))
         except Exception as e:
             print(e)
     # s.view()

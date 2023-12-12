@@ -8,7 +8,7 @@ import whisper
 import sys
 
 
-def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/mp3/BMZ #001 Legendaries und Artefakte.mp3"):
+def benchmark(filename):
     old_stdout = sys.stdout
     with open("logfile.log", "a", encoding='utf-8') as log_file:
         sys.stdout = log_file
@@ -71,7 +71,6 @@ def benchmark(filename="C:/Users/TimWittenborg/workspace/borgnetzwerk/data/BMZ/m
 
 def grab(input_path, filename, output_path=None, device='cuda'):
     model = whisper.load_model("medium", device=device)
-    # result = model.transcribe("D:/test.mp4")
 
     result = model.transcribe(os.path.join(input_path, filename))
     if filename.endswith(".mp4"):
