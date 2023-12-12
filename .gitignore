@@ -1,6 +1,5 @@
 *.dot
 *.svg
-*.txt
 *.pdf
 # BorgNetzWerk
 *.json
