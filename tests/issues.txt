@@ -12,3 +12,8 @@
 pip uninstall -y bnw_tools
 py -m build
 pip install dist\bnw_tools-0.0.1.1.tar.gz
+
+## if that version worked:
+twine upload dist/*
+username: __token__
+password: a valid PiPy token
