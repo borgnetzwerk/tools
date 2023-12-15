@@ -6,11 +6,12 @@ if TYPE_CHECKING:
     from ...extract.nlp.util_nlp import Folder
 from ...core import helper
 
+
 import urllib.parse
 import os
 import json
 import re
-
+from importlib.resources import as_file, files
 
 LIMIT_BAG_OF_WORDS = 10
 LIMIT_NAMED_ENTITIES = 5
@@ -243,7 +244,16 @@ WHERE contains(file.inlinks, this.file.link){related_sort}
 
 # Directly from dictionary
 #TODO: Make this package-worthy
-with open(os.path.join("bnw_tools","ORKG", "ResearchFields.json")) as json_file:
+        
+# with open(os.path.join("bnw_tools","ORKG", "ResearchFields.json")) as json_file:
+               
+a = files('bnw_tools.ORKG')
+b = a.joinpath('ResearchFields.json')
+c = as_file(b)
+
+# with open(as_file((files('bnw_tools.ORKG').joinpath('ResearchFields.json')))) as json_file:
+
+with open(files('bnw_tools.ORKG').joinpath('ResearchFields.json')) as json_file:
     meta = json.load(json_file)
 
 RF_map = {}
@@ -252,7 +262,8 @@ for rf in list(meta.values())[0]:
 RF_map = {k: v for k, v in sorted(
     RF_map.items(), key=lambda item: int(item[0][1:]))}
 
-with open(os.path.join("bnw_tools","ORKG", "RF_Map.json"), 'w') as outfile:
+# with open(os.path.join(root_stepup, "bnw_tools","ORKG", "RF_Map.json"), 'w') as outfile:
+with open((files('bnw_tools.ORKG').joinpath('RF_Map.json')), 'w') as outfile:
     json.dump(RF_map, outfile, indent=4)
 
 RF_patterns = {}
