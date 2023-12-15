@@ -1,11 +1,15 @@
-from os.path import isfile, join
-from os import listdir
-import os
-from datetime import datetime
 import time
 import json
-import whisper
+import warnings
 import sys
+import os
+from os.path import isfile, join
+from os import listdir
+from datetime import datetime
+try:
+    import whisper
+except ImportError:
+    warnings.warn("Not using OpenAI whisper. If you want to use it, run 'pip install bnw_tools[whisper]'")
 
 
 def benchmark(filename):

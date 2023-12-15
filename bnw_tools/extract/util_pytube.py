@@ -1,9 +1,16 @@
 import os
 import sys
 import json
-from pytube import Channel
-from pytube import Playlist
-from pytube import YouTube
+import warnings
+
+try:
+    from pytube import Channel
+    from pytube import Playlist
+    from pytube import YouTube
+except ImportError:
+    warnings.warn("Not using YouTube. If you want to use it, run 'pip install bnw_tools[YouTube]'")
+    
+
 
 OVERWRITE = True
 
