@@ -8,6 +8,10 @@ import numpy as np
 from PIL import Image
 import os
 import cv2
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..extract.nlp.util_nlp import Folder
 
 
 def generate_wordcloud(dict_word_count, output_file_path='wordcloud.png', width=1920, height=1080):
@@ -115,3 +119,17 @@ def generate_mask(image_path, mask_file_path=None):
     # If no threshold results in a mask with at least 25% black pixels, raise an error
     raise ValueError(
         "Could not generate a mask with at least 25% black pixels")
+
+def folder(folder: Folder, bag_of_words_name = "00_bag_of_words", named_entities_name = "00_named_entities", bag_of_words_mask = "00_bag_of_words_mask", named_entities_name_mask = "00_named_entities_mask"):
+    
+    generate_wordcloud(
+        folder.bag_of_words.get(), os.path.join(folder.path, bag_of_words_name))
+    generate_wordcloud(
+        folder.named_entities.get_frequencies(), os.path.join(folder.path, named_entities_name))
+    mask_path = folder.get_image()
+    if mask_path:
+        mask = generate_mask(mask_path)
+        generate_wordcloud_mask(
+            folder.bag_of_words.get(), mask, os.path.join(folder.path, bag_of_words_mask))
+        generate_wordcloud_mask(folder.named_entities.get_frequencies(
+        ), mask, os.path.join(folder.path, named_entities_name_mask))
