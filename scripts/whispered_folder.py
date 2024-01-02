@@ -1,19 +1,20 @@
 import yaml
 import os
 import sys
-import importlib
+import bnw_tools
+# 
+# from importlib.util import find_spec
+# bnw_tools_spec = find_spec('bnw_tools')
 
-bnw_tools_spec = importlib.util.find_spec('bnw_tools')
-
-if bnw_tools_spec is None:
-    sys.path.append(os.getcwd())
-    import bnw_tools
+# if bnw_tools_spec is None:
+    # sys.path.append(os.getcwd())
+    # import bnw_tools
 
 # import bnw_tools
 
 # todo: make this import cleaner
 # sys.path.append(os.getcwd())
-sys.path.append(os.path.join(os.getcwd(), "bnw_tools"))
+# sys.path.append(os.path.join(os.getcwd(), "bnw_tools"))
 
 from bnw_tools.extract import util_pytube
 from bnw_tools.publish.Obsidian import nlped_whispered_folder

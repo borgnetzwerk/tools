@@ -247,9 +247,9 @@ WHERE contains(file.inlinks, this.file.link){related_sort}
         
 # with open(os.path.join("bnw_tools","ORKG", "ResearchFields.json")) as json_file:
                
-a = files('bnw_tools.ORKG')
-b = a.joinpath('ResearchFields.json')
-c = as_file(b)
+# a = files('bnw_tools.ORKG')
+# b = a.joinpath('ResearchFields.json')
+# c = as_file(b)
 
 # with open(as_file((files('bnw_tools.ORKG').joinpath('ResearchFields.json')))) as json_file:
 

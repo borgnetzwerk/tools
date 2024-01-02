@@ -2,6 +2,7 @@ import argparse
 import os
 import json
 import spacy
+from spacy.cli.download import download
 from flair.data import Sentence, Token
 from flair.models import SequenceTagger
 from flair.embeddings import WordEmbeddings, DocumentPoolEmbeddings
@@ -95,7 +96,11 @@ class NLPTools:
         try:
             nlp_model = self.naming_conventions.get(
                 language, {}).get("spacy", f"{language}_core_news_sm")
-            self.spacy[language] = spacy.load(nlp_model)
+            try:
+                self.spacy[language] = spacy.load(nlp_model)
+            except OSError:
+                download(model=nlp_model)
+                self.spacy[language] = spacy.load(nlp_model)
 
             stop_words = self.get_STOP_WORDS(language)
             self.spacy[language].Defaults.stop_words |= set(stop_words)
