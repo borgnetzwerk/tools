@@ -1029,7 +1029,7 @@ class Folder:
         self.df = defaultdict(int)
         self.idf = defaultdict(int)
         self.sim_matrix = None
-
+        
         if nlptools:
             self.process(nlptools)
 

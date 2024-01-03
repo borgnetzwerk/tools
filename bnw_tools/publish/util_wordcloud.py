@@ -1,4 +1,7 @@
 # Work in Progress
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import json
 import wordcloud
 from wordcloud import WordCloud, ImageColorGenerator
@@ -8,7 +11,7 @@ import numpy as np
 from PIL import Image
 import os
 import cv2
-from typing import TYPE_CHECKING
+
 
 if TYPE_CHECKING:
     from ..extract.nlp.util_nlp import Folder

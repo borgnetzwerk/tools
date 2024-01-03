@@ -249,6 +249,7 @@ class PDFDocument:
             for wrong, right in swap.items():
                 self.text = self.text.replace(wrong, right)
         # TODO: Remove lines that are not text, i.e. page numbers, Header, Footer, etc.
+        # TODO: Remove line breaks mid-word
         # Optional: Remove Footnotes etc., though these may provide value
 
     def iscomplete(self):
