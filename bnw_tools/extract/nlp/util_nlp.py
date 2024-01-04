@@ -1146,6 +1146,7 @@ class Folder:
                     res[key] = get_min_match(
                         subwords, mr.nlp_analysis.bag_of_words.tf)
             reduced_media_resources.append(res)
+        # TODO: calculate once per group, then again over all groups
         self.rq_sim_mat = similarity.compute_weighed_similarity(
             reduced_media_resources, reduced_research_questions)
 
