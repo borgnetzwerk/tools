@@ -92,6 +92,7 @@ Make sure you have installed PyPA's build in your venv:
 ```
 py -m pip install --upgrade build
 ```
+
 #### Package debugging
 ```
 pip uninstall -y bnw_tools
@@ -106,4 +107,4 @@ pip install dist\bnw_tools-0.0.1.2.tar.gz
 twine upload dist/*
 ```
 username: ```__token__```
-password: *a valid PiPy token*
+password: *a valid PyPi token*
