@@ -1,11 +1,14 @@
 # BorgNetzWerk / tools
-Welcome to the BorgNetzWerk superproject! This repository contains all currently existing and future submodules for the project.
+Welcome to the BorgNetzWerk tool project! This repository contains all tools in ideation, development and usage. Use, experiment and contribute for free!
+
+## Ready to use
+* [SWARM-SLR](scripts/SWARM-SLR/README.md), a Systematic Literature Review (SLR) workflow
 
 # Contributing
-If you're interested in contributing to the BorgNetzwerk project, we'd love to have you! You can start by browsing through the open issues and picking one that you're interested in working on. If you have an idea for a new feature or a bug that you'd like to report, please open a new issue so we can discuss it. Once you're ready to start working on an issue, you can create a fork of the repository and submit a pull request when you're finished.
+If you're interested in contributing to the BorgNetzWerk project, we'd love to have you! You can start by browsing through the open issues and picking one that you're interested in working on. If you have an idea for a new feature or a bug that you'd like to report, please open a new issue so we can discuss it. Once you're ready to start working on an issue, you can create a fork of the repository and submit a pull request when you're finished.
 
 ## IDEAS
-This section is dedicated to listing and discussing ideas for new features and improvements for the BorgNetzwerk project.
+This section is dedicated to listing and discussing ideas for new features and improvements for the BorgNetzWerk project.
 
 - **Work in Progress**: These are ideas that are currently being developed or tested and are not yet ready to be implemented as submodules.
 - **Suggestions**: These are ideas that have been suggested by the community or other contributors and are being considered for implementation.
@@ -16,7 +19,7 @@ This section is dedicated to listing and discussing ideas for new features and i
 If you have an idea for a new feature or improvement, please feel free to open an issue in the repository to discuss it.
 
 ## Questions or Feedback
-If you have any questions or feedback about the BorgNetzwerk project, please don't hesitate to reach out to us through through the issues section or the following channels:
+If you have any questions or feedback about the BorgNetzWerk project, please don't hesitate to reach out to us through through the issues section or the following channels:
 
 - Contact Form: https://borgnetzwerk.de/kontakt/
 - Discord: https://discord.com/invite/gATFDczS29
