@@ -2,7 +2,7 @@
 Welcome to the BorgNetzWerk tool project! This repository contains all tools in ideation, development and usage. Use, experiment and contribute for free!
 
 ## Ready to use
-* [SWARM-SLR](scripts/SWARM-SLR/README.md), a Systematic Literature Review (SLR) workflow
+* [SWARM-SLR](https://github.com/borgnetzwerk/tools/blob/main/scripts/SWARM-SLR/README.md), a Systematic Literature Review (SLR) workflow
 
 # Contributing
 If you're interested in contributing to the BorgNetzWerk project, we'd love to have you! You can start by browsing through the open issues and picking one that you're interested in working on. If you have an idea for a new feature or a bug that you'd like to report, please open a new issue so we can discuss it. Once you're ready to start working on an issue, you can create a fork of the repository and submit a pull request when you're finished.
