@@ -88,6 +88,8 @@ class ObsidianNote:
                     res += f"%%{title}\n"
                 elif title:
                     res += f"{title}\n"
+                entry_counter = 0
+                entry_sum = 0
                 for key, value in input_dict.items():
                     if value == "" or value is None:
                         continue
@@ -96,8 +98,17 @@ class ObsidianNote:
                     if fromat_group:
                         value = ', '.join(fromat_group.format(w)
                                           for w in value)
+                    # TODO: turn this from a quick fix into a proper solution
+                    entry_counter += 1
+                    if title == "RQ Scores":
+                        res += f"RQ{entry_counter}:: {value}\n"
+                        entry_sum += float(value)
                     res += f"{key}:: {value}\n"
                     is_empty = False
+                # TODO: turn this from a quick fix into a proper solution
+                if title == "RQ Scores":
+                    res += f"RQsum:: {entry_sum}\n"
+                    res += f"RQave:: {entry_sum/entry_counter}\n"
                 if is_empty:
                     res = ""
                 elif end:

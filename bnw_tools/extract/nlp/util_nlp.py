@@ -742,6 +742,26 @@ where RQ
 SORT file.name
 ```
 
+## Done
+```dataview
+Table
+{total_cols}
+From "03_notes"
+{total_sort}
+WHERE !contains(file.tasks.completed,false)
+LIMIT 100
+```
+
+## Modified
+```dataview
+Table
+{total_cols}
+From "03_notes"
+{total_sort}
+WHERE contains(file.tasks.completed,true) AND contains(file.tasks.completed,false)
+LIMIT 100
+```
+
 ## Best Candidates
 ```dataview
 Table
