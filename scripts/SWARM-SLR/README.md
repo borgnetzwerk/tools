@@ -11,3 +11,7 @@
 
 ## Stage IV
 [SWARM-SLR_Stage_IV.ipynb](SWARM-SLR_Stage_IV.ipynb)
+
+## Background
+[Evaluation](scripts\SWARM-SLR\data\evaluation.ipynb)
+![Tool Review](scripts\SWARM-SLR\data\visualization\Tool Assisted Literature Surveys - A Tool Review.svg)
