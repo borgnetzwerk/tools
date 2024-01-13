@@ -14,4 +14,4 @@
 
 ## Background
 [Evaluation](scripts\SWARM-SLR\data\evaluation.ipynb)
-![Alt text](<data/visualization/Tool Assisted Literature Surveys - A Tool Review.svg>)
+![Alt text](<data/visualization/Tool Assisted Literature Surveys - A Tool Review.png>)
