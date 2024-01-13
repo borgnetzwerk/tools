@@ -3,6 +3,7 @@
 ### Response ID: 4
 #### Scores:
 ['A5', 'A3', 'A5', 'A7', 'A4', 'A7', 'A6', 'A4', 'A4', 'A4', 'A6', 'A6', 'A4', 'A5', 'A4', 'A2', 'A3', 'A3', 'A1', 'A1', 'A3', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A6', 'A1', 'A3', 'A4', 'A5', 'A4', 'A4', 'A4', 'A2', 'A1', 'A3', 'A3', 'A1', 'A3', 'A3', 'A2', 'A1', 'A4', '', '', 'A3', 'A1', 'A1', 'A2', 'A2', 'A3', '', 'A3', 'A3', 'A3', 'A4', 'A6', 'A2', 'A4', 'A2', 'A2', 'A3']
+#### Time:
 Total time: 736.49
 Groups:
 Group time: Planning a review: 52.01
@@ -19,6 +20,7 @@ Group time: Conclusion: 10.42
 ### Response ID: 7
 #### Scores:
 ['A7', 'A1', 'A2', 'A8', 'A2', 'A2', 'A2', 'A2', 'A4', 'A2', 'A6', 'A8', 'A8', 'A8', 'A8', 'A1', 'A1', 'A1', 'A1', 'A7', 'A3', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A1', 'A5', 'A5', 'A5', 'A5', 'A1', 'A6', 'A6', 'A2', 'A1', 'A1', 'A1', 'A1', 'A1', 'A7', 'A1', 'A1', 'A1', 'A7', 'A1', 'A1', 'A1', 'A1', 'A5', 'A1', 'A7', 'A7', 'A7', 'A3', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7']
+#### Time:
 Total time: 343.96
 Groups:
 Group time: Planning a review: 23.32
@@ -35,6 +37,7 @@ Group time: Conclusion: 5.05
 ### Response ID: 12
 #### Scores:
 ['A3', 'A3', 'A2', 'A4', 'A6', 'A2', 'A4', 'A4', 'A4', 'A4', 'A2', 'A6', 'A6', 'A6', 'A6', 'A1', 'A3', 'A3', 'A3', 'A5', 'A5', 'A1', 'A1', 'A1', 'A3', 'A3', 'A1', 'A7', 'A5', 'A7', 'A3', 'A3', 'A7', 'A3', 'A8', 'A8', 'A8', 'A3', 'A3', 'A3', 'A3', 'A1', 'A1', 'A3', 'A3', 'A1', 'A3', 'A1', 'A3', 'A1', 'A5', 'A1', 'A3', 'A3', 'A3', 'A3', 'A3', 'A2', 'A3', 'A7', 'A3', 'A3', 'A5', 'A7', 'A7']
+#### Time:
 Total time: 614.56
 Groups:
 Group time: Planning a review: 37.9
@@ -51,6 +54,7 @@ Group time: Conclusion: 3.8
 ### Response ID: 15
 #### Scores:
 ['A5', 'A3', 'A3', 'A3', 'A6', 'A4', '', 'A4', 'A4', 'A3', 'A3', '', '', '', '', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A5', 'A1', 'A3', 'A3', 'A8', '', '', '', '', '', 'A4', '', '', '', 'A3', '', '', '', '', 'A7', 'A3', 'A3', 'A3', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+#### Time:
 Total time: 705.21
 Groups:
 Group time: Planning a review: 109.13
@@ -67,6 +71,7 @@ Group time: Conclusion: 80.26
 ### Response ID: 18
 #### Scores:
 ['A3', 'A3', 'A4', 'A4', 'A4', 'A4', 'A4', 'A4', 'A6', 'A4', 'A4', 'A4', 'A4', 'A6', 'A4', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A5', 'A3', 'A5', 'A3', 'A3', 'A3', 'A5', 'A3', 'A5', 'A5', 'A5', 'A5', 'A3', 'A6', 'A6', 'A4', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A5', 'A4', 'A4', 'A4', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A4', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3']
+#### Time:
 Total time: 256.71
 Groups:
 Group time: Planning a review: 19.27
@@ -83,6 +88,7 @@ Group time: Conclusion: 6.76
 ### Response ID: 20
 #### Scores:
 ['A9', 'A9', 'A2', 'A2', 'A6', 'A2', 'A6', 'A2', 'A2', 'A4', 'A4', 'A2', 'A6', 'A6', 'A6', 'A1', 'A1', 'A4', 'A1', 'A1', 'A1', 'A3', 'A3', 'A3', 'A5', 'A1', 'A3', 'A4', 'A4', 'A4', 'A4', 'A4', 'A4', 'A1', 'A6', 'A6', 'A3', 'A3', 'A3', 'A3', 'A1', 'A1', 'A1', 'A3', 'A1', 'A1', 'A1', 'A4', 'A4', 'A4', 'A4', 'A1', 'A1', 'A1', 'A3', 'A1', 'A3', 'A1', 'A1', 'A1', 'A3', 'A1', 'A3', 'A3', 'A3']
+#### Time:
 Total time: 1264.17
 Groups:
 Group time: Planning a review: 131.56
@@ -99,6 +105,7 @@ Group time: Conclusion: 23.92
 ### Response ID: 24
 #### Scores:
 ['A4', 'A1', 'A4', 'A4', 'A6', 'A3', 'A5', 'A2', 'A4', 'A2', 'A2', 'A3', 'A4', 'A5', 'A5', 'A3', 'A2', 'A1', 'A3', 'A3', 'A3', 'A3', 'A3', 'A4', 'A3', 'A1', 'A1', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A3', 'A6', 'A6', 'A4', 'A3', 'A5', 'A5', 'A3', 'A1', 'A3', 'A5', 'A3', 'A3', '', '', 'A1', 'A4', 'A2', 'A3', 'A4', 'A2', 'A5', 'A3', 'A3', 'A3', 'A3', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5']
+#### Time:
 Total time: 438.44
 Groups:
 Group time: Planning a review: 20.8
@@ -115,6 +122,7 @@ Group time: Conclusion: 3.63
 ### Response ID: 27
 #### Scores:
 ['A6', 'A2', 'A4', 'A7', 'A4', 'A7', 'A7', 'A4', 'A6', 'A6', 'A5', 'A8', 'A8', 'A8', 'A8', 'A3', 'A3', 'A4', 'A3', 'A4', 'A7', 'A3', 'A3', 'A4', 'A4', 'A3', 'A6', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A4', 'A8', 'A8', 'A8', 'A7', 'A7', 'A5', 'A7', 'A7', 'A7', 'A6', 'A5', 'A6', 'A6', 'A7', 'A3', 'A6', 'A5', 'A7', 'A7', 'A7', 'A7', 'A4', 'A4', 'A7', 'A7', 'A7', 'A6', 'A4', 'A7', 'A7', 'A7']
+#### Time:
 Total time: 386.3
 Groups:
 Group time: Planning a review: 19.52
@@ -131,6 +139,7 @@ Group time: Conclusion: 2.78
 ### Response ID: 29
 #### Scores:
 ['A7', 'A5', 'A3', 'A3', '', 'A4', 'A4', 'A6', 'A6', 'A8', 'A8', 'A4', '', '', 'A4', 'A1', 'A2', 'A3', 'A1', '', '', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A5', 'A5', 'A2', 'A1', 'A6', 'A6', 'A2', '', '', '', 'A1', 'A1', 'A1', 'A1', 'A3', 'A3', 'A4', 'A4', 'A1', 'A1', 'A1', 'A1', 'A5', 'A1', '', '', '', '', '', '', 'A1', 'A1', 'A1', 'A1', 'A5']
+#### Time:
 Total time: 640.92
 Groups:
 Group time: Planning a review: 34.18

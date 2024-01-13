@@ -4,6 +4,7 @@
 #### Tool: Python
 #### Scores:
 ['A7', 'A6', 'A8', 'A8', 'A8', 'A8', 'A8', 'A7', 'A6', 'A8', 'A8', 'A8', 'A8', 'A7', 'A8', 'A7', 'A4', 'A5', 'A1', 'A1', 'A5', 'A2', 'A2', 'A2', 'A2', 'A2', 'A3', 'A3', 'A5', 'A7', 'A7', 'A6', 'A6', 'A7', 'A4', 'A7', 'A4', 'A7', 'A7', 'A5', 'A5', 'A5', 'A7', 'A4', 'A6', 'A6', 'A7', 'A5', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A6', 'A7', 'A7', 'A8', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 551.57
 Groups:
 Group time: Choose your Tool: 52.12
@@ -22,6 +23,7 @@ Group time: Conclusion: 2.32
 #### Tool: Perplexity.AI
 #### Scores:
 ['A7', 'A7', 'A8', 'A8', 'A8', 'A8', 'A8', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A1', 'A1', 'A1', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A1', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A1', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A3', 'A3', 'A3', 'A3', 'A1', 'A1', 'A5', 'A5', 'A5', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 1010.48
 Groups:
 Group time: Choose your Tool: 202.96
@@ -40,6 +42,7 @@ Group time: Conclusion: 67.91
 #### Tool: Google Scholar
 #### Scores:
 ['A6', 'A2', 'A4', 'A9', 'A6', 'A7', 'A5', 'A3', 'A7', 'A4', 'A5', 'A7', 'A4', 'A7', 'A4', 'A3', 'A3', 'A3', 'A7', 'A7', 'A7', 'A6', 'A3', 'A6', 'A3', 'A3', 'A6', 'A6', 'A6', 'A7', 'A7', 'A7', 'A7', 'A7', 'A8', 'A8', 'A8', 'A7', 'A7', 'A7', 'A7', 'A7', 'A3', 'A5', 'A6', 'A4', 'A7', 'A7', 'A6', 'A6', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A6', 'A4', 'A7', 'A7', 'A7']
+#### Time:
 Total time: 2091.1
 Groups:
 Group time: Choose your Tool: 41.09
@@ -58,6 +61,7 @@ Group time: Conclusion: 4.43
 #### Tool: Google Scholar
 #### Scores:
 ['A7', 'A3', 'A4', 'A7', 'A5', 'A7', 'A7', 'A5', 'A7', 'A5', 'A5', 'A4', 'A4', 'A5', 'A4', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+#### Time:
 Total time: 414.79
 Groups:
 Group time: Choose your Tool: 43.84
@@ -76,6 +80,7 @@ Group time: Conclusion: 4.09
 #### Tool: Citavi
 #### Scores:
 ['A3', 'A5', 'A2', 'A2', 'A4', 'A4', 'A4', 'A2', 'A2', 'A4', 'A4', 'A6', 'A6', 'A6', 'A6', 'A3', 'A2', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A3', 'A3', 'A4', 'A4', 'A4', 'A4', 'A4', 'A4', 'A4', 'A5', 'A5', 'A5', 'A3', 'A3', 'A3', 'A1', 'A1', 'A4', 'A4', 'A2', 'A2', 'A5', 'A5', 'A3', 'A3', 'A3', 'A3', 'A3', 'A4', 'A4', 'A3', 'A3', 'A3', 'A3', 'A3', 'A2', 'A1', 'A2', 'A3', 'A4']
+#### Time:
 Total time: 419.8
 Groups:
 Group time: Choose your Tool: 22.22
@@ -94,6 +99,7 @@ Group time: Conclusion: 4.18
 #### Tool: CADIMA
 #### Scores:
 ['A3', 'A4', 'A9', 'A9', 'A8', 'A2', 'A4', 'A6', 'A4', 'A5', 'A8', 'A4', 'A2', 'A6', 'A2', 'A7', 'A5', 'A3', 'A3', 'A7', 'A5', 'A1', 'A1', 'A3', 'A3', 'A5', 'A6', 'A4', 'A4', 'A5', 'A6', 'A6', 'A6', 'A3', 'A10', 'A10', 'A4', 'A5', 'A6', 'A9', 'A3', 'A5', 'A3', 'A4', 'A7', 'A5', 'A7', 'A7', 'A3', 'A3', 'A3', 'A1', 'A1', 'A1', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A1', 'A3', 'A4', 'A3', 'A3']
+#### Time:
 Total time: 2541.13
 Groups:
 Group time: Choose your Tool: 20.56
@@ -112,6 +118,7 @@ Group time: Conclusion: 5.97
 #### Tool: SWARM-SLR 2024-01
 #### Scores:
 ['A1', 'A2', 'A2', 'A6', 'A2', 'A2', 'A4', 'A3', 'A2', 'A3', 'A3', 'A5', 'A2', 'A2', 'A2', 'A3', 'A1', 'A1', 'A1', 'A1', 'A4', 'A1', 'A1', 'A1', 'A1', 'A3', 'A3', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A2', 'A2', 'A2', 'A1', 'A1', 'A1', 'A1', 'A1', 'A5', 'A2', 'A1', 'A1', 'A3', 'A3', 'A1', 'A1', 'A1', 'A5', 'A1', 'A3', 'A3', 'A2', 'A2', 'A7', 'A2', 'A5', 'A1', 'A4', 'A3', 'A3', 'A3']
+#### Time:
 Total time: 948.5
 Groups:
 Group time: Choose your Tool: 32.13
@@ -130,6 +137,7 @@ Group time: Conclusion: 7.73
 #### Tool: Zotero
 #### Scores:
 ['A8', 'A5', 'A8', 'A8', 'A8', 'A9', 'A9', 'A4', 'A7', 'A9', 'A9', 'A8', 'A8', 'A8', 'A8', 'A4', 'A3', 'A7', 'A3', 'A4', 'A7', 'A2', 'A2', 'A3', 'A2', 'A4', 'A7', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', '', '', '', 'A5', 'A5', 'A5', 'A9', 'A9', 'A9', 'A9', 'A7', 'A7', 'A9', 'A9', 'A5', 'A7', 'A5', 'A7', 'A7', 'A5', 'A5', 'A7', 'A7', 'A7', 'A7', 'A7', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 609.95
 Groups:
 Group time: Choose your Tool: 49.37
@@ -148,6 +156,7 @@ Group time: Conclusion: 4.2
 #### Tool: Google Scholar
 #### Scores:
 ['A4', 'A2', 'A4', 'A8', 'A4', 'A5', 'A8', 'A3', 'A3', 'A8', 'A8', 'A8', 'A5', 'A8', 'A5', 'A6', 'A4', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A9', 'A9', 'A9', 'A7', 'A7', 'A8', 'A8', 'A8', 'A6', 'A8', 'A8', 'A3', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A7', 'A8', 'A4', 'A7', 'A7', 'A7', 'A7', 'A8', 'A8', 'A8', 'A8', 'A8']
+#### Time:
 Total time: 968.77
 Groups:
 Group time: Choose your Tool: 63.63
@@ -166,6 +175,7 @@ Group time: Conclusion: 5.01
 #### Tool: Zotero
 #### Scores:
 ['A7', 'A5', '', '', 'A4', 'A4', '', 'A4', '', '', '', 'A8', 'A8', 'A8', 'A8', 'A9', 'A9', 'A9', 'A3', 'A9', 'A9', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', '', '', '', '', '', '', 'A7', 'A8', 'A8', 'A8', 'A7', 'A7', 'A7', '', '', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A3', '', 'A5', 'A7', 'A7', '', '', '', '', '', '', '', '', '', '', '', '']
+#### Time:
 Total time: 1232.33
 Groups:
 Group time: Choose your Tool: 69.91
@@ -184,6 +194,7 @@ Group time: Conclusion: 37.61
 #### Tool: Open Knowledge Maps (OKMaps)
 #### Scores:
 ['A3', 'A3', 'A5', 'A6', 'A3', 'A4', 'A6', 'A4', 'A5', 'A4', 'A6', 'A6', 'A4', 'A6', 'A4', 'A3', 'A3', 'A2', 'A5', 'A7', 'A5', 'A2', 'A2', 'A2', 'A3', 'A3', 'A5', 'A5', 'A4', 'A5', 'A5', 'A4', 'A4', 'A4', 'A6', 'A6', 'A4', 'A4', 'A5', 'A7', 'A5', 'A3', 'A5', 'A5', 'A5', 'A5', 'A6', 'A6', 'A4', 'A3', 'A5', 'A3', 'A3', 'A5', 'A5', 'A5', 'A3', 'A5', 'A7', 'A9', 'A1', 'A4', 'A3', 'A3', 'A5']
+#### Time:
 Total time: 931.82
 Groups:
 Group time: Choose your Tool: 105.52
@@ -202,6 +213,7 @@ Group time: Conclusion: 14.86
 #### Tool: Python
 #### Scores:
 ['A1', 'A2', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+#### Time:
 Total time: 124.11
 Groups:
 Group time: Choose your Tool: 26.97
@@ -220,6 +232,7 @@ Group time: Conclusion: 4.93
 #### Tool: Google Scholar
 #### Scores:
 ['A9', 'A7', 'A4', 'A8', 'A4', '', '', 'A4', 'A8', 'A4', 'A5', 'A10', 'A10', 'A10', 'A10', 'A3', 'A2', 'A3', 'A8', 'A9', 'A8', 'A5', 'A5', 'A5', 'A5', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A7', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 1034.02
 Groups:
 Group time: Choose your Tool: 31.92
@@ -238,6 +251,7 @@ Group time: Conclusion: 7.06
 #### Tool: Open Research Knowledge Graph (ORKG)
 #### Scores:
 ['A1', 'A1', 'A6', 'A6', 'A4', 'A2', 'A2', 'A6', 'A6', 'A8', 'A8', 'A8', 'A8', 'A8', 'A8', 'A9', 'A9', 'A5', 'A3', 'A9', 'A9', 'A1', 'A1', 'A5', 'A5', 'A5', 'A5', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A5', 'A10', 'A10', '', 'A9', 'A9', 'A9', 'A3', 'A7', 'A3', 'A3', 'A3', 'A3', 'A9', 'A3', 'A3', 'A3', 'A1', 'A1', 'A1', 'A3', 'A3', 'A3', 'A3', 'A5', 'A3', 'A5', 'A1', 'A1', 'A1', 'A1', 'A1']
+#### Time:
 Total time: 674.8
 Groups:
 Group time: Choose your Tool: 49.85
@@ -256,6 +270,7 @@ Group time: Conclusion: 7.88
 #### Tool: Zotero
 #### Scores:
 ['A9', 'A9', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A5', 'A1', 'A1', 'A1', 'A3', 'A5', 'A1', 'A1', 'A1', 'A1', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 4294.57
 Groups:
 Group time: Choose your Tool: 176.82
@@ -274,6 +289,7 @@ Group time: Conclusion: 20.08
 #### Tool: Google Scholar
 #### Scores:
 ['A4', 'A6', 'A8', 'A8', 'A8', 'A5', 'A7', 'A4', 'A4', 'A6', 'A4', 'A8', 'A8', 'A8', 'A8', 'A3', 'A3', 'A4', 'A3', 'A9', '', 'A1', 'A1', 'A2', 'A2', 'A2', 'A4', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A9', 'A9', 'A5', 'A2', 'A3', 'A3', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 474.99
 Groups:
 Group time: Choose your Tool: 51.92
@@ -292,6 +308,7 @@ Group time: Conclusion: 8.53
 #### Tool: Open Research Knowledge Graph (ORKG)
 #### Scores:
 ['A3', 'A3', 'A3', 'A8', 'A4', 'A4', 'A4', 'A5', 'A5', 'A4', 'A6', 'A4', 'A4', 'A4', 'A4', 'A1', 'A1', 'A1', 'A1', 'A4', 'A3', 'A1', 'A1', 'A1', 'A1', 'A3', 'A3', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A3', 'A3', 'A1', 'A3', 'A3', 'A2', 'A3', 'A2', 'A5', 'A4', 'A3', 'A3', 'A3', 'A3', 'A2', 'A4', 'A3', 'A7', 'A3', 'A3', 'A3', 'A5', 'A5']
+#### Time:
 Total time: 2363.75
 Groups:
 Group time: Choose your Tool: 50.74
@@ -310,6 +327,7 @@ Group time: Conclusion: 9.22
 #### Tool: Large Language Models (LLM) like ChatGPT, Bing
 #### Scores:
 ['A1', 'A3', 'A6', 'A5', 'A2', 'A4', 'A4', 'A4', 'A2', 'A6', 'A4', 'A4', 'A2', 'A4', 'A5', 'A5', 'A3', 'A5', 'A4', 'A3', 'A5', 'A3', 'A3', 'A3', 'A3', 'A3', 'A4', 'A3', 'A5', 'A5', 'A3', 'A3', 'A1', 'A3', 'A4', 'A4', 'A2', 'A1', 'A3', 'A3', 'A4', 'A3', 'A5', 'A7', 'A3', 'A5', 'A5', 'A5', 'A3', 'A4', 'A3', 'A1', 'A3', 'A1', 'A3', 'A3', 'A5', 'A4', 'A3', 'A5', 'A4', 'A3', 'A4', 'A6', 'A5']
+#### Time:
 Total time: 2367.71
 Groups:
 Group time: Choose your Tool: 21.27
@@ -328,6 +346,7 @@ Group time: Conclusion: 225.36
 #### Tool: Google Scholar
 #### Scores:
 ['A3', 'A3', 'A4', 'A10', 'A4', 'A4', 'A4', 'A4', 'A10', 'A5', 'A5', 'A4', 'A4', 'A10', 'A6', 'A1', 'A1', 'A1', 'A7', 'A7', 'A7', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', '', '', '', '', '', '', 'A3', '', '', '', 'A3', 'A3', 'A3', '', '', '', '', '', '', '', '', '', '', '', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 420.43
 Groups:
 Group time: Choose your Tool: 17.31
@@ -346,6 +365,7 @@ Group time: Conclusion: 5.39
 #### Tool: Large Language Models (LLM) like ChatGPT, Bing
 #### Scores:
 ['A3', '', 'A4', 'A7', 'A4', 'A2', 'A6', 'A4', 'A2', 'A6', 'A6', 'A8', 'A8', 'A8', 'A8', 'A6', 'A6', 'A6', 'A7', 'A7', 'A7', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A7', 'A1', 'A1', 'A1', 'A1', 'A1', 'A2', 'A5', 'A2', 'A2', 'A2', 'A2', 'A1', 'A1', 'A2', 'A2', 'A1', 'A1', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A7', 'A3', 'A3', 'A7', 'A7']
+#### Time:
 Total time: 1084.04
 Groups:
 Group time: Choose your Tool: 456.59
@@ -364,6 +384,7 @@ Group time: Conclusion: 9.3
 #### Tool: SWARM-SLR 2024-01
 #### Scores:
 ['A2', 'A2', 'A6', 'A6', 'A4', 'A3', 'A4', 'A4', 'A4', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A2', 'A3', 'A3', 'A2', 'A4', 'A4', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A2', 'A2', 'A2', 'A1', 'A1', 'A1', 'A1', 'A1', 'A5', 'A5', 'A2', 'A2', 'A5', 'A1', 'A1', '', '', 'A4', '', 'A4', 'A4', 'A3', 'A3', 'A5', 'A3', 'A3', 'A5', 'A5', 'A5', 'A5', 'A5']
+#### Time:
 Total time: 3617.66
 Groups:
 Group time: Choose your Tool: 25.04
@@ -382,6 +403,7 @@ Group time: Conclusion: 12.03
 #### Tool: Research Rabbit
 #### Scores:
 ['A5', 'A9', 'A2', 'A4', 'A6', 'A2', 'A2', 'A8', 'A8', 'A4', 'A8', 'A8', 'A8', 'A8', 'A8', 'A3', 'A1', 'A1', 'A7', 'A5', 'A3', 'A7', 'A7', 'A7', 'A7', 'A7', 'A9', 'A9', 'A9', 'A7', 'A9', 'A9', 'A9', 'A9', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A7', 'A1', 'A7', 'A3', 'A1', 'A1', 'A5', 'A9', 'A9', 'A9', 'A9', 'A7', 'A9', 'A9', 'A9', 'A9', 'A3', 'A9', 'A5', 'A9', 'A3', 'A7', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 1031.59
 Groups:
 Group time: Choose your Tool: 55.51
@@ -400,6 +422,7 @@ Group time: Conclusion: 5.58
 #### Tool: Google Scholar
 #### Scores:
 ['A3', 'A1', 'A2', 'A5', 'A4', 'A4', 'A4', 'A2', 'A4', 'A4', 'A6', 'A8', 'A8', 'A8', 'A8', 'A3', 'A1', 'A1', 'A3', 'A5', 'A5', 'A3', 'A3', 'A5', 'A5', 'A7', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A7', 'A8', 'A8', 'A8', 'A7', 'A7', 'A7', 'A3', 'A3', 'A1', 'A7', 'A7', 'A5', 'A7', 'A7', 'A9', 'A9', 'A9', 'A5', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A5', 'A7', 'A9', 'A9', 'A9']
+#### Time:
 Total time: 515.46
 Groups:
 Group time: Choose your Tool: 9.94
