@@ -2,7 +2,7 @@
 **S**treamlined **W**orkflow **A**utomation **R**equirements for **M**achine-readable **S**ystematic **L**iterature **R**eviews
 
 ## Stage I
-[SWARM-SLR_Stage_I.ipynb](SWARM-SLR_Stage_I.ipynb)
+![SWARM-SLR_Stage_I.ipynb](SWARM-SLR_Stage_I.ipynb)
 
 ## Stage II
 [SWARM-SLR_Stage_II.ipynb](SWARM-SLR_Stage_II.ipynb)
