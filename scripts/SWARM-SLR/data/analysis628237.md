@@ -437,3 +437,22 @@ Group time: Reporting: 23.81
 Group time: Demographic data: 21.38
 Group time: Conclusion: 5.53
 
+### Response ID: 71
+#### Tool: SWARM-SLR 2024-01
+#### Scores:
+['A3', 'A1', 'A4', 'A6', 'A4', 'A4', 'A4', 'A2', 'A2', 'A2', 'A2', 'A6', 'A6', 'A6', 'A6', 'A5', 'A3', 'A1', 'A3', 'A5', 'A5', 'A1', 'A1', 'A1', 'A1', 'A3', 'A4', 'A1', 'A1', 'A3', 'A1', 'A1', 'A1', 'A1', 'A2', 'A2', 'A2', 'A1', 'A1', 'A2', 'A1', 'A1', 'A1', 'A4', 'A1', 'A1', 'A1', 'A1', 'A3', 'A5', 'A5', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A1', 'A2', 'A2', 'A3', 'A3']
+#### Time:
+Total time: 4658.11
+Groups:
+Group time: Choose your Tool: 110.04
+Group time: Planning a review: 323.94
+Group time: Defining a scope: 889.95
+Group time: Search: 852.5
+Group time: Select: 314.08
+Group time: Evaluate: 836.66
+Group time: Analysis: 867.51
+Group time: Synthesis: 176.24
+Group time: Reporting: 161.72
+Group time: Demographic data: 23.12
+Group time: Conclusion: 102.35
+
