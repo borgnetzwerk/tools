@@ -153,3 +153,20 @@ Group time: Reporting: 17.22
 Group time: Demographic data: 16.77
 Group time: Conclusion: 3.94
 
+### Response ID: 33
+#### Scores:
+['A3', 'A1', 'A2', 'A2', 'A2', 'A2', 'A4', 'A2', 'A5', 'A4', 'A6', 'A4', 'A4', 'A6', 'A6', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A1', 'A1', 'A1', 'A3', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A3', 'A6', 'A6', 'A3', 'A3', '', 'A2', 'A1', 'A1', 'A3', 'A3', 'A1', 'A1', 'A1', 'A5', 'A3', 'A3', 'A3', 'A1', 'A5', 'A1', 'A5', 'A3', 'A3', 'A1', 'A1', 'A3', 'A3', 'A3', 'A3', 'A5', 'A5']
+#### Time:
+Total time: 490.03
+Groups:
+Group time: Planning a review: 26.62
+Group time: Defining a scope: 79.48
+Group time: Search: 31.14
+Group time: Select: 161.16
+Group time: Evaluate: 49.15
+Group time: Analysis: 17.77
+Group time: Synthesis: 62.95
+Group time: Reporting: 47.05
+Group time: Demographic data: 11.24
+Group time: Conclusion: 3.47
+
