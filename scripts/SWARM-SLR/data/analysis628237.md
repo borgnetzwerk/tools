@@ -456,3 +456,22 @@ Group time: Reporting: 161.72
 Group time: Demographic data: 23.12
 Group time: Conclusion: 102.35
 
+### Response ID: 72
+#### Tool: Google Scholar
+#### Scores:
+['A9', 'A9', 'A10', 'A10', 'A10', 'A10', 'A10', 'A2', 'A6', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A1', 'A1', 'A1', 'A1', 'A1', 'A5', 'A1', 'A1', 'A1', 'A1', 'A5', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
+Total time: 457.4
+Groups:
+Group time: Choose your Tool: 25.45
+Group time: Planning a review: 23.92
+Group time: Defining a scope: 113.87
+Group time: Search: 25.75
+Group time: Select: 136.74
+Group time: Evaluate: 34.16
+Group time: Analysis: 9.02
+Group time: Synthesis: 30.66
+Group time: Reporting: 16.19
+Group time: Demographic data: 33.98
+Group time: Conclusion: 7.66
+
