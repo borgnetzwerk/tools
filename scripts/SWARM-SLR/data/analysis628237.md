@@ -551,3 +551,41 @@ Group time: Reporting: 85.72
 Group time: Demographic data: 12.43
 Group time: Conclusion: 31.21
 
+### Response ID: 81
+#### Tool: SWARM-SLR
+#### Scores:
+['A1', 'A1', 'A3', 'A8', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A8', 'A8', 'A8', 'A8', 'A2', 'A2', 'A2', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A2', 'A2', 'A2', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A1', 'A1', 'A1', '', '']
+#### Time:
+Total time: 1968.09
+Groups:
+Group time: Choose your Tool: 16.71
+Group time: Planning a review: 92.55
+Group time: Defining a scope: 454.27
+Group time: Search: 304.19
+Group time: Select: 552.56
+Group time: Evaluate: 13.84
+Group time: Analysis: 92.99
+Group time: Synthesis: 335.25
+Group time: Reporting: 85.77
+Group time: Demographic data: 17.29
+Group time: Conclusion: 2.67
+
+### Response ID: 82
+#### Tool: Google Scholar
+#### Scores:
+['A5', 'A3', 'A5', 'A4', 'A4', 'A8', 'A8', 'A4', 'A6', 'A6', 'A8', 'A8', 'A8', 'A8', 'A8', 'A5', 'A3', 'A3', 'A5', 'A9', '', 'A3', 'A3', 'A3', '', 'A7', 'A7', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A10', 'A10', 'A10', '', '', '', 'A9', 'A9', 'A3', 'A5', 'A7', 'A5', 'A5', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9']
+#### Time:
+Total time: 557.84
+Groups:
+Group time: Choose your Tool: 22.52
+Group time: Planning a review: 54.05
+Group time: Defining a scope: 127.69
+Group time: Search: 66.3
+Group time: Select: 111.55
+Group time: Evaluate: 53.62
+Group time: Analysis: 11.05
+Group time: Synthesis: 23.33
+Group time: Reporting: 11.48
+Group time: Demographic data: 27.3
+Group time: Conclusion: 48.95
+
