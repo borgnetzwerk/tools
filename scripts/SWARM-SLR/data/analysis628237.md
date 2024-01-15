@@ -324,7 +324,7 @@ Group time: Demographic data: 38.17
 Group time: Conclusion: 9.22
 
 ### Response ID: 61
-#### Tool: Large Language Models (LLM) like ChatGPT, Bing
+#### Tool: SWARM-SLR 2024-01
 #### Scores:
 ['A1', 'A3', 'A6', 'A5', 'A2', 'A4', 'A4', 'A4', 'A2', 'A6', 'A4', 'A4', 'A2', 'A4', 'A5', 'A5', 'A3', 'A5', 'A4', 'A3', 'A5', 'A3', 'A3', 'A3', 'A3', 'A3', 'A4', 'A3', 'A5', 'A5', 'A3', 'A3', 'A1', 'A3', 'A4', 'A4', 'A2', 'A1', 'A3', 'A3', 'A4', 'A3', 'A5', 'A7', 'A3', 'A5', 'A5', 'A5', 'A3', 'A4', 'A3', 'A1', 'A3', 'A1', 'A3', 'A3', 'A5', 'A4', 'A3', 'A5', 'A4', 'A3', 'A4', 'A6', 'A5']
 #### Time:
