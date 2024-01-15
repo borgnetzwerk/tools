@@ -475,3 +475,79 @@ Group time: Reporting: 16.19
 Group time: Demographic data: 33.98
 Group time: Conclusion: 7.66
 
+### Response ID: 74
+#### Tool: Large Language Models (LLM) like ChatGPT, Bing
+#### Scores:
+['A4', 'A2', '', '', 'A4', 'A4', 'A5', 'A2', 'A5', 'A2', 'A3', 'A6', 'A4', 'A4', 'A4', 'A2', 'A3', 'A3', 'A5', 'A8', 'A8', 'A3', '', 'A3', 'A3', 'A5', 'A5', '', 'A3', 'A2', 'A1', 'A1', 'A1', '', '', 'A3', 'A5', 'A8', 'A7', '', 'A9', 'A5', 'A5', 'A4', 'A1', 'A2', 'A5', 'A5', 'A3', 'A4', 'A7', 'A3', 'A2', 'A2', 'A3', 'A3', 'A5', 'A5', 'A6', 'A6', 'A3', 'A2', 'A3', 'A5', 'A5']
+#### Time:
+Total time: 774.58
+Groups:
+Group time: Choose your Tool: 7.86
+Group time: Planning a review: 21.61
+Group time: Defining a scope: 67.16
+Group time: Search: 85.28
+Group time: Select: 323.4
+Group time: Evaluate: 91.91
+Group time: Analysis: 18
+Group time: Synthesis: 47.59
+Group time: Reporting: 51.96
+Group time: Demographic data: 49.6
+Group time: Conclusion: 10.21
+
+### Response ID: 76
+#### Tool: SWARM-SLR 2024-01
+#### Scores:
+['A2', 'A1', 'A5', 'A8', 'A6', 'A4', 'A5', 'A2', 'A2', 'A4', 'A4', 'A4', 'A3', 'A3', 'A4', 'A5', 'A3', 'A4', 'A1', 'A3', 'A3', 'A2', 'A1', 'A2', 'A1', 'A3', 'A4', 'A1', 'A2', 'A2', 'A1', 'A1', 'A1', 'A3', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A3', 'A3', 'A1', 'A3', 'A2', 'A2', 'A1', 'A2', 'A1', 'A1', 'A3', 'A2', 'A1', 'A2', 'A2', 'A1', 'A3', 'A2', 'A3', 'A3', 'A1', 'A1', 'A2', 'A2', 'A3']
+#### Time:
+Total time: 2084.45
+Groups:
+Group time: Choose your Tool: 70.59
+Group time: Planning a review: 79.36
+Group time: Defining a scope: 386.36
+Group time: Search: 1042.9
+Group time: Select: 234.97
+Group time: Evaluate: 93.02
+Group time: Analysis: 18.29
+Group time: Synthesis: 63.46
+Group time: Reporting: 25.83
+Group time: Demographic data: 57.85
+Group time: Conclusion: 11.82
+
+### Response ID: 79
+#### Tool: SWARM-SLR 2024-01
+#### Scores:
+['A1', 'A1', 'A3', 'A3', 'A2', 'A3', 'A3', 'A2', 'A3', 'A2', 'A3', 'A2', 'A2', 'A3', 'A3', 'A1', 'A1', 'A1', 'A1', 'A1', 'A2', 'A1', 'A1', 'A1', 'A1', 'A1', 'A2', 'A1', 'A1', 'A2', 'A1', 'A1', 'A1', 'A3', 'A2', 'A3', 'A4', 'A1', 'A1', 'A2', 'A3', 'A3', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A3', 'A3', 'A2', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A2', 'A2', 'A2', 'A2', 'A2']
+#### Time:
+Total time: 796.56
+Groups:
+Group time: Choose your Tool: 124.54
+Group time: Planning a review: 63.23
+Group time: Defining a scope: 107.95
+Group time: Search: 39.64
+Group time: Select: 147.83
+Group time: Evaluate: 54.3
+Group time: Analysis: 15.75
+Group time: Synthesis: 76.98
+Group time: Reporting: 19.39
+Group time: Demographic data: 84.28
+Group time: Conclusion: 62.67
+
+### Response ID: 80
+#### Tool: SWARM-SLR 2024-01
+#### Scores:
+['A3', 'A3', 'A3', 'A5', 'A2', 'A3', 'A4', 'A2', 'A2', 'A4', 'A4', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A4', 'A3', 'A6', '', 'A1', 'A1', 'A1', 'A1', 'A2', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A2', 'A2', 'A2', '', '', 'A3', 'A3', 'A3', 'A3', 'A3', '', 'A3', 'A1', 'A1', '', 'A2', 'A2', 'A3', 'A3', 'A4', '', 'A4', 'A3', 'A4', 'A3', 'A3', 'A1', 'A4', 'A3', 'A3', 'A3']
+#### Time:
+Total time: 2412.6
+Groups:
+Group time: Choose your Tool: 36.99
+Group time: Planning a review: 1519.7
+Group time: Defining a scope: 263.51
+Group time: Search: 57.61
+Group time: Select: 169.34
+Group time: Evaluate: 83.36
+Group time: Analysis: 55.46
+Group time: Synthesis: 97.27
+Group time: Reporting: 85.72
+Group time: Demographic data: 12.43
+Group time: Conclusion: 31.21
+
