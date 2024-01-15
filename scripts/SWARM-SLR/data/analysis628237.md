@@ -305,7 +305,7 @@ Group time: Demographic data: 21.87
 Group time: Conclusion: 8.53
 
 ### Response ID: 60
-#### Tool: Open Research Knowledge Graph (ORKG)
+#### Tool: SWARM-SLR 2024-01
 #### Scores:
 ['A3', 'A3', 'A3', 'A8', 'A4', 'A4', 'A4', 'A5', 'A5', 'A4', 'A6', 'A4', 'A4', 'A4', 'A4', 'A1', 'A1', 'A1', 'A1', 'A4', 'A3', 'A1', 'A1', 'A1', 'A1', 'A3', 'A3', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A3', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A3', 'A3', 'A1', 'A3', 'A3', 'A2', 'A3', 'A2', 'A5', 'A4', 'A3', 'A3', 'A3', 'A3', 'A2', 'A4', 'A3', 'A7', 'A3', 'A3', 'A3', 'A5', 'A5']
 #### Time:
