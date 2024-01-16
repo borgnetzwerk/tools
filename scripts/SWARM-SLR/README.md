@@ -23,5 +23,5 @@ SWARM-SLR currently postulates 65 requirements for a machine-readable SLR. These
 In a survey with 22 replies, 11 tools have been evaluated, 6 of them by multiple replies.
 ![A boxplot showing the survey replies to the survey "Tool Assisted Literature Surveys - A Tool Review". It depicts many different tools covering almost all of the requirements, with some requirements not being fully covered.](<data/visualization/Tool Assisted Literature Surveys - A Tool Review.png>)
 
-One of these tools is the "SWARM-SLR Guided Toolchain", the workflow presented in this repository.
-![A boxplot showing the survey replies to the survey "Tool Assisted Literature Surveys - A Tool Review", specifically only for the "SWARM-SLR" toolset presented here in the repository. It depicts a relatively consistend support for most of the SLR stages, with medium support early on, major support in the middle stages, medium support in the later stages. Some requirements are also not adressed at all.](<data/visualization/SWARM-SLR Guided Toolchain.png>)
+One of these tools is the "SWARM-SLR Workflow", the guided toolchain in this repository.
+![A boxplot showing the survey replies to the survey "Tool Assisted Literature Surveys - A Tool Review", specifically only for the "SWARM-SLR Workflow" presented here in the repository. It depicts a relatively consistend support for most of the SLR stages, with medium support early on, major support in the middle stages, medium support in the later stages. Some requirements are also not adressed at all.](<data/visualization/SWARM-SLR Workflow.png>)
