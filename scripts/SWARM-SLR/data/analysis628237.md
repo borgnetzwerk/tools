@@ -589,3 +589,60 @@ Group time: Reporting: 11.48
 Group time: Demographic data: 27.3
 Group time: Conclusion: 48.95
 
+### Response ID: 83
+#### Tool: Google Scholar
+#### Scores:
+['A7', 'A3', 'A3', 'A5', 'A8', 'A8', 'A8', 'A4', 'A6', 'A7', 'A5', 'A4', 'A4', 'A5', 'A5', 'A3', 'A2', 'A2', 'A7', 'A7', 'A7', 'A1', 'A1', 'A1', 'A3', 'A4', 'A6', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A5', 'A8', 'A10', 'A10', 'A4', 'A4', 'A3', 'A7', 'A3', 'A7', 'A7', 'A3', 'A2', 'A7', 'A7', 'A7', 'A7', 'A7', 'A4', 'A7', 'A3', 'A5', 'A3', 'A5', 'A7', 'A7', 'A7', 'A3', 'A3', 'A3', 'A4', 'A5']
+#### Time:
+Total time: 453.33
+Groups:
+Group time: Choose your Tool: 17.11
+Group time: Planning a review: 26.16
+Group time: Defining a scope: 76.22
+Group time: Search: 33.72
+Group time: Select: 105.46
+Group time: Evaluate: 76.5
+Group time: Analysis: 9.84
+Group time: Synthesis: 34.82
+Group time: Reporting: 20.13
+Group time: Demographic data: 48.43
+Group time: Conclusion: 4.94
+
+### Response ID: 84
+#### Tool: Large Language Models (LLM) like ChatGPT, Bing
+#### Scores:
+['A3', 'A2', 'A10', 'A10', 'A4', '', '', 'A4', '', '', 'A4', 'A10', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', '', '', '', '', 'A1', 'A1', '', '', '', '', '', '', 'A2', '', '', '', 'A2', '', '', '', '', '', '', 'A3', 'A3', '', 'A3', 'A3', '', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A5', 'A9', 'A9', 'A9', 'A3', '', 'A3', 'A3', '']
+#### Time:
+Total time: 319.67
+Groups:
+Group time: Choose your Tool: 35.72
+Group time: Planning a review: 20.45
+Group time: Defining a scope: 57.78
+Group time: Search: 14.35
+Group time: Select: 47.32
+Group time: Evaluate: 21.1
+Group time: Analysis: 21.39
+Group time: Synthesis: 21.91
+Group time: Reporting: 11.65
+Group time: Demographic data: 30.18
+Group time: Conclusion: 37.82
+
+### Response ID: 86
+#### Tool: SWARM-SLR 2024-01
+#### Scores:
+['A5', 'A5', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A6', 'A7', 'A5', 'A5', '', '', '', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A6', 'A6', 'A6', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A5', 'A6', 'A6', 'A6', 'A6', 'A5', 'A5', 'A7', 'A5', 'A5', 'A5', 'A7', 'A5', 'A5', 'A5']
+#### Time:
+Total time: 2095.73
+Groups:
+Group time: Choose your Tool: 16.24
+Group time: Planning a review: 369.78
+Group time: Defining a scope: 102.85
+Group time: Search: 42.03
+Group time: Select: 973.32
+Group time: Evaluate: 41.87
+Group time: Analysis: 77.01
+Group time: Synthesis: 21.17
+Group time: Reporting: 13.1
+Group time: Demographic data: 21.77
+Group time: Conclusion: 416.59
+
