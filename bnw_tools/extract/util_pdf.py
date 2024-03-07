@@ -126,13 +126,22 @@ class PDFDocument:
             'text': self.text,
         }
 
-    def get(self, attr: str):
+    def get(self, attr: str, None_if_not_found=False):
         if attr == "dict":
             return self.get_dict()
         elif attr == "title":
             return os.path.splitext(os.path.basename(self.path))[0]
         elif hasattr(self, attr):
             return getattr(self, attr)
+        elif self.metadata and attr in self.metadata:
+            return self.metadata[attr]
+        None_if_not_found = ["year", "month", "day", "author"]
+        if attr in None_if_not_found:
+            return None
+        if None_if_not_found:
+            return None
+        else:
+            raise ValueError(f"Invalid parameter '{attr}'")
 
     def save(self, force=False):
         if self.text:

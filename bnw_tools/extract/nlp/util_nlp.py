@@ -1,3 +1,4 @@
+from __future__ import annotations
 import argparse
 import os
 import json
@@ -17,6 +18,8 @@ from mutagen.easyid3 import EasyID3
 import importlib
 from termcolor import colored
 from pathlib import Path
+import warnings
+
 
 from ...review import similarity
 from ...core import helper
@@ -822,6 +825,21 @@ class MediaResource:
 
         self.basename: str = None
         self.original_name: str = None
+    
+    def is_duplicate(self, mr:MediaResource):
+        common_fields = ["basename", "original_name"]
+        pdf_fields = ["title", "author", "year"]
+
+        common_equals = sum(mr.get(field) == self.get(field) for field in common_fields)
+        pdf_equals = sum(mr.pdf.get(field, None_if_not_found=True) == self.pdf.get(field, None_if_not_found=True) for field in pdf_fields)
+
+        if common_equals >= 2:
+            return True
+        elif pdf_equals >= 3:
+            return True
+        elif common_equals >= 1 + pdf_equals >= 2:
+            return True
+        return False
 
     def add_audio(self, path: str = None, file: Audio = None):
         if file:
@@ -942,15 +960,22 @@ class MediaResource:
                 if self.nlp_analysis:
                     path = self.nlp_analysis.path
                 elif self.pdf:
-                    path = self.info.pdf
+                    path = self.pdf.path
                 elif self.audio_file:
-                    path = self.info.audio_file
+                    # todo: check if this was ment to be called "self.audio_file.path"
+                    path = self.audio_file.path
                 elif self.info:
                     path = self.info.path
-                self.basename = os.path.splitext(os.path.basename(path))[0]
-                return self.basename
+                if path:
+                    self.basename = os.path.splitext(os.path.basename(path))[0]
+                    return self.basename
+                else:
+                    warnings.warn("Could not build basename")
+                    return None
         elif parameter == 'type':
             return self.__class__.__name__
+        elif hasattr(self, parameter):
+            return getattr(self, parameter)
         else:
             raise ValueError(f"Invalid parameter '{parameter}'")
 
@@ -1070,6 +1095,7 @@ class Folder:
         self.df = defaultdict(int)
         self.idf = defaultdict(int)
         self.sim_matrix = None
+        self.statdict = {}
         
         if nlptools:
             self.process(nlptools)
@@ -1300,6 +1326,8 @@ class Folder:
                 mr = MediaResource()
                 mr.add_pdf(path=path)
                 mr.pdf.add_metadata(self.pdf.BibResources.get_metadata(path))
+                # # check if the file has already been added
+                # checking here is to intensive
                 mr.add_NLPFeatureAnalysis(path=self.analyse.lookfor(
                     path), nlptools=nlptools, do_named_entities=False)
                 mr.add_obsidian_note(path=self.notes.lookfor(path))
@@ -1307,6 +1335,23 @@ class Folder:
                 if idx % 100 == 99:
                     print(f"{idx+1} out of {len(pdfs)} added.")
             print(f"All {len(pdfs)} PDFs added.")
+
+        # check if the file has already been added
+        duplicates = set()
+        for x, mir in enumerate(self.media_resources):
+            if x in duplicates:
+                continue
+            for y in range(x+1, len(self.media_resources)):
+                if y in duplicates:
+                    continue
+                if mir.is_duplicate(self.media_resources[y]):
+                    print(f"Duplicates: {mir.basename}\n{mir.pdf.path}\n{self.media_resources[y].pdf.path}")
+                    duplicates.add(y)
+        # sort duplicates from highest to lowest
+        duplicates = sorted(duplicates, reverse=True)
+        for idx in duplicates:
+            self.media_resources.pop(idx)
+        print(f"Removed {len(duplicates)} duplicates.")
 
         if self.media_resources:
             self.populate()
@@ -1316,7 +1361,147 @@ class Folder:
                       do_named_entities=do_named_entities)
             self.save_summary(os.path.join(
                 self.path, "00_Folder_summary.json"), do_named_entities=do_named_entities)
+            self.analyse_metadata()
+
+    def analyse_metadata(self):
+
+        class Stats:
+            def __init__(self, folder:Folder = None, mr_id:int = None):
+                self.media_names = {}
+                # create np array for rq scores with no length
+                # create np array for rq scores with no length
+                self.rq_scores = np.array([])
+                self.rq_rank = 0
+                self.media_num = 0
+                if folder and mr_id:
+                    self.update(folder, mr_id)
             
+            # TypeError: Object of type Stats is not JSON serializable
+            def to_dict(self):
+                res_dict = {}
+                for attr in dir(self):
+                    if not attr.startswith('__') and not callable(getattr(self, attr)):
+                        # TypeError: Object of type ndarray is not JSON serializable
+                        if attr == "rq_scores":
+                            continue
+                        value = getattr(self, attr)
+                        if isinstance(value, np.ndarray):
+                            res_dict[attr] = value.tolist()
+                        else:
+                            res_dict[attr] = value
+                return res_dict
+            
+            def __str__(self):
+                return str(self.to_dict())
+
+            def update(self, folder:Folder, mr_id:int):
+                self.media_names[mr_id] = folder.media_resources[mr_id].basename
+                # update the self.rq_scores np array with the new rq scores
+                self.media_num += 1
+                # update the self.rq_scores np array with the new rq scores
+                new_rq_scores = folder.rq_sim_mat[mr_id]
+                # calculate the self.rq_averages over all rq_scores columns
+                self.rq_scores = np.append(self.rq_scores, new_rq_scores)
+
+                # calculate the self.rq_averages over all rq_scores columns
+                self.rq_averages = np.mean(self.rq_scores, axis=0)
+                self.rq_sums = np.sum(self.rq_scores, axis=0)
+                self.rq_maxs = np.max(self.rq_scores, axis=0)
+                self.rq_mins = np.min(self.rq_scores, axis=0)
+                self.rq_stds = np.std(self.rq_scores, axis=0)
+                self.rq_medians = np.median(self.rq_scores, axis=0)
+                self.rq_variances = np.var(self.rq_scores, axis=0)
+
+                # calculate the single values for averages, sumes, etc.
+                self.rq_average = np.mean(self.rq_averages)
+                self.rq_sum = np.sum(self.rq_sums)
+                self.rq_max = np.max(self.rq_maxs)
+                self.rq_min = np.min(self.rq_mins)                
+                # # Those don't make sense:
+                # self.rq_std = np.std(self.rq_stds)
+                # self.rq_median = np.median(self.rq_medians)
+                # self.rq_variance = np.var(self.rq_variances)
+                
+                # calculate a "rank" score that rewards high averages and quantities of media resources
+
+                new_mean = np.mean(new_rq_scores)
+                self.rq_rank += new_mean * new_mean
+        
+        statdict = {
+            "year" : defaultdict(Stats),
+            "author" : defaultdict(Stats),
+            "journal" : defaultdict(Stats),
+            # "language" : defaultdict(Stats),
+            "ENTRYTYPE" : defaultdict(Stats),
+        }
+        synoyms = {
+            "author" : ["authors"],
+            "journal" : ["journaltitle", "venue", "booktitle"],
+        }
+        not_found = {}
+        for key in statdict.keys():
+            not_found[key] = set()
+        for mr_id, mr in enumerate(self.media_resources):
+            # Create a list of all authors / venues / years and their statistics
+            if mr.pdf:
+                for key, stats in statdict.items():
+                    stat_key = mr.pdf.metadata.get(key)
+                    if not stat_key:
+                        for syn in synoyms.get(key, []):
+                            stat_key = mr.pdf.metadata.get(syn)
+                            if stat_key:
+                                break
+                    if stat_key:                        
+                        if key == "author":
+                            authors = stat_key.split(" and ")
+                            for author in authors:
+                                stats[author].update(self, mr_id)
+                        else:
+                            stats[stat_key].update(self, mr_id)
+                    else:
+                        not_found[key].update(list(mr.pdf.metadata.keys()))
+        for key, values in not_found.items():
+            ignore = list(statdict.keys())
+            ignore = ignore + ["file", "url", "urldate", "ID", "title"]
+            for key in ignore:
+                if key in values:
+                    values.remove(key)
+            print(f"No {colored(key, 'red')} in metadata, but found:\n{values}")
+
+        for key, stats in statdict.items():
+            # sort stats by rq_rank
+            statdict[key] = sorted(stats.items(), key=lambda x: x[1].rq_rank, reverse=True)
+        
+        # print statdict to json and csv
+        for key, candiates in statdict.items():
+            res_dict = {}
+            for name, stat in candiates:
+                res_dict[name] = stat.to_dict()
+            dump_json(os.path.join(self.path, f"metadata_stats_{key}.json"), res_dict)
+        with open(os.path.join(self.path, "metadata_stats.csv"), "w", encoding="utf8") as f:
+            for key, stats in statdict.items():
+                f.write(f"{key}\n")
+                
+                first_stat = stats[0][1]
+
+                headers = [attr for attr in dir(first_stat) if not attr.startswith('__') and not callable(getattr(first_stat, attr))]
+
+                # Write headers to file
+                f.write(";".join(headers) + "\n")
+
+                # Write data to file
+                for name, stat in stats:
+                    values = [str(getattr(stat, attr)) for attr in headers]
+                    f.write(f"{name};{';'.join(values)}\n")
+
+        # print the top 10 of each category to console, along with their rank, number of media resources and average rq score
+        for key, stats in statdict.items():
+            print(f"{key}:\t name,\t rq_rank,\t # of media_resources,\t rq_average")
+            for i, (name, stat) in enumerate(stats[:10]):
+                print(f"{i+1}. {name}:\t {round(stat.rq_rank, 3)} \t- {len(stat.media_names)} \t- {round(stat.rq_average,3)}")
+
+        self.statdict = statdict
+
     def publish(self):
         if self.media_resources:
             try:
