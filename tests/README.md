@@ -97,7 +97,7 @@ py -m pip install --upgrade build
 ```
 pip uninstall -y bnw_tools
 py -m build
-pip install dist\bnw_tools-0.0.1.2.tar.gz
+pip install dist\bnw_tools-0.0.1.4.tar.gz
 ```
 
 *Note*: Change the version number

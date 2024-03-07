@@ -79,7 +79,7 @@ class ObsidianNote:
             self.path = os.path.join(parent_path, self.get_name())
         return self.path
 
-    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None, rq_scores=None):
+    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None, rq_scores=None, folder_path=None):
         def dict_to_dataview(input_dict: dict[str, any], title="", join_char=", ", fromat_group="", open=True, end=True):
             res = ""
             is_empty = True
@@ -101,14 +101,15 @@ class ObsidianNote:
                     # TODO: turn this from a quick fix into a proper solution
                     entry_counter += 1
                     if title == "RQ Scores":
-                        res += f"RQ{entry_counter}:: {value}\n"
+                        if key != f"RQ{entry_counter}":
+                            res += f"RQ{entry_counter}:: {value}\n"
                         entry_sum += float(value)
                     res += f"{key}:: {value}\n"
                     is_empty = False
                 # TODO: turn this from a quick fix into a proper solution
                 if title == "RQ Scores":
-                    res += f"RQsum:: {entry_sum}\n"
-                    res += f"RQave:: {entry_sum/entry_counter}\n"
+                    res += f"RQsum:: {round(entry_sum,3)}\n"
+                    res += f"RQave:: {round(entry_sum/entry_counter,3)}\n"
                 if is_empty:
                     res = ""
                 elif end:
@@ -133,7 +134,12 @@ class ObsidianNote:
         corpus = ""
         for type, path in files.items():
             path = path.replace("\\", "/")
-            corpus += f"\n\n## {type}\n![[{path}]]"
+
+            corpus += f"\n\n## {type}"
+            if type == "PDF":
+                pdf_absolute_path = os.path.join(folder_path, path).replace(' ', '%20').replace('\\', '/')
+                corpus += f"\n* [Open PDF in default app]({pdf_absolute_path})"
+            corpus += f"\n![[{path}]]"
 
         # Replace first occurrence of each word in text with a link if it's in links or highlights
         transcript = ""
@@ -169,17 +175,21 @@ class ObsidianNote:
             else:
                 fin_meta = ""
 
+        fin_meta += "\n"
         fin_meta += dict_to_dataview(rq_scores, title="RQ Scores")
         rq_colon = ""
         for i in range(len(rq_scores)):
-            rq_colon += f"\nRQ{i+1}:: "
+            rq_colon += f"\nnotes_for_RQ{i+1}:: "
 
         related_cols = ""
         related_sort = ""
         if rq_scores:
             pieces = []
             for i, key in enumerate(rq_scores.keys()):
-                pieces.append(f"{key} as RQ{i+1}")
+                if key == f"RQ{i+1}":
+                    pieces.append(key)
+                else:           
+                    pieces.append(f"{key} as RQ{i+1}")
             rq_sum = " + ".join(rq_scores.keys())
             pieces.append(f"round({rq_sum},3) as \"Sum\"")
             related_cols = "\n" + ", ".join(pieces)
@@ -226,10 +236,10 @@ class ObsidianNote:
                 pieces = text.split("\n## Contributions\n")
                 if len(pieces) > 1:
                     pieces = pieces[1].split(
-                        "Paper read and Contribution completed")
+                        "Contribution completed")
                 if len(pieces) > 1:
                     property_block = "\n\n## Contributions\n" + pieces[0] + \
-                        "Paper read and Contribution completed"
+                        "Contribution completed"
 
         # todo see if i can compare these property_blocks better
         if not property_block:
@@ -241,7 +251,8 @@ research_problem::
 result:: 
 method:: 
 material:: {rq_colon}
-- [ ] Paper read and Contribution completed"""
+- [ ] Paper read
+- [ ] Contribution completed"""
 
         self.text = f"""# {title}{property_view}{property_block}{corpus}
 
@@ -474,7 +485,7 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
                 name = mr.info.title
 
         mr.obsidian_note.build_note(
-            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores)
+            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores, folder_path = folder.path)
 
         # create the markdown file
         mr.obsidian_note.save()

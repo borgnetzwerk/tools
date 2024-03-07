@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bnw_tools"
-version = "0.0.1.3"
+version = "0.0.1.4"
 authors = [
   { name="BorgNetzWerk", email="info@borgnetzwerk.de" },
   { name="Tim Wittenborg", email="tim.wittenborg@l3s.uni-hannover.de" },
@@ -39,6 +39,7 @@ dependencies = [
   "bibtexparser",
   "mutagen",
   "path",
+  "jupyter",
 ]
 
 [project.optional-dependencies]

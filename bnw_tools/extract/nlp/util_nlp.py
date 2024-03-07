@@ -16,6 +16,7 @@ import urllib.request
 from mutagen.easyid3 import EasyID3
 import importlib
 from termcolor import colored
+from pathlib import Path
 
 from ...review import similarity
 from ...core import helper
@@ -25,6 +26,7 @@ from ...extract import util_pdf
 from ...extract import util_zotero
 from ...extract import util_pytube
 from ...extract.nlp.my_stop_words import MY_STOP_WORDS
+
 
 
 def get_json_data(path):
@@ -649,8 +651,12 @@ class ResearchQuestion:
             lines.remove("```\n")
         self.title = lines.pop(0).strip().split("::")[1].strip()
 
-        self.tag = helper.get_clean_title(
-            self.title, obsidian=True).replace(" ", "_")
+        # self.tag = helper.get_clean_title(
+        #     self.title, obsidian=True).replace(" ", "_")
+        self.tag = Path(path).stem
+        for char in [" ", ":", ",", ";", "."]:
+            self.tag = self.tag.replace(char, "_")
+
         tag_found = False
 
         self.keywords = {}
@@ -707,6 +713,16 @@ class ResearchQuestion:
         if not tag_found:
             with open(path, "a", encoding="utf-8") as f:
                 f.write(f"""
+# Results
+```dataview
+Table
+notes_for_{self.tag} as "Notes for {self.tag}"
+from "03_notes"
+where notes_for_{self.tag}
+SORT notes_for_{self.tag} DESC
+LIMIT 100
+```
+    
 # Files
 ```dataview
 Table
@@ -768,7 +784,7 @@ Table
 {total_cols}
 From "03_notes"
 {total_sort}
-WHERE contains(file.tasks.completed,false)
+WHERE !contains(file.tasks.completed,true)
 LIMIT 100
 ```
 """
@@ -991,15 +1007,20 @@ class Subfolder:
             if not files:
                 return None
             else:
+                non_RQ = []
                 if not self.research_questions:
                     self.research_questions: list[ResearchQuestion] = []
                 for file in self.get("files"):
                     rq = ResearchQuestion()
                     if rq.from_file(os.path.join(self.path, file)):
                         self.research_questions.append(rq)
-                with open(os.path.join(self.path, file), "w", encoding="utf8") as f:
-                    f.write(ResearchQuestion.get_total_note(
-                        self.research_questions))
+                    else:
+                        non_RQ.append(file)
+                for file in non_RQ:
+                    if file.startswith("Total"):
+                        with open(os.path.join(self.path, file), "w", encoding="utf8") as f:
+                            f.write(ResearchQuestion.get_total_note(
+                                self.research_questions))
                 return self.research_questions
         elif arg == "files":
             return os.listdir(self.path)
@@ -1027,7 +1048,7 @@ class Folder:
 
     # Define paths as a class-level property
 
-    def __init__(self, folder_path, nlptools=None, language=None, media_resources: List[MediaResource] = None):
+    def __init__(self, folder_path, nlptools=None, language=None, media_resources: List[MediaResource] = None, publish=False):
         self.path = folder_path
 
         self.audio = Subfolder(folder_path, "00_audios")
@@ -1052,6 +1073,8 @@ class Folder:
         
         if nlptools:
             self.process(nlptools)
+        if publish:
+            self.publish()
 
     def get_image(self):
         candidates = []
@@ -1293,6 +1316,19 @@ class Folder:
                       do_named_entities=do_named_entities)
             self.save_summary(os.path.join(
                 self.path, "00_Folder_summary.json"), do_named_entities=do_named_entities)
+            
+    def publish(self):
+        if self.media_resources:
+            try:
+                self.wordcloud()
+            except:
+                print("Publish to Wordcloud failed")
+            # Obsidian
+            try:
+                nlped_whispered_folder.folder(self, force=True)
+            except:
+                print("Publish to Obsidian failed")
+
 
     # Wordcloud
     def wordcloud(self):
