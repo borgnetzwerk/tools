@@ -1326,11 +1326,13 @@ class Folder:
                 mr = MediaResource()
                 mr.add_pdf(path=path)
                 metadata = self.pdf.BibResources.get_metadata(path)
-                # TODO: Decide what is required here. For now, adding it without metadata.
-                # if metadata == -1:
-                #     # There was an error with the file
-                #     continue
-                mr.pdf.add_metadata(metadata)
+                if metadata == -1:
+                    # There was an error with the file
+                    # continue
+                    # TODO: Decide what is required here. For now, adding it without metadata.
+                    mr.pdf.add_metadata(None)
+                else:
+                    mr.pdf.add_metadata(metadata)
                 # # check if the file has already been added
                 # checking here is to intensive
                 mr.add_NLPFeatureAnalysis(path=self.analyse.lookfor(
@@ -1558,10 +1560,10 @@ class Folder:
 
     def publish(self):
         if self.media_resources:
-            try:
-                self.wordcloud()
-            except:
-                print("Publish to Wordcloud failed")
+            # try:
+            self.wordcloud()
+        # except:
+            print("Publish to Wordcloud failed")
             # Obsidian
             try:
                 nlped_whispered_folder.folder(self, force=True)
@@ -1575,15 +1577,17 @@ class Folder:
             self.bag_of_words.get(), os.path.join(self.path, "00_bag_of_words"))
         util_wordcloud.generate_wordcloud(
             self.named_entities.get_frequencies(), os.path.join(self.path, "00_named_entities"))
-        found, not_found = self.image.lookfor("Folder")
-        if found:
-            mask = found[0]
-            not_found = not_found[0]
-        mask = util_wordcloud.generate_mask()
-        util_wordcloud.generate_wordcloud_mask(
-            self.bag_of_words.get(), mask, os.path.join(self.path, "00_bag_of_words_mask"))
-        util_wordcloud.generate_wordcloud_mask(
-            self.named_entities.get_frequencies(), mask, os.path.join(self.path, "00_named_entities"))
+        ## TODO: Rework masks at a later point
+        # if self.image:
+        #     found, not_found = self.image.lookfor("Folder")
+        #     if found:
+        #         mask = found[0]
+        #         not_found = not_found[0]
+        #         mask = util_wordcloud.generate_mask()
+        #         util_wordcloud.generate_wordcloud_mask(
+        #             self.bag_of_words.get(), mask, os.path.join(self.path, "00_bag_of_words_mask"))
+        #         util_wordcloud.generate_wordcloud_mask(
+        #             self.named_entities.get_frequencies(), mask, os.path.join(self.path, "00_named_entities"))
 
 
 def main(input_path, output_path=None):
