@@ -1560,10 +1560,10 @@ class Folder:
 
     def publish(self):
         if self.media_resources:
-            # try:
-            self.wordcloud()
-        # except:
-            print("Publish to Wordcloud failed")
+            try:
+                self.wordcloud()
+            except:
+                print("Publish to Wordcloud failed")
             # Obsidian
             try:
                 nlped_whispered_folder.folder(self, force=True)
