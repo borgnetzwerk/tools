@@ -1325,7 +1325,7 @@ class Folder:
             for idx, path in enumerate(pdfs):
                 mr = MediaResource()
                 mr.add_pdf(path=path)
-                metadata = mr.pdf.get_metadata()
+                metadata = self.pdf.BibResources.get_metadata(path)
                 # TODO: Decide what is required here. For now, adding it without metadata.
                 # if metadata == -1:
                 #     # There was an error with the file
