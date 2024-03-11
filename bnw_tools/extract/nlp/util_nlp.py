@@ -1325,7 +1325,12 @@ class Folder:
             for idx, path in enumerate(pdfs):
                 mr = MediaResource()
                 mr.add_pdf(path=path)
-                mr.pdf.add_metadata(self.pdf.BibResources.get_metadata(path))
+                metadata = mr.pdf.get_metadata()
+                # TODO: Decide what is required here. For now, adding it without metadata.
+                # if metadata == -1:
+                #     # There was an error with the file
+                #     continue
+                mr.pdf.add_metadata(metadata)
                 # # check if the file has already been added
                 # checking here is to intensive
                 mr.add_NLPFeatureAnalysis(path=self.analyse.lookfor(
@@ -1366,11 +1371,21 @@ class Folder:
     def analyse_metadata(self):
 
         class Stats:
+            # Reward many high score media resources
+            # Factor of 1 just adds the scores, 2 squares them, 3 cubes them, etc.
+            # A higher factor rewards high scores more
+            RANK_FACTOR = 2
+
+            # Skip these in printing
+            skip = ["rq_scores", "rq_score_list", "RANK_FACTOR", "skip"]
+
+
             def __init__(self, folder:Folder = None, mr_id:int = None):
                 self.media_names = {}
                 # create np array for rq scores with no length
                 # create np array for rq scores with no length
-                self.rq_scores = np.array([])
+                self.rq_score_list = []
+                self.rq_scores = np.array([[]])
                 self.rq_rank = 0
                 self.media_num = 0
                 if folder and mr_id:
@@ -1382,7 +1397,7 @@ class Folder:
                 for attr in dir(self):
                     if not attr.startswith('__') and not callable(getattr(self, attr)):
                         # TypeError: Object of type ndarray is not JSON serializable
-                        if attr == "rq_scores":
+                        if attr in Stats.skip:
                             continue
                         value = getattr(self, attr)
                         if isinstance(value, np.ndarray):
@@ -1390,6 +1405,32 @@ class Folder:
                         else:
                             res_dict[attr] = value
                 return res_dict
+            
+            def to_csv(self, separator=";"):
+                sub_separtor = ","
+                if separator == ",":
+                    sub_separtor = ";"
+                res_list = []
+                for attr in dir(self):
+                    if not attr.startswith('__') and not callable(getattr(self, attr)):
+                        if attr in Stats.skip:
+                            continue
+                        value = getattr(self, attr)
+                        if isinstance(value, np.ndarray):
+                            value = value.tolist()
+                        if isinstance(value, list):
+                            # res_list.append("'" + f"' {sub_separtor} '".join(value) + "'")
+                            res_list.append("'" + f"' {sub_separtor} '".join(str(v) for v in value) + "'")
+                            # res_list.append(str(value))
+                        elif isinstance(value, dict):
+                            if attr == "media_names":
+                                res_list.append("'" + f"' {sub_separtor} '".join([str(v) for v in value.values()]) + "'")
+                            else:
+                                res_list.append(json.dumps(value))
+                        else:
+                            res_list.append(str(value))
+                # convert to string and join with separator
+                return separator.join(res_list)
             
             def __str__(self):
                 return str(self.to_dict())
@@ -1399,9 +1440,16 @@ class Folder:
                 # update the self.rq_scores np array with the new rq scores
                 self.media_num += 1
                 # update the self.rq_scores np array with the new rq scores
-                new_rq_scores = folder.rq_sim_mat[mr_id]
+                
+                self.rq_score_list.append(folder.rq_sim_mat[mr_id])
+
+                ## Reward many high score media resources
+                new_mean = np.mean(folder.rq_sim_mat[mr_id])
+                self.rq_rank += new_mean**Stats.RANK_FACTOR
+
+            def calc(self):
                 # calculate the self.rq_averages over all rq_scores columns
-                self.rq_scores = np.append(self.rq_scores, new_rq_scores)
+                self.rq_scores = np.array(self.rq_score_list)
 
                 # calculate the self.rq_averages over all rq_scores columns
                 self.rq_averages = np.mean(self.rq_scores, axis=0)
@@ -1424,9 +1472,9 @@ class Folder:
                 
                 # calculate a "rank" score that rewards high averages and quantities of media resources
 
-                new_mean = np.mean(new_rq_scores)
-                self.rq_rank += new_mean * new_mean
         
+        # # TODO: Why does this not work?
+        # statdict:Dict[str,Dict[str,Stats]] = {
         statdict = {
             "year" : defaultdict(Stats),
             "author" : defaultdict(Stats),
@@ -1443,7 +1491,7 @@ class Folder:
             not_found[key] = set()
         for mr_id, mr in enumerate(self.media_resources):
             # Create a list of all authors / venues / years and their statistics
-            if mr.pdf:
+            if mr.pdf and mr.pdf.metadata:
                 for key, stats in statdict.items():
                     stat_key = mr.pdf.metadata.get(key)
                     if not stat_key:
@@ -1460,45 +1508,51 @@ class Folder:
                             stats[stat_key].update(self, mr_id)
                     else:
                         not_found[key].update(list(mr.pdf.metadata.keys()))
+
+        for key, stats in statdict.items():
+            for name, stat in stats.items():
+                stat.calc()
+        
         for key, values in not_found.items():
             ignore = list(statdict.keys())
             ignore = ignore + ["file", "url", "urldate", "ID", "title"]
-            for key in ignore:
-                if key in values:
-                    values.remove(key)
+            for ignore_key in ignore:
+                if ignore_key in values:
+                    values.remove(ignore_key)
             print(f"No {colored(key, 'red')} in metadata, but found:\n{values}")
 
         for key, stats in statdict.items():
             # sort stats by rq_rank
-            statdict[key] = sorted(stats.items(), key=lambda x: x[1].rq_rank, reverse=True)
+            statdict[key] = dict(sorted(stats.items(), key=lambda x: x[1].rq_rank, reverse=True))
         
         # print statdict to json and csv
-        for key, candiates in statdict.items():
+        for category, entry_dict in statdict.items():
             res_dict = {}
-            for name, stat in candiates:
+            for name, stat in entry_dict.items():
                 res_dict[name] = stat.to_dict()
-            dump_json(os.path.join(self.path, f"metadata_stats_{key}.json"), res_dict)
-        with open(os.path.join(self.path, "metadata_stats.csv"), "w", encoding="utf8") as f:
-            for key, stats in statdict.items():
-                f.write(f"{key}\n")
-                
-                first_stat = stats[0][1]
+            dump_json(os.path.join(self.path, f"metadata_stats_{category}.json"), res_dict)
+        
+        for category, entry_dict in statdict.items():
+            first_stat = list(entry_dict.values())[0]
+            headers = [attr for attr in dir(first_stat) if not attr.startswith('__') and not callable(getattr(first_stat, attr))]
+            for header in Stats.skip:
+                if header in headers:
+                    headers.remove(header)
+            headers = ["name"] + headers
 
-                headers = [attr for attr in dir(first_stat) if not attr.startswith('__') and not callable(getattr(first_stat, attr))]
-
+            with open(os.path.join(self.path, f"metadata_stats_{category}.csv"), "w", encoding="utf8") as f:
                 # Write headers to file
                 f.write(";".join(headers) + "\n")
 
-                # Write data to file
-                for name, stat in stats:
-                    values = [str(getattr(stat, attr)) for attr in headers]
-                    f.write(f"{name};{';'.join(values)}\n")
+                for name, stat in entry_dict.items():
+                    # Write data to file
+                    f.write(f"{name};{stat.to_csv()}\n")
 
         # print the top 10 of each category to console, along with their rank, number of media resources and average rq score
         for key, stats in statdict.items():
             print(f"{key}:\t name,\t rq_rank,\t # of media_resources,\t rq_average")
-            for i, (name, stat) in enumerate(stats[:10]):
-                print(f"{i+1}. {name}:\t {round(stat.rq_rank, 3)} \t- {len(stat.media_names)} \t- {round(stat.rq_average,3)}")
+        for i, (name, stat) in enumerate(list(stats.items())[:10]):
+            print(f"{i+1}. {name}:\t {round(stat.rq_rank, 3)} \t- {len(stat.media_names)} \t- {round(stat.rq_average,3)}")
 
         self.statdict = statdict
 
