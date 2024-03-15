@@ -179,7 +179,7 @@ class ObsidianNote:
         fin_meta += dict_to_dataview(rq_scores, title="RQ Scores")
         rq_colon = ""
         for i in range(len(rq_scores)):
-            rq_colon += f"\nnotes_for_RQ{i+1}:: "
+            rq_colon += f"\nRQ{i+1}_notes:: "
 
         related_cols = ""
         related_sort = ""
@@ -230,22 +230,79 @@ class ObsidianNote:
 | Paper URL | `=this.url` |{ORKG_Document_Properties}
 	(You can update this in edit mode at the end of the document)"""
 
+        # Preserve existing content
         if os.path.exists(self.path):
             with open(self.path, 'r', encoding='utf8') as f:
                 text = f.read()
                 pieces = text.split("\n## Contributions\n")
+
+                # try to make the cut outside of the content first (external)
+                append = ""
+                external_splitter = ["## PDF"]
+                splitter = external_splitter + ["Contribution completed"]
                 if len(pieces) > 1:
-                    pieces = pieces[1].split(
-                        "Contribution completed")
+                    while not append and len(splitter):
+                        test = splitter.pop(0)
+                        if test in pieces[1]:
+                            pieces = pieces[1].split(test)
+                            append = test
+                    if not append:
+                        error = "Could not find the end of the contributions section."
+                        print("Error on build_note for ", self.path)
+                        print(error)
+                        return error
+                    # If we were able to make the cut outside of the content, we don't need to append anything
+                    if append in external_splitter:
+                        append = "" 
+
                 if len(pieces) > 1:
-                    property_block = "\n\n## Contributions\n" + pieces[0] + \
-                        "Contribution completed"
+                    edited_indicators = [
+                        # Has a tasked checked
+                        "- [x]",
+                        # Has a second contribution added
+                        "### Contribution 2",
+                    ]
+                    edited_indicators_re = [
+                        # r"review_score:: *[^\n]",
+                        # r"review_comment:: *[^\n]",
+                        # Has a property filled in
+                        r":: +[^\n\\]+",
+                    ]
+
+                    edited = False
+                    for indicator in edited_indicators:
+                        if indicator in pieces[0]:
+                            edited = True
+                            break
+                    if not edited:
+                        for indicator in edited_indicators_re:
+                            if re.search(indicator, pieces[0]):
+                                edited = True
+                                break
+
+                    if edited:
+                        property_block = "\n\n## Contributions\n" + pieces[0] + append
+
+                        # TODO: better dynamic solution
+                        legacy_updates = {
+                            "notes_for_RQ1": "RQ1_notes",
+                            "notes_for_RQ2": "RQ2_notes",
+                            "notes_for_RQ3": "RQ3_notes",
+                            "notes_for_RQ4": "RQ4_notes",
+                        }
+                        for legacy, new in legacy_updates.items():
+                            property_block = property_block.replace(
+                                legacy, new)
+                        
 
         # todo see if i can compare these property_blocks better
         if not property_block:
             property_block = f"""
 
 ## Contributions
+review_score:: 
+review_comment:: 
+
 ### Contribution 1
 research_problem:: 
 result:: 
@@ -484,8 +541,9 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             if hasattr(mr.info, 'title'):
                 name = mr.info.title
 
-        mr.obsidian_note.build_note(
+        errors = mr.obsidian_note.build_note(
             text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores, folder_path = folder.path)
 
-        # create the markdown file
-        mr.obsidian_note.save()
+        if not errors:
+            # create the markdown file
+            mr.obsidian_note.save()
