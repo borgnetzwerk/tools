@@ -1073,7 +1073,7 @@ class Folder:
 
     # Define paths as a class-level property
 
-    def __init__(self, folder_path, nlptools=None, language=None, media_resources: List[MediaResource] = None, publish=False):
+    def __init__(self, folder_path, nlptools=None, language=None, media_resources: List[MediaResource] = None, publish=False, config=None):
         self.path = folder_path
 
         self.audio = Subfolder(folder_path, "00_audios")
@@ -1096,6 +1096,8 @@ class Folder:
         self.idf = defaultdict(int)
         self.sim_matrix = None
         self.statdict = {}
+        
+        self.config = config
         
         if nlptools:
             self.process(nlptools)
@@ -1217,7 +1219,7 @@ class Folder:
             reduced_media_resources.append(res)
         # TODO: calculate once per group, then again over all groups
         self.rq_sim_mat = similarity.compute_weighed_similarity(
-            reduced_media_resources, reduced_research_questions)
+            reduced_media_resources, reduced_research_questions, config=self.config)
 
         similarity.print_rq([mr.get("basename") for mr in self.media_resources], self.rq_sim_mat,
                             self.path, filename="RQ", additional_info=self.rq.research_questions)

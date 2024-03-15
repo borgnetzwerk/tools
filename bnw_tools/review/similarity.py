@@ -52,7 +52,7 @@ def create_word_vectors(dictionaries: List[Dict[str, int]], sum_dict: Dict[str, 
     return vectors
 
 
-def normalize(vectors, log_level=False, sqrt_level=2):
+def normalize(vectors, log_level=False, sqrt_level=2, config=None):
     """
     Normalize a list of vectors and reward higher word counts logarithmically.
 
@@ -91,6 +91,10 @@ max        [0.232,  0.118,  0.242]])
            [0,947,  0.555, 0.591],
            [1.0,    1.0,    1.0]])
     """
+    if config:
+        log_level = config.get("log_level", log_level)
+        sqrt_level = config.get("sqrt_level", sqrt_level)
+
     max_values = np.max(vectors, axis=0)
     indices_zero = max_values == 0
     max_values[indices_zero] = 1  # replacing 0s with 1s
@@ -104,25 +108,27 @@ max        [0.232,  0.118,  0.242]])
         vectors = np.log10(vectors) / (log_level - 1)
     if sqrt_level:
         vectors = np.sqrt(vectors)
+
+    # TODO: Reduce the reward of long documents
     return vectors
 
 # def compute_similarity_matrix(vectors):
 #     # todo: Include weighed cosine similarity
 #     return cosine_similarity(vectors)
 
-
-def compute_similarity_from_vectors(vector_a: List[Dict[str, int]], vector_b: List[Dict[str, int]]):
+# # TODO: does not seem to be used anymore
+def compute_similarity_from_vectors(vector_a: List[Dict[str, int]], vector_b: List[Dict[str, int]], config=None):
     np_vectors_a = create_word_vectors(vector_a)
-    np_vectors_a = normalize(np_vectors_a)
+    np_vectors_a = normalize(np_vectors_a, config=config)
 
     np_vectors_b = create_word_vectors(vector_b)
     sim_matrix = cosine_similarity(np_vectors_a, np_vectors_b)
     return sim_matrix
 
 
-def compute_weighed_similarity(vector_a: List[Dict[str, int]], vector_b: List[Dict[str, int]]):
+def compute_weighed_similarity(vector_a: List[Dict[str, int]], vector_b: List[Dict[str, int]], config=None):
     np_vectors_a = create_word_vectors(vector_a)
-    np_vectors_a = normalize(np_vectors_a)
+    np_vectors_a = normalize(np_vectors_a, config=config)
 
     np_vectors_b = create_word_vectors(vector_b)
     sim_matrix = np.zeros((len(np_vectors_a), len(np_vectors_b)))
