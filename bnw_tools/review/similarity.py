@@ -91,13 +91,22 @@ max        [0.232,  0.118,  0.242]])
            [0,947,  0.555, 0.591],
            [1.0,    1.0,    1.0]])
     """
+    # check if vectors is List[Dict[str, int]]
+    if isinstance(vectors[0], dict):
+        vectors = create_word_vectors(vectors)
+
     if config:
         log_level = config.get("log_level", log_level)
         sqrt_level = config.get("sqrt_level", sqrt_level)
 
+
+
     max_values = np.max(vectors, axis=0)
-    indices_zero = max_values == 0
-    max_values[indices_zero] = 1  # replacing 0s with 1s
+        
+    if not np.isscalar(max_values):
+        # max_values is a vector.
+        indices_zero = max_values == 0
+        max_values[indices_zero] = 1  # replacing 0s with 1s
     vectors /= max_values
 
     if log_level:

@@ -1143,6 +1143,9 @@ class Folder:
             mr.nlp_analysis.save(should_have_nen=should_have_nen)
 
     def calc_rq_sim(self):
+        """
+        The highest similarity to a research question belongs to the document that uses the most relevant keywords the most.
+        """
         if not self.rq.research_questions:
             return None
 
@@ -1179,6 +1182,7 @@ class Folder:
             else:
                 return 0
 
+        ## Which words are actually relevant?
         relevant_keys = set()
         for rq in self.rq.get("rqs"):
             for group in rq.keywords.values():
@@ -1186,22 +1190,12 @@ class Folder:
                 relevant_keys.update(group)
                 # for keyword in group:
                 # relevant_keys.update(keyword.split(" "))
-        reduced_research_questions = []
-        for rq in self.rq.get("rqs"):
-            res = {}
-            ungrouped = {}
-            for group in rq.keywords.values():
-                ungrouped.update(group)
-            for key in relevant_keys:
-                value = 0
-                if key in ungrouped:
-                    # todo: utilize weight
-                    value = ungrouped[key]
-                    # value = 1
-                res[key] = value
-            reduced_research_questions.append(res)
 
+        ## Reduce the media resources to the relevant words
         reduced_media_resources = []
+
+        # to set the order and get indices
+        relevant_keys = list(relevant_keys)
         for mr in self.media_resources:
             res = {}
             for key in relevant_keys:
@@ -1217,9 +1211,99 @@ class Folder:
                     res[key] = get_min_match(
                         subwords, mr.nlp_analysis.bag_of_words.tf)
             reduced_media_resources.append(res)
+        
+        normalised_media_resources = similarity.normalize(reduced_media_resources, config=self.config)
+
+           
+        rq_scores = []
+        for rq in self.rq.get("rqs"):
+            all_group_scores = []
+            # TODO: allow other weights for groups
+            group_weights = []
+            for group in rq.keywords.values():
+                group_weights.append(1)
+            group_weights = similarity.normalize(group_weights, log_level = False, sqrt_level = False)
+
+            for idx, group in enumerate(rq.keywords.values()):
+                group_weight = group_weights[idx]
+                keyword_indices = []
+                weights = []
+                for keyword, weight in group.items():
+                    keyword_indices.append(relevant_keys.index(keyword))
+                    weights.append(weight)
+                
+                # reduce normalised_media_resources to only the keywords existing in this group
+                # media_resource_group_frequencies
+                current_group_media_resources = normalised_media_resources[:, keyword_indices]
+                # media_resource_group_frequencies_weighed
+                current_group_media_resources = np.array(current_group_media_resources) * np.array(weights)
+
+                # media_resource_group_scores
+                current_group_scores = current_group_media_resources.sum(axis=1)
+
+
+                # media_resource_group_scores_normalized
+                current_group_scores = similarity.normalize(current_group_scores, log_level = False, sqrt_level = False)
+                
+                current_group_scores = current_group_scores * group_weight
+                all_group_scores.append(current_group_scores)
+            all_group_scores = np.array(all_group_scores)
+
+            # TODO: see if there are other approaches.
+
+            # group_prodct this penalizes the those scoring 0 in any group by making the whole score 0
+            group_prodct = False
+
+            # group_sum does not reward a good spread of groups if one group scored very high
+            group_sum = False
+
+            # group_sum_average 
+            group_average = True
+
+
+            if self.config:
+                group_prodct = self.config.get("group_prodct", group_prodct)
+                group_sum = self.config.get("group_sum", group_sum)
+                group_average = self.config.get("group_average", group_average)
+
+            if group_prodct:
+                all_group_scores = np.prod(all_group_scores, axis=0)
+            if group_sum:
+                all_group_scores = np.sum(all_group_scores, axis=0)
+            if group_average:
+                all_group_scores = np.mean(all_group_scores, axis=0)
+
+            all_group_scores = similarity.normalize(all_group_scores, log_level = False, sqrt_level = False)
+
+
+            rq_scores.append(all_group_scores)
+        rq_scores = np.array(rq_scores).transpose()
+        self.rq_sim_mat = rq_scores
+
+
+        # for keyword, weight in group.items():
+        #     relevant_keys.add(keyword)
+
+            
+        #     res = {}
+        #     ungrouped = {}
+        #     groups.append(list(rq.keywords.values()))
+        #     for group in rq.keywords.values():
+        #         ungrouped.update(group)
+        #     for key in relevant_keys:
+        #         value = 0
+        #         if key in ungrouped:
+        #             # todo: utilize weight
+        #             value = ungrouped[key]
+        #             # value = 1
+        #         res[key] = value
+        #     reduced_research_questions.append(res)
+
+
         # TODO: calculate once per group, then again over all groups
-        self.rq_sim_mat = similarity.compute_weighed_similarity(
-            reduced_media_resources, reduced_research_questions, config=self.config)
+        
+        # self.rq_sim_mat = similarity.compute_weighed_similarity(
+        #     reduced_media_resources, reduced_research_questions, config=self.config)
 
         similarity.print_rq([mr.get("basename") for mr in self.media_resources], self.rq_sim_mat,
                             self.path, filename="RQ", additional_info=self.rq.research_questions)
