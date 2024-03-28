@@ -1639,8 +1639,8 @@ class Folder:
         # print the top 10 of each category to console, along with their rank, number of media resources and average rq score
         for key, stats in statdict.items():
             print(f"{key}:\t name,\t rq_rank,\t # of media_resources,\t rq_average")
-        for i, (name, stat) in enumerate(list(stats.items())[:10]):
-            print(f"{i+1}. {name}:\t {round(stat.rq_rank, 3)} \t- {len(stat.media_names)} \t- {round(stat.rq_average,3)}")
+            for i, (name, stat) in enumerate(list(stats.items())[:10]):
+                print(f"{i+1}. {name}:\t {round(stat.rq_rank, 3)} \t- {len(stat.media_names)} \t- {round(stat.rq_average,3)}")
 
         self.statdict = statdict
 
