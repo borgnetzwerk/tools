@@ -120,3 +120,15 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 26.62 | 79.48 | 31.14 | 161.16 | 49.15 | 17.77 | 62.95 | 47.05 | 11.24 | 3.47 |
 
+### Response ID: 35
+#### Metadata:
+| Date submitted | Last page | Start language | Date started | Date last action | Age | Education | Survey count | Experience |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2024-02-11 22:33:45 | 10 | en | 2024-02-11 22:30:46 | 2024-02-11 22:33:45 | 26 | Bachelor's degree | 1 | Fair |
+#### Scores:
+['A3', '', 'A4', '', '', '', '', 'A4', '', 'A4', '', 'A4', '', '', '', 'A3', '', '', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', '', 'A7', '', 'A1', 'A3', 'A3', 'A3', '', 'A4', '', 'A4', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', 'A3', '', 'A3', '', '', 'A3', 'A3', '', 'A3', '', 'A3', '', 'A3', '', 'A3', 'A3', 'A3', 'A7', 'A3']
+#### Time total: 183 seconds (3.06 minutes)
+| Planning a review | Defining a scope | Search | Select | Evaluate | Analysis | Synthesis | Reporting | Demographic data | Conclusion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 27.91 | 37.05 | 13.43 | 37.22 | 14.86 | 7.07 | 11.16 | 9.2 | 20.55 | 4.97 |
+

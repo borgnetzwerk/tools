@@ -455,3 +455,29 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 50.35 | 17.02 | 110.08 | 65.7 | 2744.64 | 20.69 | 75 | 64.99 | 16.5 | 25.75 | 19.07 |
 
+### Response ID: 88
+#### Tool: Open Research Knowledge Graph (ORKG)
+#### Metadata:
+| Date submitted | Last page | Start language | Date started | Date last action | Age | Education | Survey count | Experience |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2024-01-18 02:43:39 | 11 | en | 2024-01-18 02:37:52 | 2024-01-18 02:43:39 | 39 | Ph.D. or higher | 2-3 | Excellent |
+#### Scores:
+['A1', 'A1', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A2', 'A6', 'A8', 'A6', '', 'A8', 'A5', 'A1', 'A1', 'A5', 'A5', 'A5', 'A1', 'A1', 'A1', 'A1', 'A1', 'A9', 'A5', 'A5', 'A5', 'A9', 'A9', 'A9', 'A1', 'A10', 'A10', 'A2', 'A9', 'A9', 'A9', 'A1', 'A9', 'A9', 'A1', 'A1', 'A1', 'A9', 'A9', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1', 'A9', 'A9', 'A1', 'A1', 'A1', 'A1', 'A1', 'A1']
+#### Time total: 353 seconds (5.88 minutes)
+| Choose your Tool | Planning a review | Defining a scope | Search | Select | Evaluate | Analysis | Synthesis | Reporting | Demographic data | Conclusion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 12.22 | 16.5 | 64.1 | 32.88 | 83.81 | 36.85 | 18.79 | 35.41 | 12.28 | 35.9 | 4.08 |
+
+### Response ID: 89
+#### Tool: LaTeX
+#### Metadata:
+| Date submitted | Last page | Start language | Date started | Date last action | Age | Education | Survey count | Experience |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2024-01-18 02:48:23 | 11 | en | 2024-01-18 02:44:41 | 2024-01-18 02:48:23 | 39 | Ph.D. or higher | 2-3 | Excellent |
+#### Scores:
+['A9', 'A9', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A1', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A10', 'A10', 'A10', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A1', 'A1', 'A1', 'A1', 'A1', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A1', 'A1', 'A1', 'A1', 'A1']
+#### Time total: 227 seconds (3.79 minutes)
+| Choose your Tool | Planning a review | Defining a scope | Search | Select | Evaluate | Analysis | Synthesis | Reporting | Demographic data | Conclusion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 15.09 | 12.89 | 30.79 | 15.12 | 49.99 | 18.23 | 15.38 | 31.31 | 11.98 | 21.98 | 4.55 |
+
