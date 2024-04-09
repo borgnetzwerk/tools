@@ -68,9 +68,9 @@ This makes sure you have all packages in one place, without affecting your overa
 ```
 *Hint*: Potentially, you need wrap it in an Set-ExecutionPolicy block, if you do not have the rights to execute scripts:
 ```
-Set-ExecutionPolicy RemoteSigned
+Set-ExecutionPolicy Unrestricted -Scope Process
 .venv/Scripts/activate
-Set-ExecutionPolicy Restricted
+Set-ExecutionPolicy Restricted -Scope Process
 ```
 *Hint*: this action is undone by typing ```deactivate```
 
