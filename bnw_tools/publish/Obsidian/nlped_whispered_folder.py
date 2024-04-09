@@ -100,11 +100,12 @@ class ObsidianNote:
                                           for w in value)
                     # TODO: turn this from a quick fix into a proper solution
                     entry_counter += 1
+                    line = f"{key}:: {value}\n"
                     if title == "RQ Scores":
                         if key != f"RQ{entry_counter}":
-                            res += f"RQ{entry_counter}:: {value}\n"
+                            line = f"RQ{entry_counter}:: {value}\n"
                         entry_sum += float(value)
-                    res += f"{key}:: {value}\n"
+                    res += line
                     is_empty = False
                 # TODO: turn this from a quick fix into a proper solution
                 if title == "RQ Scores":
