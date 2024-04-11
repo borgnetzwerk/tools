@@ -31,7 +31,7 @@ class ObsidianNote:
         # if not self.iscomplete() and text:
         #     self.complete(text)
         if simVec:
-            #TODO: Establish this function
+            # TODO: Establish this function
             self.get_related_note_ids(simVec)
 
     def from_file(self, path):
@@ -44,7 +44,7 @@ class ObsidianNote:
         self.path = path
         try:
             if os.path.exists(path):
-                with open(path, 'r', encoding='utf8') as f:
+                with open(path, "r", encoding="utf8") as f:
                     self.text = f.read()
         except Exception as e:
             print(e)
@@ -58,7 +58,7 @@ class ObsidianNote:
         if path is None:
             path = self.path
 
-        with open(path, 'w', encoding='utf8') as f:
+        with open(path, "w", encoding="utf8") as f:
             f.write(self.text)
 
     def get_name(self, filename=None, fallback=None):
@@ -81,8 +81,28 @@ class ObsidianNote:
             self.path = os.path.join(parent_path, self.get_name())
         return self.path
 
-    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None, rq_scores=None, folder_path=None, keyword_scores=None, visualizations=None):
-        def dict_to_dataview(input_dict: dict[str, any], title="", join_char=", ", fromat_group="", open=True, end=True):
+    def build_note(
+        self,
+        text,
+        highlights=None,
+        links=None,
+        name=None,
+        related_notes=None,
+        files=None,
+        additional_meta_data=None,
+        rq_scores=None,
+        folder_path=None,
+        keyword_scores=None,
+        visualizations=None,
+    ):
+        def dict_to_dataview(
+            input_dict: dict[str, any],
+            title="",
+            join_char=", ",
+            fromat_group="",
+            open=True,
+            end=True,
+        ):
             res = ""
             is_empty = True
             if input_dict:
@@ -98,8 +118,7 @@ class ObsidianNote:
                     if isinstance(value, str):
                         value = value.replace("\\", "/")
                     if fromat_group:
-                        value = ', '.join(fromat_group.format(w)
-                                          for w in value)
+                        value = ", ".join(fromat_group.format(w) for w in value)
                     # TODO: turn this from a quick fix into a proper solution
                     entry_counter += 1
                     line = f"{key}:: {value}\n"
@@ -140,7 +159,11 @@ class ObsidianNote:
 
             corpus += f"\n\n## {type}"
             if type == "PDF":
-                pdf_absolute_path = os.path.join(folder_path, path).replace(' ', '%20').replace('\\', '/')
+                pdf_absolute_path = (
+                    os.path.join(folder_path, path)
+                    .replace(" ", "%20")
+                    .replace("\\", "/")
+                )
                 corpus += f"\n* [Open PDF in default app]({pdf_absolute_path})"
             corpus += f"\n![[{path}]]"
 
@@ -155,12 +178,15 @@ class ObsidianNote:
             transcript += f"\n\n## Transcript\n{text}"
 
         metadata = ""
-        metadata += dict_to_dataview(links,
-                                     fromat_group='[[{}]]', open=False, end=False)
-        metadata += dict_to_dataview(highlights,
-                                     fromat_group='**{}**', open=False, end=False)
-        metadata += dict_to_dataview(related_notes,
-                                     fromat_group='[[{}]]', open=False, end=False)
+        metadata += dict_to_dataview(
+            links, fromat_group="[[{}]]", open=False, end=False
+        )
+        metadata += dict_to_dataview(
+            highlights, fromat_group="**{}**", open=False, end=False
+        )
+        metadata += dict_to_dataview(
+            related_notes, fromat_group="[[{}]]", open=False, end=False
+        )
         if metadata:
             metadata = "\n\n%%\n" + metadata + "%%"
 
@@ -191,10 +217,10 @@ class ObsidianNote:
             for i, key in enumerate(rq_scores.keys()):
                 if key == f"RQ{i+1}":
                     pieces.append(key)
-                else:           
+                else:
                     pieces.append(f"{key} as RQ{i+1}")
             rq_sum = " + ".join(rq_scores.keys())
-            pieces.append(f"round({rq_sum},3) as \"Sum\"")
+            pieces.append(f'round({rq_sum},3) as "Sum"')
             related_cols = "\n" + ", ".join(pieces)
             related_sort = f"\nSORT {rq_sum} desc"
 
@@ -206,11 +232,11 @@ class ObsidianNote:
             while look_at and not url_suffix:
                 check = look_at.pop(0)
                 if check in additional_meta_data and additional_meta_data[check]:
-                    url_suffix = additional_meta_data[check].replace(
-                        "/", "%2F")
+                    url_suffix = additional_meta_data[check].replace("/", "%2F")
             if url_suffix:
-                ORKG_data[
-                    "ORKG_search"] = f"https://orkg.org/search/{urllib.parse.quote(url_suffix)}"
+                ORKG_data["ORKG_search"] = (
+                    f"https://orkg.org/search/{urllib.parse.quote(url_suffix)}"
+                )
         fin_meta += dict_to_dataview(ORKG_data, title="ORKG")
 
         if keyword_scores:
@@ -221,7 +247,7 @@ class ObsidianNote:
             for key in ORKG_data.keys():
                 ORKG_Document_Properties += f"\n| {key} | `=this.{key}` |"
 
-# Rank according to age of paper
+        # Rank according to age of paper
 
         property_block = ""
         property_view = f"""
@@ -235,14 +261,14 @@ class ObsidianNote:
 | Published in | `=this.published_in` |
 | Paper URL | `=this.url` |{ORKG_Document_Properties}
 	(You can update this in edit mode at the end of the document)"""
-        
+
         if visualizations:
             for vis in visualizations:
                 property_view += f"\n![[{vis}]]"
 
         # Preserve existing content
         if os.path.exists(self.path):
-            with open(self.path, 'r', encoding='utf8') as f:
+            with open(self.path, "r", encoding="utf8") as f:
                 text = f.read()
                 pieces = text.split("\n## Contributions\n")
 
@@ -263,7 +289,7 @@ class ObsidianNote:
                         return error
                     # If we were able to make the cut outside of the content, we don't need to append anything
                     if append in external_splitter:
-                        append = "" 
+                        append = ""
 
                 if len(pieces) > 1:
                     edited_indicators = [
@@ -301,9 +327,7 @@ class ObsidianNote:
                             "notes_for_RQ4": "RQ4_notes",
                         }
                         for legacy, new in legacy_updates.items():
-                            property_block = property_block.replace(
-                                legacy, new)
-                        
+                            property_block = property_block.replace(legacy, new)
 
         # todo see if i can compare these property_blocks better
         if not property_block:
@@ -332,27 +356,26 @@ WHERE contains(file.inlinks, this.file.link){related_sort}
 
 
 # Directly from dictionary
-#TODO: Make this package-worthy
-        
+# TODO: Make this package-worthy
+
 # with open(os.path.join("bnw_tools","ORKG", "ResearchFields.json")) as json_file:
-               
+
 # a = files('bnw_tools.ORKG')
 # b = a.joinpath('ResearchFields.json')
 # c = as_file(b)
 
 # with open(as_file((files('bnw_tools.ORKG').joinpath('ResearchFields.json')))) as json_file:
 
-with open(files('bnw_tools.ORKG').joinpath('ResearchFields.json')) as json_file:
+with open(files("bnw_tools.ORKG").joinpath("ResearchFields.json")) as json_file:
     meta = json.load(json_file)
 
 RF_map = {}
 for rf in list(meta.values())[0]:
-    RF_map.update({rf['id']: rf['label']})
-RF_map = {k: v for k, v in sorted(
-    RF_map.items(), key=lambda item: int(item[0][1:]))}
+    RF_map.update({rf["id"]: rf["label"]})
+RF_map = {k: v for k, v in sorted(RF_map.items(), key=lambda item: int(item[0][1:]))}
 
 # with open(os.path.join(root_stepup, "bnw_tools","ORKG", "RF_Map.json"), 'w') as outfile:
-with open((files('bnw_tools.ORKG').joinpath('RF_Map.json')), 'w') as outfile:
+with open((files("bnw_tools.ORKG").joinpath("RF_Map.json")), "w") as outfile:
     json.dump(RF_map, outfile, indent=4)
 
 RF_patterns = {}
@@ -370,10 +393,10 @@ for raw_field in RF_map.values():
     elif " and " in raw_field:
         temp = raw_field.split(" and ", 1)[1]
         if " " in temp:
-            temp = " " .join(temp.split(" ", 1)[1:])
+            temp = " ".join(temp.split(" ", 1)[1:])
             master = re.escape(temp) + r"*"
-    fields = re.split(',|/| and ', raw_field)
-    fields = [field.strip(' ') for field in fields]
+    fields = re.split(",|/| and ", raw_field)
+    fields = [field.strip(" ") for field in fields]
     if "" in fields:
         fields.remove("")
     if len(fields) > 1:
@@ -415,8 +438,9 @@ def update_RF(meta):
                     if RF_id not in assume:
                         assume[RF_id] = 0
                     assume[RF_id] = value * weight
-    assume = {k: v for k, v in sorted(
-        assume.items(), key=lambda item: item[1], reverse=True)}
+    assume = {
+        k: v for k, v in sorted(assume.items(), key=lambda item: item[1], reverse=True)
+    }
     highest = 0
     results = []
     for RF_id, value in assume.items():
@@ -454,7 +478,12 @@ def update_RF(meta):
     return meta
 
 
-def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENTITIES, force=False):
+def folder(
+    folder: Folder,
+    limit_ns=LIMIT_BAG_OF_WORDS,
+    limit_ne=LIMIT_NAMED_ENTITIES,
+    force=False,
+):
     # loop over each file in the directory
     # build Entry Node
     # Sort all files into subfolders
@@ -468,9 +497,11 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
         # Create the Obsidian directory if it does not exist,
 
         bag_of_words = list(mr.nlp_analysis.bag_of_words.tf_idf.keys())[
-            :LIMIT_BAG_OF_WORDS + LIMIT_NAMED_ENTITIES]
+            : LIMIT_BAG_OF_WORDS + LIMIT_NAMED_ENTITIES
+        ]
         named_entities = list(mr.nlp_analysis.named_entities.get().keys())[
-            :LIMIT_NAMED_ENTITIES]
+            :LIMIT_NAMED_ENTITIES
+        ]
 
         for name in named_entities:
             lookfor = set([name.lower()]).union(name.lower().split())
@@ -513,8 +544,8 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             meta.update(mr.pdf.metadata)
         if mr.info:
             block = mr.info.__dict__
-            del block['thumbnail_urls']
-            del block['cap_codes']
+            del block["thumbnail_urls"]
+            del block["cap_codes"]
             meta.update(block)
 
         if meta:
@@ -537,18 +568,17 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
         try:
             if folder.rq and folder.rq.research_questions:
                 for id_rq, rq in enumerate(folder.rq.research_questions):
-                    rq_scores.update(
-                        {rq.tag: round(folder.rq_sim_mat[idr][id_rq], 3)})
+                    rq_scores.update({rq.tag: round(folder.rq_sim_mat[idr][id_rq], 3)})
         except Exception as e:
             print(e)
 
         name = mr.original_name
 
         if mr.pdf and mr.pdf.metadata:
-            if 'title' in mr.pdf.metadata:
-                name = mr.pdf.metadata['title']
+            if "title" in mr.pdf.metadata:
+                name = mr.pdf.metadata["title"]
         elif mr.info:
-            if hasattr(mr.info, 'title'):
+            if hasattr(mr.info, "title"):
                 name = mr.info.title
 
         keyword_scores = None
@@ -556,31 +586,46 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             keyword_scores = {}
             for key, value in mr.keyword_scores.items():
                 keyword_scores["keys_" + key.replace(" ", "_")] = value
-        
+
         # Visualizations
         # paused while not fully solved for many keywords
         visualizations = []
         hold_visualizations_for_now = False
         if sum(mr.keyword_scores.values()) and not hold_visualizations_for_now:
-            keyword_bar_path = mr.obsidian_note.path.replace("03_notes", "03_visualizations")
+            keyword_bar_path = mr.obsidian_note.path.replace(
+                "03_notes", "03_visualizations"
+            )
             keyword_bar_path = keyword_bar_path.replace(".md", "_bar.png")
             # todo: shift this to a more general location
             # all non 0 elements in mr.keyword_scores:
             data = {k: v for k, v in mr.keyword_scores.items() if v > 0}
-            util_pyplot.dict_to_barchart(data, path=keyword_bar_path, sort = True)
-            visualizations.append(keyword_bar_path) 
+            util_pyplot.dict_to_barchart(data, path=keyword_bar_path, sort=True)
+            visualizations.append(keyword_bar_path)
 
             keyword_cloud_path = keyword_bar_path.replace("_bar.png", "_cloud.png")
-            util_wordcloud.generate_wordcloud(data, keyword_cloud_path, width=1900, height=300)
+            util_wordcloud.generate_wordcloud(
+                data, keyword_cloud_path, width=1900, height=300
+            )
             visualizations.append(keyword_cloud_path)
 
             for i in range(len(visualizations)):
-                # remove folder.path from keyowrd_bar_path   
-                visualizations[i] = os.path.relpath(visualizations[i],folder.path)
-                visualizations[i] = visualizations[i].replace("\\", "/")            
+                # remove folder.path from keyowrd_bar_path
+                visualizations[i] = os.path.relpath(visualizations[i], folder.path)
+                visualizations[i] = visualizations[i].replace("\\", "/")
 
         errors = mr.obsidian_note.build_note(
-            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores, folder_path = folder.path, keyword_scores=keyword_scores, visualizations=visualizations)
+            text,
+            links=links,
+            highlights=highlights,
+            name=name,
+            related_notes=related_notes,
+            files=files,
+            additional_meta_data=meta,
+            rq_scores=rq_scores,
+            folder_path=folder.path,
+            keyword_scores=keyword_scores,
+            visualizations=visualizations,
+        )
 
         if not errors:
             # create the markdown file
