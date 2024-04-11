@@ -825,6 +825,10 @@ class MediaResource:
 
         self.basename: str = None
         self.original_name: str = None
+
+        self.keyword_scores: Dict[str, float] = {}
+
+        self.visualizations: List[str] = []
     
     def is_duplicate(self, mr:MediaResource):
         common_fields = ["basename", "original_name"]
@@ -893,6 +897,15 @@ class MediaResource:
             self.obsidian_note = nlped_whispered_folder.ObsidianNote(path)
         else:
             self.obsidian_note = nlped_whispered_folder.ObsidianNote()
+
+    def add_visualizations(self, path: str = None, files:List[str] = None):
+        if files:
+            for file in files:
+                if file not in self.visualizations:
+                    self.visualizations.append(file)
+        elif path:
+            self.visualizations = os.listdir(path)        
+
 
     def search_original_name(self, force=False):
         if self.original_name and not force:
@@ -996,6 +1009,7 @@ class Subfolder:
         "02_nlp": [".json", "_processed.json"],
         # 03 Publish
         "03_notes": [".md"],
+        "03_visualizations": [".png"],
     }
 
     def __init__(self, folder_path, type="blank"):
@@ -1009,7 +1023,7 @@ class Subfolder:
             self.research_questions: list[ResearchQuestion] = None
             self.get("research_questions")
             
-    def lookfor(self, filename):
+    def lookfor(self, filename, allow_list = False):
         path_found = []
         path_suggested = []
         basename = os.path.basename(filename)
@@ -1020,7 +1034,10 @@ class Subfolder:
                 path_found.append(path)
             else:
                 path_suggested.append(path)
-        best_fit = path_found[0] if path_found else path_suggested[0] if path_suggested else None
+        if allow_list:
+            best_fit = path_found if path_found else path_suggested if path_suggested else None
+        else:
+            best_fit = path_found[0] if path_found else path_suggested[0] if path_suggested else None
         return best_fit
         # return found, not_found
 
@@ -1084,6 +1101,7 @@ class Folder:
         self.whisper = Subfolder(folder_path, "01_whisper")
         self.analyse = Subfolder(folder_path, "02_nlp")
         self.notes = Subfolder(folder_path, "03_notes")
+        self.visualizations = Subfolder(folder_path, "03_visualizations")
 
         self.media_resources: List[MediaResource] = media_resources or []
         self.added_docs = set()
@@ -1214,6 +1232,8 @@ class Folder:
         
         normalised_media_resources = similarity.normalize(reduced_media_resources, config=self.config)
 
+        for idx, mr in enumerate(self.media_resources):
+            mr.keyword_scores = dict(zip(relevant_keys, normalised_media_resources[idx]))
            
         rq_scores = []
         for rq in self.rq.get("rqs"):
@@ -1406,6 +1426,7 @@ class Folder:
                     path=self.analyse.lookfor(path), nlptools=nlptools)
 
                 mr.add_obsidian_note(path=self.notes.lookfor(path))
+                mr.add_visualizations(path=self.notes.lookfor(path))
                 self.add_media_resource(mr)
         if pdfs:
             for idx, path in enumerate(pdfs):
@@ -1654,6 +1675,7 @@ class Folder:
             try:
                 nlped_whispered_folder.folder(self, force=True)
             except:
+                raise
                 print("Publish to Obsidian failed")
 
 

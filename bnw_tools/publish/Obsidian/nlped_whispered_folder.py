@@ -6,6 +6,8 @@ if TYPE_CHECKING:
     from ...extract.nlp.util_nlp import Folder
 from ...core import helper
 
+from .. import util_wordcloud
+from .. import util_pyplot
 
 import urllib.parse
 import os
@@ -79,7 +81,7 @@ class ObsidianNote:
             self.path = os.path.join(parent_path, self.get_name())
         return self.path
 
-    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None, rq_scores=None, folder_path=None):
+    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None, rq_scores=None, folder_path=None, keyword_scores=None):
         def dict_to_dataview(input_dict: dict[str, any], title="", join_char=", ", fromat_group="", open=True, end=True):
             res = ""
             is_empty = True
@@ -210,6 +212,9 @@ class ObsidianNote:
                 ORKG_data[
                     "ORKG_search"] = f"https://orkg.org/search/{urllib.parse.quote(url_suffix)}"
         fin_meta += dict_to_dataview(ORKG_data, title="ORKG")
+
+        if keyword_scores:
+            fin_meta += dict_to_dataview(keyword_scores, title="Keyword Scores")
 
         ORKG_Document_Properties = ""
         if ORKG_data:
@@ -542,8 +547,26 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
             if hasattr(mr.info, 'title'):
                 name = mr.info.title
 
+        keyword_scores = None
+        if mr.keyword_scores:
+            keyword_scores = {}
+            for key, value in mr.keyword_scores.items():
+                keyword_scores["keys_" + key.replace(" ", "_")] = value
+        
+        # Visualizations
+        # paused while not fully solved for many keywords
+        hold_visualizations_for_now = True
+        if mr.keyword_scores and not hold_visualizations_for_now:
+            keyword_bar_path = mr.obsidian_note.path.replace(".md", "_keyword_bar.png")
+            # todo: shift this to a more general location
+            keyword_bar_path = keyword_bar_path.replace("03_notes", "03_visualizations")
+            util_pyplot.dict_to_barchart(mr.keyword_scores, path=keyword_bar_path)
+
+ 
+            
+
         errors = mr.obsidian_note.build_note(
-            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores, folder_path = folder.path)
+            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores, folder_path = folder.path, keyword_scores=keyword_scores)
 
         if not errors:
             # create the markdown file

@@ -192,6 +192,7 @@ def print_rq(names: list[str], sim_matrix, path, prefix="", filename="", suffix=
     # ax.legend()
 
     print(f"Similarity matrix saved as {png_file} and {csv_file}.")
+    plt.close()
 
 
 def print_sim_matrix(sim_matrix, path, prefix="", filename="", suffix="_similarity_matrix", xlabel='Documents', ylabel='Documents', dpi=300, vmin=None, vmax=None, cmap=None, additional_info: ResearchQuestion = None):
@@ -239,3 +240,4 @@ def print_sim_matrix(sim_matrix, path, prefix="", filename="", suffix="_similari
                                     header=False, sep=";", decimal=",")
 
     print(f"Similarity matrix saved as {png_file} and {csv_file}.")
+    plt.close()
