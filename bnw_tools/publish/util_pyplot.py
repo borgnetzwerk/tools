@@ -15,7 +15,7 @@ def dict_to_barchart(data: dict[str:float], path = None, show = False, force = F
     # check if file exists:
     if path and not force:
         if os.path.exists(path):
-            print(f"File already exists: {path}")
+            # print(f"File already exists: {path}")
             return
     
     if sort:
@@ -26,7 +26,7 @@ def dict_to_barchart(data: dict[str:float], path = None, show = False, force = F
         # we can delete every entry after the first with 0 was found
         if sort:
             position = 0
-            for key, value in data.items():
+            for value in data.values():
                 if value == 0:
                     break
                 else:
@@ -43,11 +43,12 @@ def dict_to_barchart(data: dict[str:float], path = None, show = False, force = F
 
     positions = np.arange(len(values)) * 2 + 0.5
     
-
+    fontdict={'fontsize': 20}
 
     height = len(max(data.keys(), key=len))
     height = height / 10 + 2 # account for labels + bars
     width = len(data) / 2 # + 2
+    width = width if width > 5 else 5
     fig, ax = plt.subplots(figsize=(width, height))
     fig.subplots_adjust(bottom=.6)
     plt.margins(x=0, tight=True)
@@ -56,8 +57,8 @@ def dict_to_barchart(data: dict[str:float], path = None, show = False, force = F
     plt.xticks(positions, labels, rotation=45, ha='right')
 
     plt.tick_params(axis='x', labelsize=20)
-    plt.ylabel('% of max')
-    plt.title('Relevant Keywords frequency present in this document, compared to the maximum found in any document.')
+    plt.ylabel('% of max', fontdict=fontdict)
+    plt.title('Relevant Keywords frequency present in this document, compared to the maximum found in any document.', fontdict=fontdict)
     plt.grid(True, axis= 'y')
 
     if path:

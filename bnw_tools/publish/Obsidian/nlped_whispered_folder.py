@@ -81,7 +81,7 @@ class ObsidianNote:
             self.path = os.path.join(parent_path, self.get_name())
         return self.path
 
-    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None, rq_scores=None, folder_path=None, keyword_scores=None):
+    def build_note(self, text, highlights=None, links=None, name=None, related_notes=None, files=None, additional_meta_data=None, rq_scores=None, folder_path=None, keyword_scores=None, visualizations=None):
         def dict_to_dataview(input_dict: dict[str, any], title="", join_char=", ", fromat_group="", open=True, end=True):
             res = ""
             is_empty = True
@@ -235,6 +235,10 @@ class ObsidianNote:
 | Published in | `=this.published_in` |
 | Paper URL | `=this.url` |{ORKG_Document_Properties}
 	(You can update this in edit mode at the end of the document)"""
+        
+        if visualizations:
+            for vis in visualizations:
+                property_view += f"\n![[{vis}]]"
 
         # Preserve existing content
         if os.path.exists(self.path):
@@ -555,18 +559,28 @@ def folder(folder: Folder, limit_ns=LIMIT_BAG_OF_WORDS, limit_ne=LIMIT_NAMED_ENT
         
         # Visualizations
         # paused while not fully solved for many keywords
-        hold_visualizations_for_now = True
-        if mr.keyword_scores and not hold_visualizations_for_now:
-            keyword_bar_path = mr.obsidian_note.path.replace(".md", "_keyword_bar.png")
+        visualizations = []
+        hold_visualizations_for_now = False
+        if sum(mr.keyword_scores.values()) and not hold_visualizations_for_now:
+            keyword_bar_path = mr.obsidian_note.path.replace("03_notes", "03_visualizations")
+            keyword_bar_path = keyword_bar_path.replace(".md", "_bar.png")
             # todo: shift this to a more general location
-            keyword_bar_path = keyword_bar_path.replace("03_notes", "03_visualizations")
-            util_pyplot.dict_to_barchart(mr.keyword_scores, path=keyword_bar_path)
+            # all non 0 elements in mr.keyword_scores:
+            data = {k: v for k, v in mr.keyword_scores.items() if v > 0}
+            util_pyplot.dict_to_barchart(data, path=keyword_bar_path, sort = True)
+            visualizations.append(keyword_bar_path) 
 
- 
-            
+            keyword_cloud_path = keyword_bar_path.replace("_bar.png", "_cloud.png")
+            util_wordcloud.generate_wordcloud(data, keyword_cloud_path, width=1900, height=300)
+            visualizations.append(keyword_cloud_path)
+
+            for i in range(len(visualizations)):
+                # remove folder.path from keyowrd_bar_path   
+                visualizations[i] = os.path.relpath(visualizations[i],folder.path)
+                visualizations[i] = visualizations[i].replace("\\", "/")            
 
         errors = mr.obsidian_note.build_note(
-            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores, folder_path = folder.path, keyword_scores=keyword_scores)
+            text, links=links, highlights=highlights, name=name, related_notes=related_notes, files=files, additional_meta_data=meta, rq_scores=rq_scores, folder_path = folder.path, keyword_scores=keyword_scores, visualizations=visualizations)
 
         if not errors:
             # create the markdown file

@@ -151,7 +151,7 @@ def main():
         filepath = os.path.join(path, name + "_bar.png")
         util_pyplot.dict_to_barchart(data, path = filepath, force = True, sort = True, prune=True)
         filepath = os.path.join(path, name + "_cloud.png")
-        util_wordcloud.generate_wordcloud(data, filepath, width=1900, height=300)
+        # util_wordcloud.generate_wordcloud(data, filepath, width=1900, height=300)
 
 
 if __name__ == "__main__":

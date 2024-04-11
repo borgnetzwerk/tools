@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ..extract.nlp.util_nlp import Folder
 
 
-def generate_wordcloud(dict_word_count, output_file_path='wordcloud.png', width=1920, height=1080, colormap=None, square=False):
+def generate_wordcloud(dict_word_count, output_file_path='wordcloud.png', width=1920, height=1080, colormap=None, square=False, force=False):
     """
     Generates a wordcloud as a PNG image from a dictionary containing word count information.
 
@@ -33,18 +33,24 @@ def generate_wordcloud(dict_word_count, output_file_path='wordcloud.png', width=
     if not dict_word_count:
         return None
     
+    if not output_file_path.endswith(".png"):
+        output_file_path += ".png"
+
+    if output_file_path and not force:
+        if os.path.exists(output_file_path):
+            # print(f"File already exists: {output_file_path}")
+            return
+    
     colormap = 'rainbow' if colormap is None else colormap
     # https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
-    if not output_file_path.endswith(".png"):
-        output_file_path += ".png"
     wc = WordCloud(width=width, height=height, colormap=colormap)
     wc.generate_from_frequencies(dict_word_count)
     wc.to_file(output_file_path)
 
     if square:
         new = min(height, width)
-        wc2 = WordCloud(width=new, height=new)
+        wc2 = WordCloud(width=new, height=new, colormap=colormap)
         wc2.generate_from_frequencies(dict_word_count)
         wc2.to_file(output_file_path.replace(".png", "_square.png"))
 
