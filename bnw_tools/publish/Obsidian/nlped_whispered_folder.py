@@ -599,7 +599,17 @@ def folder(
             # todo: shift this to a more general location
             # all non 0 elements in mr.keyword_scores:
             data = {k: v for k, v in mr.keyword_scores.items() if v > 0}
-            util_pyplot.dict_to_barchart(data, path=keyword_bar_path, sort=True)
+
+            ylabel = "% of max"
+            title = "Relevant Keywords frequency present in this document, compared to the maximum found in any document."
+            util_pyplot.dict_to_barchart(
+                data,
+                path=keyword_bar_path,
+                sort=True,
+                ylabel=ylabel,
+                title=title,
+                limit=0,
+            )
             visualizations.append(keyword_bar_path)
 
             keyword_cloud_path = keyword_bar_path.replace("_bar.png", "_cloud.png")

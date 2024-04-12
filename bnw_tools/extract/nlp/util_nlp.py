@@ -19,11 +19,13 @@ import importlib
 from termcolor import colored
 from pathlib import Path
 import warnings
+import shutil
 
 
 from ...review import similarity
 from ...core import helper
 from ...publish import util_wordcloud
+from ...publish import util_pyplot
 from ...publish.Obsidian import nlped_whispered_folder
 from ...extract import util_pdf
 from ...extract import util_zotero
@@ -31,11 +33,10 @@ from ...extract import util_pytube
 from ...extract.nlp.my_stop_words import MY_STOP_WORDS
 
 
-
 def get_json_data(path):
     if os.path.exists(path) and os.path.splitext(path)[1] == ".json":
         try:
-            with open(path, 'r', encoding='utf8') as f:
+            with open(path, "r", encoding="utf8") as f:
                 return json.load(f)
         except Exception as e:
             print(f"Could not load {path}: {str(e)}")
@@ -43,7 +44,7 @@ def get_json_data(path):
 
 
 def dump_json(path, output_dict):
-    with open(path, 'w', encoding='utf-8') as output_file:
+    with open(path, "w", encoding="utf-8") as output_file:
         json.dump(output_dict, output_file, indent=4, ensure_ascii=False)
 
 
@@ -73,8 +74,16 @@ def data_to_attributes(instance, data, do_named_entities=True):
 
 class NLPTools:
     naming_conventions = {
-        "en": {"spacy": "en_core_web_sm", "SequenceTagger": "ner", "WordEmbeddings": "glove"},
-        "de": {"spacy": "de_core_news_sm", "SequenceTagger": "flair/ner-german", "WordEmbeddings": "de"},
+        "en": {
+            "spacy": "en_core_web_sm",
+            "SequenceTagger": "ner",
+            "WordEmbeddings": "glove",
+        },
+        "de": {
+            "spacy": "de_core_news_sm",
+            "SequenceTagger": "flair/ner-german",
+            "WordEmbeddings": "de",
+        },
         # add more languages and their naming conventions as needed
     }
 
@@ -88,10 +97,10 @@ class NLPTools:
     def get_STOP_WORDS(self, language):
         if language in self.STOP_WORDS:
             return self.STOP_WORDS[language]
-        stop_words_module = importlib.import_module(
-            f"spacy.lang.{language}.stop_words")
+        stop_words_module = importlib.import_module(f"spacy.lang.{language}.stop_words")
         self.STOP_WORDS[language] = MY_STOP_WORDS[language].union(
-            stop_words_module.STOP_WORDS)
+            stop_words_module.STOP_WORDS
+        )
         # TODO: Idea to allways include the english stop-words, since sometimes other languages use english as well
         return self.STOP_WORDS[language]
 
@@ -99,8 +108,9 @@ class NLPTools:
         if language in self.spacy:
             return self.spacy[language]
         try:
-            nlp_model = self.naming_conventions.get(
-                language, {}).get("spacy", f"{language}_core_news_sm")
+            nlp_model = self.naming_conventions.get(language, {}).get(
+                "spacy", f"{language}_core_news_sm"
+            )
             try:
                 self.spacy[language] = spacy.load(nlp_model)
             except OSError:
@@ -125,10 +135,10 @@ class NLPTools:
         if language in self.WordEmbeddings:
             return self.WordEmbeddings[language]
         try:
-            word_embeddings_model = self.naming_conventions.get(
-                language, {}).get("WordEmbeddings", language)
-            self.WordEmbeddings[language] = WordEmbeddings(
-                word_embeddings_model)
+            word_embeddings_model = self.naming_conventions.get(language, {}).get(
+                "WordEmbeddings", language
+            )
+            self.WordEmbeddings[language] = WordEmbeddings(word_embeddings_model)
             return self.WordEmbeddings[language]
         except Exception as e:
             print(f"Error loading WordEmbeddings for {language}: {str(e)}")
@@ -139,21 +149,21 @@ class NLPTools:
             return self.DocumentPoolEmbeddings[language]
         try:
             self.DocumentPoolEmbeddings[language] = DocumentPoolEmbeddings(
-                [self.get_WordEmbeddings(language)])
+                [self.get_WordEmbeddings(language)]
+            )
             return self.DocumentPoolEmbeddings[language]
         except Exception as e:
-            print(
-                f"Error loading DocumentPoolEmbeddings for {language}: {str(e)}")
+            print(f"Error loading DocumentPoolEmbeddings for {language}: {str(e)}")
             return None
 
     def get_SequenceTagger(self, language):
         if language in self.SequenceTagger:
             return self.SequenceTagger[language]
         try:
-            sequence_tagger_model = self.naming_conventions.get(
-                language, {}).get("SequenceTagger", f"flair/ner-{language.lower()}")
-            self.SequenceTagger[language] = SequenceTagger.load(
-                sequence_tagger_model)
+            sequence_tagger_model = self.naming_conventions.get(language, {}).get(
+                "SequenceTagger", f"flair/ner-{language.lower()}"
+            )
+            self.SequenceTagger[language] = SequenceTagger.load(sequence_tagger_model)
             return self.SequenceTagger[language]
         except Exception as e:
             print(f"Error loading SequenceTagger for {language}: {str(e)}")
@@ -161,7 +171,16 @@ class NLPTools:
 
 
 class BagOfWords:
-    def __init__(self, words: Dict[str, int] = None, stops: Dict[str, int] = None, tf: Dict[str, float] = None, tf_idf: Dict[str, float] = None, text=None, nlptools=None, language=None):
+    def __init__(
+        self,
+        words: Dict[str, int] = None,
+        stops: Dict[str, int] = None,
+        tf: Dict[str, float] = None,
+        tf_idf: Dict[str, float] = None,
+        text=None,
+        nlptools=None,
+        language=None,
+    ):
         self.words = words or defaultdict(int)
         self.stops = stops or defaultdict(int)
         self.tf = tf or {}
@@ -183,8 +202,9 @@ class BagOfWords:
         return self.tf
 
     def calc_tf_idf(self, idf: Dict[str, float]):
-        self.tf_idf = {word: frequency * idf[word]
-                       for word, frequency in self.get_tf().items()}
+        self.tf_idf = {
+            word: frequency * idf[word] for word, frequency in self.get_tf().items()
+        }
         self.sort(do_words=False, do_tf_idf=True)
         return self.tf_idf
 
@@ -204,21 +224,23 @@ class BagOfWords:
                 # self.words = {k: v for k, v in sorted(self.words.items(),
                 #   key=lambda x: x[1], reverse=True)}
                 self.words = dict(
-                    sorted(self.words.items(), key=lambda x: (-x[1], x[0])))
+                    sorted(self.words.items(), key=lambda x: (-x[1], x[0]))
+                )
 
             if len(self.stops):
                 # self.stops = {k: v for k, v in sorted(self.stops.items(),
                 #   key=lambda x: x[1], reverse=True)}
                 self.stops = dict(
-                    sorted(self.stops.items(), key=lambda x: (-x[1], x[0])))
+                    sorted(self.stops.items(), key=lambda x: (-x[1], x[0]))
+                )
         if do_tf:
             if len(self.tf):
-                self.tf = dict(
-                    sorted(self.tf.items(), key=lambda x: (-x[1], x[0])))
+                self.tf = dict(sorted(self.tf.items(), key=lambda x: (-x[1], x[0])))
         if do_tf_idf:
             if len(self.tf_idf):
                 self.tf_idf = dict(
-                    sorted(self.tf_idf.items(), key=lambda x: (-x[1], x[0])))
+                    sorted(self.tf_idf.items(), key=lambda x: (-x[1], x[0]))
+                )
 
     def get(self):
         return self.words
@@ -246,7 +268,7 @@ class BagOfWords:
             if len(key) < 2:
                 return True
             if not key.isalpha() and key not in vocab:
-                if len(re.findall('[a-zA-Z\d]', key)) < 2:
+                if len(re.findall("[a-zA-Z\d]", key)) < 2:
                     return True
             # way to harsh, not every word is in (that language's) vocab
             # if key not in vocab:
@@ -276,7 +298,11 @@ class BagOfWords:
 
 
 class NamedEntities:
-    def __init__(self, entities: Dict[str, List[str]] = None, text=None,):
+    def __init__(
+        self,
+        entities: Dict[str, List[str]] = None,
+        text=None,
+    ):
         self.entities = entities or {}
 
         if text:
@@ -290,11 +316,19 @@ class NamedEntities:
             return
         val = list(self.entities.values())[0]
         if isinstance(val, list):
-            self.entities = {k: v for k, v in sorted(
-                self.entities.items(), key=lambda item: len(item[1]), reverse=True)}
+            self.entities = {
+                k: v
+                for k, v in sorted(
+                    self.entities.items(), key=lambda item: len(item[1]), reverse=True
+                )
+            }
         if isinstance(val, int):
-            self.entities = {k: v for k, v in sorted(
-                self.entities.items(), key=lambda item: item[1], reverse=True)}
+            self.entities = {
+                k: v
+                for k, v in sorted(
+                    self.entities.items(), key=lambda item: item[1], reverse=True
+                )
+            }
 
     def add(self, other, path=None):
         for key, value in other.entities.items():
@@ -328,13 +362,14 @@ class NamedEntities:
         return {k: len(v) for k, v in self.entities.items()}
 
     def from_nlp_text(self, sentence):
-        for entity in sentence.get_spans('ner'):
+        for entity in sentence.get_spans("ner"):
             rep = f"Span[{entity.start_position}:{entity.end_position}]: {entity.tag} ({round(entity.score, 2)})"
             if entity.text in self.entities:
                 self.entities[entity.text].append(rep)
             else:
                 self.entities[entity.text] = [rep]
         self.sort()
+
 
 # File classes
 
@@ -377,7 +412,7 @@ class Transcript:
             while end < len(text):
                 next_stop = 0
                 for fi in candidates:
-                    pos = text[begin + jump:end + jump].find(fi)
+                    pos = text[begin + jump : end + jump].find(fi)
                     if pos >= 0 and pos <= jump * 2:
                         next_stop = pos
                         break
@@ -417,11 +452,7 @@ class Transcript:
         return self.iscomplete()
 
     def get_dict(self):
-        return {
-            'text': self.text,
-            'segments': self.segments,
-            'language': self.language
-        }
+        return {"text": self.text, "segments": self.segments, "language": self.language}
 
     def get(self, attr: str):
         if attr == "dict":
@@ -489,7 +520,15 @@ class Audio:
 
 
 class NLPFeatureAnalysis:
-    def __init__(self, path=None, bag_of_words=None, named_entities=None, nlptools: NLPTools = None, transcript: Transcript = None, do_named_entities=True):
+    def __init__(
+        self,
+        path=None,
+        bag_of_words=None,
+        named_entities=None,
+        nlptools: NLPTools = None,
+        transcript: Transcript = None,
+        do_named_entities=True,
+    ):
         """
         A class representing NLP feature analysis.
 
@@ -509,10 +548,9 @@ class NLPFeatureAnalysis:
         if path:
             self.from_file(path, do_named_entities=do_named_entities)
         if transcript and transcript.text:
-            self.complete(transcript, nlptools,
-                          do_named_entities=do_named_entities)
+            self.complete(transcript, nlptools, do_named_entities=do_named_entities)
 
-    def from_file(self, path: str = None, do_named_entities: bool=True) -> None:
+    def from_file(self, path: str = None, do_named_entities: bool = True) -> None:
         """
         Load transcript from the given path.
 
@@ -531,7 +569,12 @@ class NLPFeatureAnalysis:
             return True
         return False
 
-    def complete(self, transcript: Transcript, nlptools: NLPTools = None, do_named_entities: bool = True) -> bool:
+    def complete(
+        self,
+        transcript: Transcript,
+        nlptools: NLPTools = None,
+        do_named_entities: bool = True,
+    ) -> bool:
         """Processes a JSON file containing text and returns a Document object.
 
         Args:
@@ -556,12 +599,15 @@ class NLPFeatureAnalysis:
         # create a Document object and return it
         entity_change = self.named_entities.update()
         BagOfWords_change = self.bag_of_words.update_stops(
-            transcript.language, nlptools)
+            transcript.language, nlptools
+        )
         if changes or BagOfWords_change or entity_change:
             self.save(should_have_nen=do_named_entities)
         return self.iscomplete()
 
-    def fill_bag_of_words(self, transcript: Transcript, nlptools: NLPTools = None) -> Union[BagOfWords, bool]:
+    def fill_bag_of_words(
+        self, transcript: Transcript, nlptools: NLPTools = None
+    ) -> Union[BagOfWords, bool]:
         if not self.bag_of_words.get():
             nlptools = nlptools or NLPTools()
             if not transcript.iscomplete():
@@ -574,18 +620,24 @@ class NLPFeatureAnalysis:
             for text in transcript.get_manageable_text_sizes():
                 doc = nlptools.get_spacy(transcript.language)(text)
 
-                bow.add(BagOfWords(
-                    text=doc, nlptools=nlptools, language=transcript.language))
+                bow.add(
+                    BagOfWords(
+                        text=doc, nlptools=nlptools, language=transcript.language
+                    )
+                )
 
             # get the bag of words and non-stop-words
             self.bag_of_words = bow
             return self.bag_of_words
         else:
             self.bag_of_words.update_stops(
-                language=transcript.language, nlptools=nlptools)
+                language=transcript.language, nlptools=nlptools
+            )
             return False
 
-    def fill_named_entities(self, transcript: Transcript, nlptools: NLPTools = None) -> Union[NamedEntities, bool]:
+    def fill_named_entities(
+        self, transcript: Transcript, nlptools: NLPTools = None
+    ) -> Union[NamedEntities, bool]:
         if not self.named_entities.get():
             nlptools = nlptools or NLPTools()
             if not transcript.iscomplete():
@@ -597,13 +649,11 @@ class NLPFeatureAnalysis:
             for text in transcript.get_manageable_text_sizes():
                 sentence = Sentence(text)
 
-                nlptools.get_DocumentPoolEmbeddings(
-                    transcript.language).embed(sentence)
+                nlptools.get_DocumentPoolEmbeddings(transcript.language).embed(sentence)
 
                 # get the named entities
                 # todo: Worked
-                nlptools.get_SequenceTagger(
-                    transcript.language).predict(sentence)
+                nlptools.get_SequenceTagger(transcript.language).predict(sentence)
                 nen.add(NamedEntities(text=sentence))
             self.named_entities = nen
             return self.named_entities
@@ -613,10 +663,10 @@ class NLPFeatureAnalysis:
     def get_dict(self) -> dict:
         # Todo: consider writing 'tf' to file as well.
         return {
-            'bag_of_words': self.bag_of_words.words,
-            'tf_idf': self.bag_of_words.get_tf_idf(),
-            'named_entities': self.named_entities.get(),
-            'stop_words': self.bag_of_words.stops
+            "bag_of_words": self.bag_of_words.words,
+            "tf_idf": self.bag_of_words.get_tf_idf(),
+            "named_entities": self.named_entities.get(),
+            "stop_words": self.bag_of_words.stops,
         }
 
     def save(self, path: Optional[str] = None, should_have_nen: bool = True) -> None:
@@ -632,7 +682,13 @@ class NLPFeatureAnalysis:
 
 
 class ResearchQuestion:
-    def __init__(self, title: str = None, path: str = None, keywords: dict[str, int] = None, queries: dict[str, str] = None):
+    def __init__(
+        self,
+        title: str = None,
+        path: str = None,
+        keywords: dict[str, int] = None,
+        queries: dict[str, str] = None,
+    ):
         self.path: str = None
         self.title: str = title
         self.keywords: dict[str, int] = keywords
@@ -697,12 +753,10 @@ class ResearchQuestion:
                         self.keywords[current_name] = current_group
                         current_name = ""
                         current_group = {}
-                    current_name = line.strip().split(
-                        "::")[0].split("### ")[1].lower()
+                    current_name = line.strip().split("::")[0].split("### ")[1].lower()
                 else:
                     keyword, weight = line.strip().split("::")
-                    current_group[keyword.lower().strip()] = int(
-                        weight.strip())
+                    current_group[keyword.lower().strip()] = int(weight.strip())
             elif in_queries:
                 if line.startswith("### "):
                     if current_name:
@@ -715,7 +769,8 @@ class ResearchQuestion:
 
         if not tag_found:
             with open(path, "a", encoding="utf-8") as f:
-                f.write(f"""
+                f.write(
+                    f"""
 # Results
 ```dataview
 Table
@@ -734,7 +789,8 @@ from "03_notes"
 SORT {self.tag} DESC
 LIMIT 100
 ```
-""")
+"""
+                )
         if current_name:
             self.queries[current_name] = current_query
             current_name = ""
@@ -749,7 +805,7 @@ LIMIT 100
             tags.append(key.tag)
             pieces.append(f"{key.tag} as RQ{i+1}")
         rq_sum = " + ".join(tags)
-        pieces.append(f"round({rq_sum},3) as \"Sum\"")
+        pieces.append(f'round({rq_sum},3) as "Sum"')
         total_cols = ", ".join(pieces)
         total_sort = f"SORT {rq_sum} desc"
 
@@ -829,13 +885,17 @@ class MediaResource:
         self.keyword_scores: Dict[str, float] = {}
 
         self.visualizations: List[str] = []
-    
-    def is_duplicate(self, mr:MediaResource):
+
+    def is_duplicate(self, mr: MediaResource):
         common_fields = ["basename", "original_name"]
         pdf_fields = ["title", "author", "year"]
 
         common_equals = sum(mr.get(field) == self.get(field) for field in common_fields)
-        pdf_equals = sum(mr.pdf.get(field, None_if_not_found=True) == self.pdf.get(field, None_if_not_found=True) for field in pdf_fields)
+        pdf_equals = sum(
+            mr.pdf.get(field, None_if_not_found=True)
+            == self.pdf.get(field, None_if_not_found=True)
+            for field in pdf_fields
+        )
 
         if common_equals >= 2:
             return True
@@ -871,7 +931,13 @@ class MediaResource:
             self.pdf = util_pdf.PDFDocument(path)
         self.search_original_name()
 
-    def add_NLPFeatureAnalysis(self, path: str = None, file: NLPFeatureAnalysis = None, nlptools: NLPTools = None, do_named_entities=True):
+    def add_NLPFeatureAnalysis(
+        self,
+        path: str = None,
+        file: NLPFeatureAnalysis = None,
+        nlptools: NLPTools = None,
+        do_named_entities=True,
+    ):
         if file:
             self.nlp_analysis = file
         elif path:
@@ -881,16 +947,23 @@ class MediaResource:
                 text_container = self.transcript
             else:
                 print(
-                    f"Lacking text basis, can't add NLPFeatureAnalysis for file {self.basename}")
+                    f"Lacking text basis, can't add NLPFeatureAnalysis for file {self.basename}"
+                )
                 return None
             self.nlp_analysis = NLPFeatureAnalysis(
-                path, nlptools=nlptools, transcript=text_container, do_named_entities=do_named_entities)
+                path,
+                nlptools=nlptools,
+                transcript=text_container,
+                do_named_entities=do_named_entities,
+            )
 
     def add_image(self, path: str = None):
         if path:
             self.image = path
 
-    def add_obsidian_note(self, path: str = None, file: nlped_whispered_folder.ObsidianNote = None):
+    def add_obsidian_note(
+        self, path: str = None, file: nlped_whispered_folder.ObsidianNote = None
+    ):
         if file:
             self.obsidian_note = file
         elif path:
@@ -898,14 +971,13 @@ class MediaResource:
         else:
             self.obsidian_note = nlped_whispered_folder.ObsidianNote()
 
-    def add_visualizations(self, path: str = None, files:List[str] = None):
+    def add_visualizations(self, path: str = None, files: List[str] = None):
         if files:
             for file in files:
                 if file not in self.visualizations:
                     self.visualizations.append(file)
         elif path:
-            self.visualizations = os.listdir(path)        
-
+            self.visualizations = os.listdir(path)
 
     def search_original_name(self, force=False):
         if self.original_name and not force:
@@ -934,8 +1006,7 @@ class MediaResource:
         nlptools = nlptools or NLPTools()
 
         self.transcript.complete()
-        self.nlp_analysis.complete(
-            nlptools, do_named_entities=do_named_entities)
+        self.nlp_analysis.complete(nlptools, do_named_entities=do_named_entities)
 
     def get_dict(self):
         # TODO: check if this throws errors, else revert
@@ -945,27 +1016,27 @@ class MediaResource:
             attr = getattr(self, key)
             try:
                 # todo: remove all get_dicts
-                if hasattr(attr, 'get_dict'):
+                if hasattr(attr, "get_dict"):
                     result_dict |= attr.get_dict()
-                elif hasattr(attr, 'get') and callable(attr.get):
-                    result_dict |= attr.get('dict')
+                elif hasattr(attr, "get") and callable(attr.get):
+                    result_dict |= attr.get("dict")
             except:
                 continue
         return result_dict
 
     def get(self, parameter):
-        if parameter == 'text':
+        if parameter == "text":
             if self.pdf is not None:
                 return self.pdf.get("text")
             elif self.transcript is not None:
                 return self.transcript.get("text")
             else:
                 return None
-        elif parameter == 'url':
+        elif parameter == "url":
             return self.url
-        elif parameter == 'dict':
+        elif parameter == "dict":
             return self.get_dict()
-        elif parameter == 'basename':
+        elif parameter == "basename":
             if self.basename:
                 return self.basename
             else:
@@ -985,7 +1056,7 @@ class MediaResource:
                 else:
                     warnings.warn("Could not build basename")
                     return None
-        elif parameter == 'type':
+        elif parameter == "type":
             return self.__class__.__name__
         elif hasattr(self, parameter):
             return getattr(self, parameter)
@@ -1010,20 +1081,23 @@ class Subfolder:
         # 03 Publish
         "03_notes": [".md"],
         "03_visualizations": [".png"],
+        "03_visualizations": [".png"],
     }
 
-    def __init__(self, folder_path, type="blank"):
+    def __init__(self, folder_path, type="blank", zotero=False):
         self.path = os.path.join(folder_path, type)
         os.makedirs(self.path, exist_ok=True)
         self.type = type
-        self.endings = self.folder_formats[type]
-        if type == "00_PDFs":
+        if type in self.folder_formats:
+            self.endings = self.folder_formats[type]
+        # TODO: Need to put the util_zotero call in its own function to not clog the init
+        if type == "00_PDFs" and zotero:
             self.BibResources = util_zotero.BibResources(folder_path)
         if type == "00_RQs":
             self.research_questions: list[ResearchQuestion] = None
             self.get("research_questions")
-            
-    def lookfor(self, filename, allow_list = False):
+
+    def lookfor(self, filename, allow_list=False):
         path_found = []
         path_suggested = []
         basename = os.path.basename(filename)
@@ -1035,9 +1109,15 @@ class Subfolder:
             else:
                 path_suggested.append(path)
         if allow_list:
-            best_fit = path_found if path_found else path_suggested if path_suggested else None
+            best_fit = (
+                path_found if path_found else path_suggested if path_suggested else None
+            )
         else:
-            best_fit = path_found[0] if path_found else path_suggested[0] if path_suggested else None
+            best_fit = (
+                path_found[0]
+                if path_found
+                else path_suggested[0] if path_suggested else None
+            )
         return best_fit
         # return found, not_found
 
@@ -1060,9 +1140,12 @@ class Subfolder:
                         non_RQ.append(file)
                 for file in non_RQ:
                     if file.startswith("Total"):
-                        with open(os.path.join(self.path, file), "w", encoding="utf8") as f:
-                            f.write(ResearchQuestion.get_total_note(
-                                self.research_questions))
+                        with open(
+                            os.path.join(self.path, file), "w", encoding="utf8"
+                        ) as f:
+                            f.write(
+                                ResearchQuestion.get_total_note(self.research_questions)
+                            )
                 return self.research_questions
         elif arg == "files":
             return os.listdir(self.path)
@@ -1090,11 +1173,27 @@ class Folder:
 
     # Define paths as a class-level property
 
-    def __init__(self, folder_path, nlptools=None, language=None, media_resources: List[MediaResource] = None, publish=False, config=None):
+    def __init__(
+        self,
+        folder_path,
+        nlptools=None,
+        language=None,
+        media_resources: List[MediaResource] = None,
+        publish=False,
+        config=None,
+        select=False,
+        zotero=None,
+    ):
         self.path = folder_path
-
+        if not zotero:
+            if nlptools:
+                zotero = True
+            elif select:
+                zotero = False
+            else:
+                zotero = True
         self.audio = Subfolder(folder_path, "00_audios")
-        self.pdf = Subfolder(folder_path, "00_PDFs")
+        self.pdf = Subfolder(folder_path, "00_PDFs", zotero=zotero)
         self.image = Subfolder(folder_path, "00_images")
         self.infos = Subfolder(folder_path, "00_infos")
         self.rq = Subfolder(folder_path, "00_RQs")
@@ -1102,6 +1201,7 @@ class Folder:
         self.analyse = Subfolder(folder_path, "02_nlp")
         self.notes = Subfolder(folder_path, "03_notes")
         self.visualizations = Subfolder(folder_path, "03_visualizations")
+        self.selected = Subfolder(folder_path, "04_selected")
 
         self.media_resources: List[MediaResource] = media_resources or []
         self.added_docs = set()
@@ -1114,13 +1214,106 @@ class Folder:
         self.idf = defaultdict(int)
         self.sim_matrix = None
         self.statdict = {}
-        
+
         self.config = config
-        
+
         if nlptools:
             self.process(nlptools)
         if publish:
             self.publish()
+        if select:
+            self.select()
+
+    def select(self):
+        files = self.notes.get("files")
+        if not files:
+            return None
+        relevant = {}
+        copy = {}
+        scores = {}
+        for file in files:
+            if file.endswith(".md"):
+                with open(
+                    os.path.join(self.notes.path, file), "r", encoding="utf8"
+                ) as f:
+                    lines = f.readlines()
+                if "review_score:: \n" in lines:
+                    continue
+                else:
+                    rq_zone = False
+                    for line in lines:
+                        if "review_score::" in line:
+                            line = line.replace("review_score::", "")
+                            score = line.strip()
+                            if score not in relevant:
+                                relevant[score] = []
+                            relevant[score].append(file)
+                        if "![[" in line:
+                            filepath = line.split("![[")[1].split("]]")[0]
+                            if file not in copy:
+                                copy[file] = []
+                            copy[file].append(os.path.join(self.path, filepath))
+                        if "%%RQ Scores" in line:
+                            rq_zone = True
+                        elif rq_zone and line.startswith("RQ"):
+                            if file not in scores:
+                                scores[file] = {}
+                            rq, score = line.split("::")
+                            scores[file][rq] = float(score)
+                        elif rq_zone and line.startswith("%%"):
+                            rq_zone = False
+
+        if "select" in self.config:
+            to_be_selected = self.config["select"]
+            if to_be_selected:
+                for i in range(len(to_be_selected)):
+                    to_be_selected.append(str(to_be_selected[i]))
+                to_be_deleted = []
+                for score in relevant:
+                    if score not in to_be_selected:
+                        to_be_deleted.append(score)
+                for deletion in to_be_deleted:
+                    del relevant[deletion]
+
+        # sort the relevant dict by float value of score
+        relevant = dict(
+            sorted(relevant.items(), key=lambda item: float(item[0]), reverse=True)
+        )
+
+        for score, files in relevant.items():
+            score_path = os.path.join(self.selected.path, score)
+            if not os.path.exists(score_path):
+                os.makedirs(score_path)
+            for file in files:
+                for c in copy[file]:
+                    # copy every c into the selected folder
+                    src = c
+                    # Catch pdf and visualizations
+                    filename = file.replace(".md", "")
+                    pieces = c.split(filename)
+                    if len(pieces) < 2:
+                        continue
+                    dst = os.path.join(score_path, filename + pieces[1])
+                    if not os.path.exists(dst):
+                        shutil.copy(src, dst)
+
+        # create a csv in the selected folder with the selected files and their scores
+        with open(
+            os.path.join(self.selected.path, "selected.csv"), "w", encoding="utf8"
+        ) as f:
+            header = "file;score"
+            if scores:
+                header += ";"
+                header += ";".join(list(scores[list(scores.keys())[0]].keys()))
+            f.write(header + "\n")
+            for score, files in relevant.items():
+                for file in files:
+                    filename = file.replace(".md", "")
+                    f.write(f"{filename};{score}")
+                    if scores:
+                        for rq, score in scores[file].items():
+                            f.write(f";{score}")
+                    f.write("\n")
 
     def get_image(self):
         candidates = []
@@ -1137,8 +1330,7 @@ class Folder:
                 if mr.info.thumbnail_urls:
                     # handle "if not mr.image"
                     file_path = mr.image
-                    urllib.request.urlretrieve(
-                        mr.info.thumbnail_urls[-1], file_path)
+                    urllib.request.urlretrieve(mr.info.thumbnail_urls[-1], file_path)
 
                     return file_path
 
@@ -1147,7 +1339,9 @@ class Folder:
         #     [doc.bag_of_words.get() for doc in self.documents], self.bag_of_words.get())
 
         bag_sim_mat = similarity.compute_similarity_matrix(
-            [mr.nlp_analysis.bag_of_words.tf_idf for mr in self.media_resources], self.bag_of_words.get())
+            [mr.nlp_analysis.bag_of_words.tf_idf for mr in self.media_resources],
+            self.bag_of_words.get(),
+        )
 
         # todo: option to eventually weigh named entities differently
         # nam_sim_mat = similarity.create_word_vectors(
@@ -1174,10 +1368,7 @@ class Folder:
                     value = 0
                     if word in mr.nlp_analysis.bag_of_words.tf:
                         value += mr.nlp_analysis.bag_of_words.tf[word]
-                    synonyms = [
-                        word.replace("-", " "),
-                        word.replace("-", "")
-                    ]
+                    synonyms = [word.replace("-", " "), word.replace("-", "")]
                     for syn in synonyms:
                         if syn in mr.nlp_analysis.bag_of_words.tf:
                             value += mr.nlp_analysis.bag_of_words.tf[syn]
@@ -1190,8 +1381,7 @@ class Folder:
                         break
                 else:
                     if word in mr.nlp_analysis.bag_of_words.tf:
-                        found.append(
-                            mr.nlp_analysis.bag_of_words.tf[word])
+                        found.append(mr.nlp_analysis.bag_of_words.tf[word])
                     else:
                         found = None
                         break
@@ -1226,15 +1416,18 @@ class Folder:
                         subwords = key.split(" ")
                     else:
                         subwords = [key]
-                    res[key] = get_min_match(
-                        subwords, mr.nlp_analysis.bag_of_words.tf)
+                    res[key] = get_min_match(subwords, mr.nlp_analysis.bag_of_words.tf)
             reduced_media_resources.append(res)
-        
-        normalised_media_resources = similarity.normalize(reduced_media_resources, config=self.config)
+
+        normalised_media_resources = similarity.normalize(
+            reduced_media_resources, config=self.config
+        )
 
         for idx, mr in enumerate(self.media_resources):
-            mr.keyword_scores = dict(zip(relevant_keys, normalised_media_resources[idx]))
-           
+            mr.keyword_scores = dict(
+                zip(relevant_keys, normalised_media_resources[idx])
+            )
+
         rq_scores = []
         for rq in self.rq.get("rqs"):
             all_group_scores = []
@@ -1242,7 +1435,9 @@ class Folder:
             group_weights = []
             for group in rq.keywords.values():
                 group_weights.append(1)
-            group_weights = similarity.normalize(group_weights, log_level = False, sqrt_level = False)
+            group_weights = similarity.normalize(
+                group_weights, log_level=False, sqrt_level=False
+            )
 
             for idx, group in enumerate(rq.keywords.values()):
                 group_weight = group_weights[idx]
@@ -1251,20 +1446,25 @@ class Folder:
                 for keyword, weight in group.items():
                     keyword_indices.append(relevant_keys.index(keyword))
                     weights.append(weight)
-                
+
                 # reduce normalised_media_resources to only the keywords existing in this group
                 # media_resource_group_frequencies
-                current_group_media_resources = normalised_media_resources[:, keyword_indices]
+                current_group_media_resources = normalised_media_resources[
+                    :, keyword_indices
+                ]
                 # media_resource_group_frequencies_weighed
-                current_group_media_resources = np.array(current_group_media_resources) * np.array(weights)
+                current_group_media_resources = np.array(
+                    current_group_media_resources
+                ) * np.array(weights)
 
                 # media_resource_group_scores
                 current_group_scores = current_group_media_resources.sum(axis=1)
 
-
                 # media_resource_group_scores_normalized
-                current_group_scores = similarity.normalize(current_group_scores, log_level = False, sqrt_level = False)
-                
+                current_group_scores = similarity.normalize(
+                    current_group_scores, log_level=False, sqrt_level=False
+                )
+
                 current_group_scores = current_group_scores * group_weight
                 all_group_scores.append(current_group_scores)
             all_group_scores = np.array(all_group_scores)
@@ -1277,9 +1477,8 @@ class Folder:
             # group_sum does not reward a good spread of groups if one group scored very high
             group_sum = False
 
-            # group_sum_average 
+            # group_sum_average
             group_average = True
-
 
             if self.config:
                 group_prodct = self.config.get("group_prodct", group_prodct)
@@ -1293,18 +1492,17 @@ class Folder:
             if group_average:
                 all_group_scores = np.mean(all_group_scores, axis=0)
 
-            all_group_scores = similarity.normalize(all_group_scores, log_level = False, sqrt_level = False)
-
+            all_group_scores = similarity.normalize(
+                all_group_scores, log_level=False, sqrt_level=False
+            )
 
             rq_scores.append(all_group_scores)
         rq_scores = np.array(rq_scores).transpose()
         self.rq_sim_mat = rq_scores
 
-
         # for keyword, weight in group.items():
         #     relevant_keys.add(keyword)
 
-            
         #     res = {}
         #     ungrouped = {}
         #     groups.append(list(rq.keywords.values()))
@@ -1319,22 +1517,28 @@ class Folder:
         #         res[key] = value
         #     reduced_research_questions.append(res)
 
-
         # TODO: calculate once per group, then again over all groups
-        
+
         # self.rq_sim_mat = similarity.compute_weighed_similarity(
         #     reduced_media_resources, reduced_research_questions, config=self.config)
 
-        similarity.print_rq([mr.get("basename") for mr in self.media_resources], self.rq_sim_mat,
-                            self.path, filename="RQ", additional_info=self.rq.research_questions)
+        similarity.print_rq(
+            [mr.get("basename") for mr in self.media_resources],
+            self.rq_sim_mat,
+            self.path,
+            filename="RQ",
+            additional_info=self.rq.research_questions,
+        )
 
     def add_media_resource(self, media_resource: MediaResource):
         if media_resource:
             self.media_resources.append(media_resource)
 
     def calc_idf(self):
-        self.idf = {word: math.log(len(self.media_resources) / (frequency))
-                    for word, frequency in self.df.items()}
+        self.idf = {
+            word: math.log(len(self.media_resources) / (frequency))
+            for word, frequency in self.df.items()
+        }
         return self.idf
 
     def get_idf(self):
@@ -1347,7 +1551,8 @@ class Folder:
             if mr.nlp_analysis.path not in self.added_docs:
                 self.bag_of_words.add(mr.nlp_analysis.bag_of_words)
                 self.named_entities.add(
-                    mr.nlp_analysis.named_entities, mr.nlp_analysis.path)
+                    mr.nlp_analysis.named_entities, mr.nlp_analysis.path
+                )
                 self.added_docs.add(mr.nlp_analysis.path)
                 # document frequency
                 for word in mr.nlp_analysis.bag_of_words.get().keys():
@@ -1362,11 +1567,13 @@ class Folder:
 
     def get_dict(self):
         return {
-            'bag_of_words': self.bag_of_words.words,
-            'idf': self.idf,
-            'named_entities': self.named_entities.get(),
-            'stop_words': self.bag_of_words.stops,
-            'documents': [os.path.basename(mr.nlp_analysis.path) for mr in self.media_resources]
+            "bag_of_words": self.bag_of_words.words,
+            "idf": self.idf,
+            "named_entities": self.named_entities.get(),
+            "stop_words": self.bag_of_words.stops,
+            "documents": [
+                os.path.basename(mr.nlp_analysis.path) for mr in self.media_resources
+            ],
         }
 
     def save(self, output_path=None, do_named_entities=True):
@@ -1386,14 +1593,27 @@ class Folder:
         if not len(self.media_resources):
             print(f"No Documents found in folder: {output_path}")
             return None
-        threshold = min(
-            int(list(self.bag_of_words.get().values())[0] / 100), 10)
+        threshold = min(int(list(self.bag_of_words.get().values())[0] / 100), 10)
         threshold = max(threshold, 3)
         output_dict = {
-            'bag_of_words': {k: v for k, v in list(self.bag_of_words.words.items())[:1000] if v >= threshold},
-            'stop_words': {k: v for k, v in list(self.bag_of_words.stops.items())[:1000] if v >= threshold},
-            'named_entities': {k: len(v) for k, v in list(self.named_entities.get().items())[:1000] if len(v) >= threshold},
-            'documents': [os.path.basename(doc.nlp_analysis.path) for doc in self.media_resources]
+            "bag_of_words": {
+                k: v
+                for k, v in list(self.bag_of_words.words.items())[:1000]
+                if v >= threshold
+            },
+            "stop_words": {
+                k: v
+                for k, v in list(self.bag_of_words.stops.items())[:1000]
+                if v >= threshold
+            },
+            "named_entities": {
+                k: len(v)
+                for k, v in list(self.named_entities.get().items())[:1000]
+                if len(v) >= threshold
+            },
+            "documents": [
+                os.path.basename(doc.nlp_analysis.path) for doc in self.media_resources
+            ],
         }
 
         relevant = [len(self.media_resources), len(self.bag_of_words)]
@@ -1407,8 +1627,7 @@ class Folder:
     def process(self, nlptools=None):
         if nlptools is None:
             nlptools = NLPTools()
-        audios = [os.path.join(self.audio.path, f)
-                  for f in os.listdir(self.audio.path)]
+        audios = [os.path.join(self.audio.path, f) for f in os.listdir(self.audio.path)]
         pdfs = self.pdf.BibResources.pdfs
         do_named_entities = False
         if audios:
@@ -1419,11 +1638,14 @@ class Folder:
                 mr.add_transcript(path=self.whisper.lookfor(path))
                 mr.add_info(path=self.infos.lookfor(path))
                 if not mr.transcript.text:
-                    mr.transcript.text, mr.transcript.language = mr.info.get_transcript()
+                    mr.transcript.text, mr.transcript.language = (
+                        mr.info.get_transcript()
+                    )
                 mr.add_image(path=self.image.lookfor(path))
                 # todo: eventually load thumbnails here
                 mr.add_NLPFeatureAnalysis(
-                    path=self.analyse.lookfor(path), nlptools=nlptools)
+                    path=self.analyse.lookfor(path), nlptools=nlptools
+                )
 
                 mr.add_obsidian_note(path=self.notes.lookfor(path))
                 mr.add_visualizations(path=self.notes.lookfor(path))
@@ -1442,8 +1664,11 @@ class Folder:
                     mr.pdf.add_metadata(metadata)
                 # # check if the file has already been added
                 # checking here is to intensive
-                mr.add_NLPFeatureAnalysis(path=self.analyse.lookfor(
-                    path), nlptools=nlptools, do_named_entities=False)
+                mr.add_NLPFeatureAnalysis(
+                    path=self.analyse.lookfor(path),
+                    nlptools=nlptools,
+                    do_named_entities=False,
+                )
                 mr.add_obsidian_note(path=self.notes.lookfor(path))
                 self.add_media_resource(mr)
                 if idx % 100 == 99:
@@ -1455,11 +1680,13 @@ class Folder:
         for x, mir in enumerate(self.media_resources):
             if x in duplicates:
                 continue
-            for y in range(x+1, len(self.media_resources)):
+            for y in range(x + 1, len(self.media_resources)):
                 if y in duplicates:
                     continue
                 if mir.is_duplicate(self.media_resources[y]):
-                    print(f"Duplicates: {mir.basename}\n{mir.pdf.path}\n{self.media_resources[y].pdf.path}")
+                    print(
+                        f"Duplicates: {mir.basename}\n{mir.pdf.path}\n{self.media_resources[y].pdf.path}"
+                    )
                     duplicates.add(y)
         # sort duplicates from highest to lowest
         duplicates = sorted(duplicates, reverse=True)
@@ -1471,10 +1698,14 @@ class Folder:
             self.populate()
             self.calc_sim_matrix()
             self.calc_rq_sim()
-            self.save(os.path.join(self.path, "00_Folder.json"),
-                      do_named_entities=do_named_entities)
-            self.save_summary(os.path.join(
-                self.path, "00_Folder_summary.json"), do_named_entities=do_named_entities)
+            self.save(
+                os.path.join(self.path, "00_Folder.json"),
+                do_named_entities=do_named_entities,
+            )
+            self.save_summary(
+                os.path.join(self.path, "00_Folder_summary.json"),
+                do_named_entities=do_named_entities,
+            )
             self.analyse_metadata()
 
     def analyse_metadata(self):
@@ -1488,8 +1719,7 @@ class Folder:
             # Skip these in printing
             skip = ["rq_scores", "rq_score_list", "RANK_FACTOR", "skip"]
 
-
-            def __init__(self, folder:Folder = None, mr_id:int = None):
+            def __init__(self, folder: Folder = None, mr_id: int = None):
                 self.media_names = {}
                 # create np array for rq scores with no length
                 # create np array for rq scores with no length
@@ -1499,12 +1729,12 @@ class Folder:
                 self.media_num = 0
                 if folder and mr_id:
                     self.update(folder, mr_id)
-            
+
             # TypeError: Object of type Stats is not JSON serializable
             def to_dict(self):
                 res_dict = {}
                 for attr in dir(self):
-                    if not attr.startswith('__') and not callable(getattr(self, attr)):
+                    if not attr.startswith("__") and not callable(getattr(self, attr)):
                         # TypeError: Object of type ndarray is not JSON serializable
                         if attr in Stats.skip:
                             continue
@@ -1514,14 +1744,14 @@ class Folder:
                         else:
                             res_dict[attr] = value
                 return res_dict
-            
+
             def to_csv(self, separator=";"):
                 sub_separtor = ","
                 if separator == ",":
                     sub_separtor = ";"
                 res_list = []
                 for attr in dir(self):
-                    if not attr.startswith('__') and not callable(getattr(self, attr)):
+                    if not attr.startswith("__") and not callable(getattr(self, attr)):
                         if attr in Stats.skip:
                             continue
                         value = getattr(self, attr)
@@ -1529,27 +1759,37 @@ class Folder:
                             value = value.tolist()
                         if isinstance(value, list):
                             # res_list.append("'" + f"' {sub_separtor} '".join(value) + "'")
-                            res_list.append("'" + f"' {sub_separtor} '".join(str(v) for v in value) + "'")
+                            res_list.append(
+                                "'"
+                                + f"' {sub_separtor} '".join(str(v) for v in value)
+                                + "'"
+                            )
                             # res_list.append(str(value))
                         elif isinstance(value, dict):
                             if attr == "media_names":
-                                res_list.append("'" + f"' {sub_separtor} '".join([str(v) for v in value.values()]) + "'")
+                                res_list.append(
+                                    "'"
+                                    + f"' {sub_separtor} '".join(
+                                        [str(v) for v in value.values()]
+                                    )
+                                    + "'"
+                                )
                             else:
                                 res_list.append(json.dumps(value))
                         else:
                             res_list.append(str(value))
                 # convert to string and join with separator
                 return separator.join(res_list)
-            
+
             def __str__(self):
                 return str(self.to_dict())
 
-            def update(self, folder:Folder, mr_id:int):
+            def update(self, folder: Folder, mr_id: int):
                 self.media_names[mr_id] = folder.media_resources[mr_id].basename
                 # update the self.rq_scores np array with the new rq scores
                 self.media_num += 1
                 # update the self.rq_scores np array with the new rq scores
-                
+
                 self.rq_score_list.append(folder.rq_sim_mat[mr_id])
 
                 ## Reward many high score media resources
@@ -1573,27 +1813,26 @@ class Folder:
                 self.rq_average = np.mean(self.rq_averages)
                 self.rq_sum = np.sum(self.rq_sums)
                 self.rq_max = np.max(self.rq_maxs)
-                self.rq_min = np.min(self.rq_mins)                
+                self.rq_min = np.min(self.rq_mins)
                 # # Those don't make sense:
                 # self.rq_std = np.std(self.rq_stds)
                 # self.rq_median = np.median(self.rq_medians)
                 # self.rq_variance = np.var(self.rq_variances)
-                
+
                 # calculate a "rank" score that rewards high averages and quantities of media resources
 
-        
         # # TODO: Why does this not work?
         # statdict:Dict[str,Dict[str,Stats]] = {
         statdict = {
-            "year" : defaultdict(Stats),
-            "author" : defaultdict(Stats),
-            "journal" : defaultdict(Stats),
+            "year": defaultdict(Stats),
+            "author": defaultdict(Stats),
+            "journal": defaultdict(Stats),
             # "language" : defaultdict(Stats),
-            "ENTRYTYPE" : defaultdict(Stats),
+            "ENTRYTYPE": defaultdict(Stats),
         }
         synoyms = {
-            "author" : ["authors"],
-            "journal" : ["journaltitle", "venue", "booktitle"],
+            "author": ["authors"],
+            "journal": ["journaltitle", "venue", "booktitle"],
         }
         not_found = {}
         for key in statdict.keys():
@@ -1608,7 +1847,7 @@ class Folder:
                             stat_key = mr.pdf.metadata.get(syn)
                             if stat_key:
                                 break
-                    if stat_key:                        
+                    if stat_key:
                         if key == "author":
                             authors = stat_key.split(" and ")
                             for author in authors:
@@ -1621,7 +1860,7 @@ class Folder:
         for key, stats in statdict.items():
             for name, stat in stats.items():
                 stat.calc()
-        
+
         for key, values in not_found.items():
             ignore = list(statdict.keys())
             ignore = ignore + ["file", "url", "urldate", "ID", "title"]
@@ -1632,24 +1871,42 @@ class Folder:
 
         for key, stats in statdict.items():
             # sort stats by rq_rank
-            statdict[key] = dict(sorted(stats.items(), key=lambda x: x[1].rq_rank, reverse=True))
-        
+            statdict[key] = dict(
+                sorted(stats.items(), key=lambda x: x[1].rq_rank, reverse=True)
+            )
+
         # print statdict to json and csv
         for category, entry_dict in statdict.items():
             res_dict = {}
             for name, stat in entry_dict.items():
                 res_dict[name] = stat.to_dict()
-            dump_json(os.path.join(self.path, f"metadata_stats_{category}.json"), res_dict)
-        
+            dump_json(
+                os.path.join(self.path, f"metadata_stats_{category}.json"), res_dict
+            )
+            for key in res_dict.keys():
+                res_dict[key] = res_dict[key]["rq_rank"]
+            # TODO: add a more readable barchart feature here
+            # ylabel = "RQ rank"
+            # title = f"{category} ranked by RQ rank"
+            # util_pyplot.dict_to_barchart(res_dict, os.path.join(self.path, f"metadata_stats_{category}.png"), ylabel=ylabel, title=title)
+
         for category, entry_dict in statdict.items():
             first_stat = list(entry_dict.values())[0]
-            headers = [attr for attr in dir(first_stat) if not attr.startswith('__') and not callable(getattr(first_stat, attr))]
+            headers = [
+                attr
+                for attr in dir(first_stat)
+                if not attr.startswith("__") and not callable(getattr(first_stat, attr))
+            ]
             for header in Stats.skip:
                 if header in headers:
                     headers.remove(header)
             headers = ["name"] + headers
 
-            with open(os.path.join(self.path, f"metadata_stats_{category}.csv"), "w", encoding="utf8") as f:
+            with open(
+                os.path.join(self.path, f"metadata_stats_{category}.csv"),
+                "w",
+                encoding="utf8",
+            ) as f:
                 # Write headers to file
                 f.write(";".join(headers) + "\n")
 
@@ -1661,7 +1918,9 @@ class Folder:
         for key, stats in statdict.items():
             print(f"{key}:\t name,\t rq_rank,\t # of media_resources,\t rq_average")
             for i, (name, stat) in enumerate(list(stats.items())[:10]):
-                print(f"{i+1}. {name}:\t {round(stat.rq_rank, 3)} \t- {len(stat.media_names)} \t- {round(stat.rq_average,3)}")
+                print(
+                    f"{i+1}. {name}:\t {round(stat.rq_rank, 3)} \t- {len(stat.media_names)} \t- {round(stat.rq_average,3)}"
+                )
 
         self.statdict = statdict
 
@@ -1678,13 +1937,15 @@ class Folder:
                 raise
                 print("Publish to Obsidian failed")
 
-
     # Wordcloud
     def wordcloud(self):
         util_wordcloud.generate_wordcloud(
-            self.bag_of_words.get(), os.path.join(self.path, "00_bag_of_words"))
+            self.bag_of_words.get(), os.path.join(self.path, "00_bag_of_words")
+        )
         util_wordcloud.generate_wordcloud(
-            self.named_entities.get_frequencies(), os.path.join(self.path, "00_named_entities"))
+            self.named_entities.get_frequencies(),
+            os.path.join(self.path, "00_named_entities"),
+        )
         ## TODO: Rework masks at a later point
         # if self.image:
         #     found, not_found = self.image.lookfor("Folder")
@@ -1706,16 +1967,19 @@ def main(input_path, output_path=None):
         # process all files in directory
         return Folder(input_path)
     else:
-        print('Invalid input path.')
+        print("Invalid input path.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Process JSON files and extract document features.')
+        description="Process JSON files and extract document features."
+    )
+    parser.add_argument("input", help="path to JSON file or folder of JSON files")
     parser.add_argument(
-        'input', help='path to JSON file or folder of JSON files')
-    parser.add_argument(
-        '-o', '--output', help='path to output file or folder (default: derived from input path)')
+        "-o",
+        "--output",
+        help="path to output file or folder (default: derived from input path)",
+    )
     args = parser.parse_args()
 
     main(args.input, args.output)

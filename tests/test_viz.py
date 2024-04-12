@@ -133,7 +133,7 @@ data = {
     "distribute": 0.0,
     "knowledge_graph": 0.02868968298833199,
     "search": 0.0,
-    "spacecraft_engineering": 0.0
+    "spacecraft_engineering": 0.0,
 }
 
 
@@ -149,7 +149,9 @@ def main():
     ]
     for name in names:
         filepath = os.path.join(path, name + "_bar.png")
-        util_pyplot.dict_to_barchart(data, path = filepath, force = True, sort = True, prune=True)
+        util_pyplot.dict_to_barchart(
+            data, path=filepath, force=True, sort=True, prune=True
+        )
         filepath = os.path.join(path, name + "_cloud.png")
         # util_wordcloud.generate_wordcloud(data, filepath, width=1900, height=300)
 
