@@ -5,19 +5,19 @@ build-backend = "hatchling.build"
 
 [project]
 name = "bnw_tools"
-version = "0.0.1.4"
+version = "0.0.2.0"
 authors = [
-  { name="BorgNetzWerk", email="info@borgnetzwerk.de" },
-  { name="Tim Wittenborg", email="tim.wittenborg@l3s.uni-hannover.de" },
+  { name = "BorgNetzWerk", email = "info@borgnetzwerk.de" },
+  { name = "Tim Wittenborg", email = "tim.wittenborg@l3s.uni-hannover.de" },
 ]
 description = "Tools developed in the BorgNetzWerk project for the extraction, analysis and publication of knowledge."
 keywords = ["BorgNetzWerk", "ORKG", "knowledge", "literature", "media"]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.8, <3.12"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 dependencies = [
   "scipy==1.10.1",
