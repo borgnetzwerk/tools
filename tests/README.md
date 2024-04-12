@@ -91,13 +91,14 @@ See https://stackoverflow.com/questions/68033795/avoiding-sys-path-append-for-im
 Make sure you have installed PyPA's build in your venv:
 ```
 py -m pip install --upgrade build
+py -m pip install --upgrade twine
 ```
 
 #### Package debugging
 ```
 pip uninstall -y bnw_tools
 py -m build
-pip install dist\bnw_tools-0.0.1.4.tar.gz
+pip install dist\bnw_tools-0.0.2.0.tar.gz
 ```
 
 *Note*: Change the version number
