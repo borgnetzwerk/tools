@@ -887,6 +887,9 @@ class MediaResource:
         self.visualizations: List[str] = []
 
     def is_duplicate(self, mr: MediaResource):
+        # TODO: Without pdf, we currently can't detect duplicates very well
+        if not mr.pdf:
+            return False
         common_fields = ["basename", "original_name"]
         pdf_fields = ["title", "author", "year"]
 
@@ -977,7 +980,11 @@ class MediaResource:
                 if file not in self.visualizations:
                     self.visualizations.append(file)
         elif path:
-            self.visualizations = os.listdir(path)
+            # if path is list, merge lists
+            if isinstance(path, list):
+                self.visualizations += path
+            elif isinstance(path, str):
+                self.visualizations.append(path)
 
     def search_original_name(self, force=False):
         if self.original_name and not force:
@@ -1309,10 +1316,16 @@ class Folder:
             for score, files in relevant.items():
                 for file in files:
                     filename = file.replace(".md", "")
-                    f.write(f"{filename};{score}")
+                    total_score = score
+                    if scores and "RQave" in scores[file]:
+                        total_score = float(score)
+                        total_score += scores[file]["RQave"]
+                        total_score = str(round(total_score, 3)).replace(".", ",")
+                    f.write(f"{filename};{total_score}")
                     if scores:
-                        for rq, score in scores[file].items():
-                            f.write(f";{score}")
+                        for rq, rq_score in scores[file].items():
+                            rq_score = str(round(rq_score, 3)).replace(".", ",")
+                            f.write(f";{rq_score}")
                     f.write("\n")
 
     def get_image(self):
@@ -1648,7 +1661,7 @@ class Folder:
                 )
 
                 mr.add_obsidian_note(path=self.notes.lookfor(path))
-                mr.add_visualizations(path=self.notes.lookfor(path))
+                mr.add_visualizations(path=self.visualizations.lookfor(path, allow_list=True))
                 self.add_media_resource(mr)
         if pdfs:
             for idx, path in enumerate(pdfs):
@@ -1706,7 +1719,9 @@ class Folder:
                 os.path.join(self.path, "00_Folder_summary.json"),
                 do_named_entities=do_named_entities,
             )
-            self.analyse_metadata()
+            if pdfs:
+                # TODO: Extract metadata from sources other than PDFs
+                self.analyse_metadata()
 
     def analyse_metadata(self):
 

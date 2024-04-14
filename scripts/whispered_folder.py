@@ -51,6 +51,17 @@ channels = {
 }
 
 YT_root = "D:/workspace/YouTube"
+config = {
+    # https://matplotlib.org/stable/users/explain/colors/colormaps.html
+    "wordcloud": {
+        "width": 1300,
+        "height": 370,
+        "max_words": 100,
+        "background_color": "white",
+        "colormap": "Dark2",
+        "force": True,
+    },
+}
 
 for channel_id, channel_name in channels.items():
     entry = {"folder": os.path.join(YT_root, channel_name),
@@ -92,10 +103,14 @@ for do in queue:
 
     # Wordcloud
     if folder.media_resources:
+        cloud_config = None
+        if config and "wordcloud" in config:
+            cloud_config = config["wordcloud"]
+
         util_wordcloud.generate_wordcloud(
-            folder.bag_of_words.get(), os.path.join(folder_path, "00_bag_of_words"))
+            folder.bag_of_words.get(), os.path.join(folder_path, "00_bag_of_words"), config=cloud_config)
         util_wordcloud.generate_wordcloud(
-            folder.named_entities.get_frequencies(), os.path.join(folder_path, "00_named_entities"))
+            folder.named_entities.get_frequencies(), os.path.join(folder_path, "00_named_entities"), config=cloud_config)
         mask_path = folder.get_image()
         if mask_path:
             mask = util_wordcloud.generate_mask(mask_path)
