@@ -344,6 +344,11 @@ method::
 material:: {rq_colon}
 - [ ] Paper read
 - [ ] Contribution completed"""
+            
+        # remove trailing \n from property_block
+        # TODO: Improve the above construction of edited property_blocks, so that this is not necessary
+        while property_block[-1] == "\n":
+            property_block = property_block[:-1]
 
         self.text = f"""# {title}{property_view}{property_block}{corpus}
 
