@@ -9,6 +9,7 @@ from datetime import datetime
 try:
     import whisper
 except ImportError:
+    # TODO: this is not working properly
     warnings.warn("Not using OpenAI whisper. If you want to use it, run 'pip install bnw_tools[whisper]'")
 
 
