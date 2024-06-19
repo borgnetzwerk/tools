@@ -287,6 +287,10 @@ class BibResources:
 
     def from_path(self, path):
         self.get_pdf_path(path)
+        # if path ends on "/", we need to prune that:
+        if path[-1] == "/":
+            path = path[:-1]
+        # TODO: See if this applies to other areas as well
         folder_name = os.path.basename(path)
         self.look_for_export(path, folder_name)
 

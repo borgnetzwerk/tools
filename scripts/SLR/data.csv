@@ -1,0 +1,661 @@
+process;software;data item;data model;data format specification;interchange format;source
+CAD;;Explicit Geometry;;;Step;Böhnke - 2009 - Data integration in preliminary airplane design
+CAD;;Explicit Geometry;;;Iges;Böhnke - 2009 - Data integration in preliminary airplane design
+CAD;;Explicit Geometry;;;DXF;Böhnke - 2009 - Data integration in preliminary airplane design
+CAD;;Implicit Geometry;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+exchange of design intents;;;;;STEP;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+exchange of design intents;;;;;IGES;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+exchange of design intents;;;;;DXF;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+Product Data Management;;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+Enterprise Resource Planning;;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+Digital MockUp;;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+product design;;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+manufacturing;;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+information sharing;;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+;;;STEP Part 42:EDM;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+CAD;Pro/E(PTC);;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+CAD;I-DEAS(SDRC);;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+CAD;CADDS5(CV);;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+CAD;SolidWorks;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+CAD;IDEAS;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+CAD;UG;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+CAD;CATIA;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+CAD;SolidEdge;;;;;Choi et al. - Exchange of CAD Part Models Based on the Macro-Par
+description of object oriented software;;;UML;;;Böhnke - 2009 - Data integration in preliminary airplane design
+exchange of design intents;;;;;Cpacs;Böhnke - 2009 - Data integration in preliminary airplane design
+exchange of design intents;;;;;.p21 or Xml;Böhnke - 2009 - Data integration in preliminary airplane design
+;EXPRESS application;;Step;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Natural language Information Analysis Method (NIAM) application;;Object Role Model (ORM);;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Object Role Model (ORM);;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;IDEF1X Application;;IDEF1X;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;;;XML-Schema-Definition;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;;;;;Vrml;Böhnke - 2009 - Data integration in preliminary airplane design
+;;;SysML;;;Böhnke - 2009 - Data integration in preliminary airplane design
+read data from the model;;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+processe data;;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+write data back to the model;;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Expresso9;;Express;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;CoOM10;;Express;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Express Compiler in JSDAI;;Express;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Tixi;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;libXml240;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;C application;;C;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Fortran application;;Fortan;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Python Application;;Python;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Tigl;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Eclipse;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Eclipse Plugin;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Altova’s UModel;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+Knowledge Based Engineering;;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;JSDAI4;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;Java Application;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+Convert File Formats;;;;;;Böhnke - 2009 - Data integration in preliminary airplane design
+;;;;;Parasolid;Böhnke - 2009 - Data integration in preliminary airplane design
+;;;SysML;;;Flink et al. - 2022 - Orchestrating tool chains for model-based systems
+;;;CPACS;;;Flink et al. - 2022 - Orchestrating tool chains for model-based systems
+;RCE;;;;;Flink et al. - 2022 - Orchestrating tool chains for model-based systems
+Model Based Systems Engineering (MBSE);;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Design;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Check;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Review;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Archive;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Initiate the product term class;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Access Product design data;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Populate the objects of product term class with semantic information and enclose the objects in message being sent;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+retrieve product term object and task requirement;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+aceess tooling CAD models;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Identify different tooling types;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+initiate action according to tooling types;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;MS Word;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;Knowledge Mangement Tool;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;Multi-Agent Collaborative System;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;CAD Programming Interface;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;;;VBA;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;Product data management System;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;Oracle Server;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;File Server;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;Web Server;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+Semantic information transferring;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+summarizing;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+calculating;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+analyzing;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+format transforming of semantic information;;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;API;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;JADE;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;NX4;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;Protégé;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+express ontology;Engineering java programming;;;;;Yan et al. - 2008 - A multi-agent-based semantic collaboration framewo
+;;Ontology;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+;;;UML;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+;;Mind Map;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+;;;OWL;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+knowledge classification;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+annotating the semantic contents of a document;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+ontological engineering;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+knowledge systematisation;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+knowledge base building;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+share documents;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+knowledge management;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+semantic knowledge management within design engineering;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+access to knowledge and expertise;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+sharing of knowledge and expertise;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+problem solving;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+searching for a solution to problems that may have been solved;;;;;;Sanya et al. - 2011 - Challenges in semantic knowledge management for ae
+System Identification;;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+System Specification;;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+System Architecting;;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+System Synthesis;;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+System Design;;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+Systems Engineering (SE);;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+Multi-Disciplinary Analysis and Optimization (MDAO);;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;;;Common Parametric Aircraft Configuration Schema (CPACS);;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;;;JavaScript Object Notation (JSON);;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;;Architecture Design Space Graph (ADSG);;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;;;CMDOWS;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;;;MDAx;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;;;KADMOS;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;Operational Collaborative Environment (OCE);;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+managing project files;KE-Chain;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;Pykechain;;Python;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+establish links from architectural elements to nodes in the data schema;MultiLinQ;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;Requirements Verification Framework (RVF);;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;Remote Component Environment (RCE);;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;WhatsOpt;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;Surrogate Model Generator (SMG);;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;GKN Fokker;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+Multidisciplinary Modeling;Multidisciplinary Modeler (MDM);;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+Cost Analysis Tool for Manufacturing Components;Cost Analysis Tool for Manufacturing of Aircraft Components (CATMAC);;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+generate FEM model;CAD2FEM;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;Proteus;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+collection and sharing of design information through a Single Source of Truth (SSOT);;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+sharing and usage of surrogate models;Surrogate Model Repository;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;Brics technology;;;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+MDO process formulation, visualizations;;eXtended Design Structure Matrix (XDSM);;;;Royal - 2022 - Advancing Cross-Organizational Collaboration in Ai
+;;;Hierarchical Data Format, version 5 (HDF5);;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+exchange of models;;;XML;;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+;;;Document Type Definition (DTD;;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+;;;XML Schema Definition (XSD);;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+;DAVEtools;;;;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+;Janus;;;;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+;NASA Ames Function Table Processor scripts;;;;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+;;Extensible Stylesheet (XSL) conversion;;;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+rehost' each release of a flight dynamics model from one simulation environment to another one;;;;;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+export data, translate to one neutral format once, then exchange that;;;;;;Jackson und Hildreth - 2006 - Progress Toward a Format Standard for Flight Dynam
+;;Knowledge Architecture (KA);;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+MDO process formulation, visualizations;;eXtended Design Structure Matrix (XDSM);;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+Development;AGILE Development Framework (ADF);;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+Graph-based support in the design problem formulation;AGILE Development Framework (ADF);;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+Visualization of large, complex AD processes;AGILE Development Framework (ADF);;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+Design concepts formalization;AGILE Development Framework (ADF);;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+;Visualization Package;;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+;cpacsPy library;;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+;RCE;;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+;BRICS;;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+;Optimus;;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+;Process Integration and Design Optimization (PIDO) platforms;;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+;Common MDO Workflow Schema (CMDOWS);;;;;Van Gent et al. - 2017 - Knowledge architecture supporting collaborative MD
+;;;Multi-Agent Modeling Language (MAML);;;Jian - 2011 - Knowledge search for new product development a mu
+;Java Agent Development Environment (JADE);;;;;Jian - 2011 - Knowledge search for new product development a mu
+;Open Agent Architecture (OAA);;;;;Jian - 2011 - Knowledge search for new product development a mu
+;Social Interaction Framework (SIF);;;;;Jian - 2011 - Knowledge search for new product development a mu
+Accessory Manufacture;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+General Assembly;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Ground Test;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Flight-test Preparation;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+First Flight Decision;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Nation Decision;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Flight Test;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Eligibility of Model examiniation;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+ISSUE TC PC AC Certification;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Deliver first Aircraft;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Detailed Design;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Design Blueprint;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Calculation Report;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Test report;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Flight test report;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+training;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Product support;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Airworthiness Test;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Manufacturing preparation;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Tooling Development;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Engine Accessory Purchase;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Development Safeguard Actualization;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Product Support;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Preliminary Design;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Design and development;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Airfraem Manufacturing;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+System Integration;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Product Verification;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Certification;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Customer Service;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Sales and Marketing;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+Wide Body Transports;;;;;;Jian - 2011 - Knowledge search for new product development a mu
+;;;Extensible Markup Language (XML);;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+;;;Numerical Control Markup Language (NCML);;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+;;;Extensible Graphics Language (XGL);;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+;Computational Analysis Programming Interface (CAPRI);;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+;Geographic Independent Virtual Environment (GIVE);;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+"incorporating visualization into multiobjective optimization tools
+for MDO problems";Cloud Visualization;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+"incorporating visualization into multiobjective optimization tools 
+for MDO problems";visualization in support of the Shopping Paradigm;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+"incorporating visualization into multiobjective optimization tools 
+for MDO problems";visualization interface for Physical Programming;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+"incorporating visualization into multiobjective optimization tools 
+for MDO problems";MOPCSSOViz;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+"incorporating visualization into multiobjective optimization tools 
+for MDO problems";Hyper-Pareto Frontier visualization;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+Optimization;;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+Design Space Visualization;;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+Project Planning;;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+Configuration Management;;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+Life Cycle Simulation;;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+Disciplinary Analysis;;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+;Web-Based Decision Tool;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+;CAD Representation VDSM;;;;;Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+;;Ontology;Web Ontology Language (OWL);;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;Ontology;Resources Description Framework (RDF);;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;CAD representation;;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;SysML model;SysML;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;Syndeia;;;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;Labeled Property Graph database (LPG);;;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;Neo4j;;;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;knowledge graph (KG);;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;Cameo System Modeler (CSM);;;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;LPG was a Cypher-Neo4j;;;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;;SQL;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;;XQuery;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;;SPARQL;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;;Cypher;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;;;REST (HTTP) API;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;Git;;;;;Herrero - 2022 - A System Architecture for the Digital Thread in Co
+;Knowledge Optimized Manufacture And Design (KNOMAD);;;;;Curran et al. - 2010 - The KNOMAD Methodology for Integration of Multidis
+Knowledge Management (KM);;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+KM:Knowledge Creation;Data Mining;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+KM:Knowledge Creation;learning tools;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+KM:Knowledge Storage / Retrieval;Electronic Bulletin boards;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+KM:Knowledge Storage / Retrieval;knowledege repositories, databases;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+KM:Transfer;discussion forums, knowledge directories;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+KM:Application;Expert systems;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+KM:Application;Workflow systems;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;;SPARQL;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;word processor documents;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;PDF files;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;tables, spreadsheets;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;lexical data;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;WordNet;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;;BFO;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;;CCO;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;taxonomy;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;SUMO;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;ImageNet;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;Ontologies for NextGen Avionics Systems (ONAS);;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;National Airspace System (NAS);;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;Airspace System Ontology;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;;Avionics Analytics Ontology (AAO);;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;NextGen Avionics Systems;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+learning of ontologies from textual data;TextToOnto;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+learning of ontologies from textual data;Text2Onto;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;KAON;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+;TEXT2RDF;;;;;Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
+MDAO;;;;;;Van Gent et al. - 2017 - Composing MDAO symphonies graph-based generation
+;SWF software Package RCE;;;;;Van Gent et al. - 2017 - Composing MDAO symphonies graph-based generation
+;CFView;;;;;Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
+;QFView Web Interface;;;;;Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
+;;Knowledge Base;;;;Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
+;OPTIMUS Workflow management tool;;;;;Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
+;scientific workflows (SW);;;;;Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
+;;CFD simulations of the European Hypersonic Database;;;;Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
+;J2EE application servers;;;;;Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
+;Database Management System servers (DBMS);;;;;Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
+;;;PostgreSQL;;;Vargas-Hernandez et al. - 2003 - Development of a computer aided conceptual design
+Analysing information content (Data Mining Techniques);;;;;;Xie - 2013 - Application of context aware systems to support kn
+Text Analyisis;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Link analysis;;;;;;Xie - 2013 - Application of context aware systems to support kn
+information classification;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Information clustering;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Pattern analyis;;;;;;Xie - 2013 - Application of context aware systems to support kn
+handling concepts and relationships between concepts (semantic Techniques);;;;;;Xie - 2013 - Application of context aware systems to support kn
+Semantic Representation;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Resource Description;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Ontology Modeling;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Context inference;;;;;;Xie - 2013 - Application of context aware systems to support kn
+caturing contextual information form information users (Profiling techniques);;;;;;Xie - 2013 - Application of context aware systems to support kn
+Activity Profiling;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Physical sensing;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Interest Profiling;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Knowledge, Skill and Background Profiling;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Acquisition;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Processing;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Creation;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Dissemination;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Authoring;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Semantic Lexicon;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Descriptive Information Generation;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Information search;;;;;;Xie - 2013 - Application of context aware systems to support kn
+Information push;;;;;;Xie - 2013 - Application of context aware systems to support kn
+;;;DARPA Agent Markup Language (DAML);;;Xie - 2013 - Application of context aware systems to support kn
+RSS (Really Simple Syndication);;;;;;Xie - 2013 - Application of context aware systems to support kn
+;Text2Onto;;;;;Xie - 2013 - Application of context aware systems to support kn
+;Vivisimo;;;;;Xie - 2013 - Application of context aware systems to support kn
+;;IkeWiki;;;;Xie - 2013 - Application of context aware systems to support kn
+;;FreeBase;;;;Xie - 2013 - Application of context aware systems to support kn
+;;SweetWiki;;;;Xie - 2013 - Application of context aware systems to support kn
+;;WordNet;;;;Xie - 2013 - Application of context aware systems to support kn
+;;BabelNet;;;;Xie - 2013 - Application of context aware systems to support kn
+;MS Word;;;;;Xie - 2013 - Application of context aware systems to support kn
+crawling;;;;;;Xie - 2013 - Application of context aware systems to support kn
+;Google;;;;;Xie - 2013 - Application of context aware systems to support kn
+;SemSearch;;;;;Xie - 2013 - Application of context aware systems to support kn
+;Protégé;;;;;Xie - 2013 - Application of context aware systems to support kn
+Capture and Reuse Engineering Experience;;;;;;Xie - 2013 - Application of context aware systems to support kn
+;Daedalus;;;;;Xie - 2013 - Application of context aware systems to support kn
+;;;YAWL;;;Hoogreef et al. - 2015 - A multidisciplinary design optimization advisory s
+;;;;XML;;Hoogreef et al. - 2015 - A multidisciplinary design optimization advisory s
+reasoning;reasoner;;;;;Hoogreef et al. - 2015 - A multidisciplinary design optimization advisory s
+;process integration and design optimization (PIDO);;;;;Hoogreef et al. - 2015 - A multidisciplinary design optimization advisory s
+;simulation workflow management (SWFM);;;;;Hoogreef et al. - 2015 - A multidisciplinary design optimization advisory s
+selection of a suitable MDO architecture for the problem at hand;;;;;;Hoogreef et al. - 2015 - A multidisciplinary design optimization advisory s
+definition of the optimization problem;;;;;;Hoogreef et al. - 2015 - A multidisciplinary design optimization advisory s
+integrate the MDO architecture in an executable workflow;;;;;;Hoogreef et al. - 2015 - A multidisciplinary design optimization advisory s
+;;;;drawing exchange format (DXF);;Qin et al. - 2017 - Status, Comparison, and Issues of Computer-Aided D
+;;;VAMPzero;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+;;;OpenVSP;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+;;;RDS;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+data visualization;;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+inference;;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+data validation;;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+workflow management;;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+optimization;;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+;ECLIPSE;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+;;;VampZero;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+;CEASIOM;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+;TIXI;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+Product data management;;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+Software interlinking;Software interlinking tools;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+;Remote Component Environment (RCE);;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+Software interlinking;ModelCenter;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+Software interlinking;iSIGHT;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+Software interlinking;OPTIMUS;;;;;Nagel et al. - 2012 - Communication in aircraft design Can we establish
+;;;;Common Logic Interchange Format (CLIF);;Rovetto - 2017 - Ontology-based knowledge management for space data
+;;;Web Ontology Language (OWL);;;Rovetto - 2017 - Ontology-based knowledge management for space data
+;;;;Knowledge Interchange Format (KIF);;Rovetto - 2017 - Ontology-based knowledge management for space data
+;;;;XML;;Rovetto - 2017 - Ontology-based knowledge management for space data
+;;;SPARQL;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+;;;OWL-QL;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+;;;Topic Maps;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+;Protégé;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+;;Taxonomy;NASA Taxonomy;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+;Ontology-Driven Interactive Search Environment for Earth Sciences (ODISEES);;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Knowledge management;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Knowledge engineering;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+data search, access, and retrieval;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Mapping between disparate data sets;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Classification and terminology development;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Translations among distinct vocabularies;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Conceptual modelling;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Knowledge representation and reasoning;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Knowledge and data sharing;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Knowledge discovery;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Data integration/fusion;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Decision support;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Automated reasoning;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Machine-to-machine communication;;;;;;Rovetto - 2017 - Ontology-based knowledge management for space data
+Knowlege Graph Construction;Fault Knowledge Graph Construction and Platform for Aircraft PHM;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowledge Interaction;Fault Knowledge Graph Construction and Platform for Aircraft PHM;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Construction:Data labeling;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Construction:Text classification;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Construction:Knowledge extraction;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Construction:Data review;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Construction:Data management;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowledge Interaction:Q&A;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowledge Interaction:Knowledge visualisation;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge application:Data labeling;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge application:knowledge extraction;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge application:quality assessment;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge application:Q&A;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge application:Knowledge visualisation;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge interfacing:data retrieval;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge interfacing:model training;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge interfacing:knowledge extraction;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge interfacing:data review;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge interfacing:problematic entity extraction;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge interfacing:classification of question intent;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge interfacing:question answer search;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+knowledge interfacing:Q&A;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Data storage;Neo4j;Knowledge Graph;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Building:File importing;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Building:Document classification;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Building:Text classification;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Building:Data labeling;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Building:Knowledge extraction;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Building:Knowledge audit;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Knowlege Graph Building:Data management;;;;;;Meng et al. - 2023 - Fault Knowledge Graph Construction and Platform De
+Data Processing:Collection;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Visualization;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;;;;CSV;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;;;;CSV;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;;;;XML;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;;;;XML;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;;;;XML;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Collection;Excel;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;Excel;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;Excel;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;Excel;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;Excel;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Visualization;Excel;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Collection;;;SQL;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;;;SQL;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;;;SQL;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;;;SQL;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Collection;Access;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Collection;Oracle;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;Oracle;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;Oracle;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;Oracle;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;Oracle;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Collection;;;NoSQL;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;;;NoSQL;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;;;NoSQL;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;;;NoSQL;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Collection;Google;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;Google;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;Google;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;Google;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;Google;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Visualization;Google;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Collection;Wikipedia;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;Wikipedia;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;Wikipedia;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;Wikipedia;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;MATLAB;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;MATLAB;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;MATLAB;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Visualization;MATLAB;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;R;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;R;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;R;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Visualization;R;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;SAS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;SAS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;SAS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;SAS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Visualization;SAS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Storage;SPSS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Organization;SPSS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Recall;SPSS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Analysis;SPSS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+Data Processing:Visualization;SPSS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+;AAA;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+;FLOPS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+;PrADO;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+;RDS;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+;VDK/HC;;;;;Haney - 2016 - Data Engineering in Aerospace Systems Design & For
+;OpenMDAO;;;;;Jeyaraj et al. - 2021 - Connecting Model-based Systems Engineering and Mul
+;;;Common MDAO Workflow Schema (CMDOWS);;;Jeyaraj et al. - 2021 - Connecting Model-based Systems Engineering and Mul
+;;;Common Parametric Aircraft Schema (CPACS);;;Jeyaraj et al. - 2021 - Connecting Model-based Systems Engineering and Mul
+;Remote Component Environment (RCE);;;;;Jeyaraj et al. - 2021 - Connecting Model-based Systems Engineering and Mul
+;OPTIMUS;;;;;Jeyaraj et al. - 2021 - Connecting Model-based Systems Engineering and Mul
+Knowledge discovery;T-Rex;;;;;
+Knowledge discovery;Saxon;;;;;
+Knowledge capture;K-Forms;;;;;
+Terminology recognition;TR;;;;;
+Knowledge exploration;K-Search;;;;;
+Knowledge storage;triple store;;;;;
+;inverted index;;;;;
+multimedia document processing;;;;;;
+integration of single-media and cross-media information;;;;;;
+feature processing;;;;;;
+;;;;PDF;;
+;;;;HTML;;
+;;;OWL DL;;;
+;;;K-Store;;;
+;;;K-Forms;;;
+;;;X-Forms;;;
+;;;SOLR;;;
+;;;SERQL;;;
+;;;SPARQL;;;
+Concept, Design & Development;;;;;;Synthesis
+Concept Design;;;;;;Synthesis
+Analysis;;;;;;Synthesis
+Solving;;;;;;Synthesis
+Optimization;;;;;;Synthesis
+Evaluation;;;;;;Synthesis
+Perliminary design;;;;;;Synthesis
+Analysis;;;;;;Synthesis
+Solving;;;;;;Synthesis
+Optimization;;;;;;Synthesis
+Evaluation;;;;;;Synthesis
+"""Detailed design";;;;;;Synthesis
+Analysis;;;;;;Synthesis
+Solving;;;;;;Synthesis
+Optimization;;;;;;Synthesis
+Evaluation;;;;;;Synthesis
+Detailed;;;;;;Synthesis
+Analysis;;;;;;Synthesis
+Disciplinary Analysis;;;;;;Synthesis
+engine analysis;;;;;;Synthesis
+Solving;;;;;;Synthesis
+structural solver;;;;;;Synthesis
+Optimization;;;;;;Synthesis
+Optimization;;;;;;Synthesis
+Evaluation;;;;;;Synthesis
+Production & Product launch;;;;;;Synthesis
+Manufacture;;;;;;Synthesis
+Support & Service;;;;;;Synthesis
+Mission analysis;;;;;;Synthesis
+Failure Management;;;;;;Synthesis
+Failure;;;;;;Synthesis
+Navigation;;;;;;Synthesis
+Scheduling;;;;;;Synthesis
+on-board systems;;;;;;Synthesis
+Recycling;;;;;;Synthesis
+MDO process formulation;;;;;;Synthesis
+Business process integration;;;;;;Synthesis
+Visualization (XDSM);;;;;;Synthesis
+WF execution;;;;;;Synthesis
+Project Planning;;;;;;Synthesis
+Life Cycle Simulation;;;;;;Synthesis
+Configuration Management;;;;;;Synthesis
+Design Space Visualization;;;;;;Synthesis
+Control & stability;;;;;;Synthesis
+PLM;;;;;;Synthesis
+ALM;;;;;;Synthesis
+System Arch;;;;;;Synthesis
+animation;;;;;;Synthesis
+;Jupyter Notebook;;;;;Synthesis
+;Tornado;;;;;Synthesis
+;FSMS;;;;;Synthesis
+;vampZero Element;;;;;Synthesis
+;PEST;;;;;Synthesis
+;TiXI;;;;;Synthesis
+;TiGL;;;;;Synthesis
+;NetworkX;;;;;Synthesis
+;Neo4j;;;;;Synthesis
+;Protégé;;;;;Synthesis
+;RCE;;;;;Synthesis
+;Word;;;;;Synthesis
+;Outlook;;;;;Synthesis
+;Excel;;;;;Synthesis
+;Share Point;;;;;Synthesis
+;REST (HTTP) API;;;;;Synthesis
+;;BOM;;;;Synthesis
+;;Business Logic;;;;Synthesis
+;;Business Objects & Processes;;;;Synthesis
+;;CAD;;;;Synthesis
+;;CAPP;;;;Synthesis
+;;CFD code;;;;Synthesis
+;;CFD simulation data;;;;Synthesis
+;;Design Parts;;;;Synthesis
+;;Documents;;;;Synthesis
+;;Measurement data;;;;Synthesis
+;;MetaData;;;;Synthesis
+;;Object Definitions;;;;Synthesis
+;;Process Definitions;;;;Synthesis
+;;System Definition;;;;Synthesis
+;;Tooling Parts;;;;Synthesis
+;;Word Doc;;;;Synthesis
+;;3D solid model;;;;Synthesis
+;;2D engineering drawings;;;;Synthesis
+;;Unformatted documents;;;;Synthesis
+;;Formatted documents;;;;Synthesis
+;;Forms;;;;Synthesis
+;;Sectors of database;;;;Synthesis
+;;Audio;;;;Synthesis
+;;Video;;;;Synthesis
+;;Animations;;;;Synthesis
+;;Manufacturing Method;;;;Synthesis
+;;Quantity;;;;Synthesis
+;;Material;;;;Synthesis
+;;Image;;;;Synthesis
+;;3D Models;;;;Synthesis
+;;2D Drawings;;;;Synthesis
+;;Assemblies;;;;Synthesis
+;;Tools Needed;;;;Synthesis
+;;Difficulty;;;;Synthesis
+;;Animation;;;;Synthesis
+;;Live Video;;;;Synthesis
+;;Name;;;;Synthesis
+;;External Web Page;;;;Synthesis
+;;Description;;;;Synthesis
+;;How It Works;;;;Synthesis
+;;Section Description;;;;Synthesis
+;;Images;;;;Synthesis
+;;Point Clouds;;;;Synthesis
+;;Ontology;;;;Synthesis
+;;Taxonomy;;;;Synthesis
+;;;3D PDF;;;Synthesis
+;;;ACIS;;;Synthesis
+;;;AD_ASM;;;Synthesis
+;;;AD_PRT;;;Synthesis
+;;;AD-DRW;;;Synthesis
+;;;ADD;;;Synthesis
+;;;Database;;;Synthesis
+;;;Direct API;;;Synthesis
+;;;DWF;;;Synthesis
+;;;DWG;;;Synthesis
+;;;DXF;;;Synthesis
+;;;Flash;;;Synthesis
+;;;Flat File;;;Synthesis
+;;;GIF;;;Synthesis
+;;;HTML;;;Synthesis
+;;;IGS;;;Synthesis
+;;;JPEG;;;Synthesis
+;;;JPG;;;Synthesis
+;;;JPGs;;;Synthesis
+;;;Lotus 123;;;Synthesis
+;;;MOV;;;Synthesis
+;;;MP3;;;Synthesis
+;;;MPEG;;;Synthesis
+;;;MS Excel;;;Synthesis
+;;;MS Word;;;Synthesis
+;;;OOBC;;;Synthesis
+;;;PDF;;;Synthesis
+;;;PostScript;;;Synthesis
+;;;SOAP;;;Synthesis
+;;;STEP;;;Synthesis
+;;;STL;;;Synthesis
+;;;TIFF;;;Synthesis
+;;;TXT;;;Synthesis
+;;;VRML;;;Synthesis
+;;;WAV;;;Synthesis
+;;;WMV;;;Synthesis
+;;;WRP;;;Synthesis
+;;;XML;;;Synthesis
+;;;OWL;;;Synthesis
+;;;RDF;;;Synthesis
+;;;PNG;;;Synthesis
+;;;JSON;;;Synthesis
+;;;;BFO;;Synthesis
+;;;;CPACS;;Synthesis
+;;;;Orbital Debris Ontology (ODO);;Synthesis
+;;;;Orbital Space Environment Domain Ontology;;Synthesis
+;;;;Aerospace Ontology;;Synthesis
+;;;;Airspace System Ontology;;Synthesis
+;;;;Space Situational Awareness Ontology (SSAO);;Synthesis
+;;;;NASA Semantic Web for Earth and Environmental Terminology (SWEET);;Synthesis
+;;;;NASA Taxonomy;;Synthesis
+;;;;STEP;;Synthesis
+;;;;ADDAM;;Synthesis
+;;;;RaDEX (Rationale-based Design Explanation);;Synthesis
+;;;;KADMOS;;Synthesis
+;;;;MDAx;;Synthesis
+;;;;DTAD;;Synthesis
+;;;;Codex;;Synthesis
+;;;;Bond Graphs;;Synthesis
+;;;;MDO FAD (Framework for Analysis and Design);;Synthesis
+;;;;CMDOWS;;Synthesis
+;;;;XCALIBR (XML Capability Analysis Library);;Synthesis
+;;;;ROM (Recursive object model);;Synthesis
+;;;;Adaptive Neuro-Fuzzy Inference System (ANFIS);;Synthesis
+;;;;WordNet;;Synthesis
+;;;;MultiWordNet;;Synthesis
+;;;;RVF;;Synthesis
