@@ -135,7 +135,7 @@ class BibTeXEntry:
 
 
 class BibResources:
-    def __init__(self, path=None, entries: Dict[str, BibTeXEntry] = None) -> None:
+    def __init__(self, path=None, entries: Dict[str, BibTeXEntry] = None, do_print=False) -> None:
         self.entries: Dict[str, BibTeXEntry] = entries or {}
         self.missing: Dict[str, BibTeXEntry] = {}
         self.folder_path = path or None
@@ -144,7 +144,7 @@ class BibResources:
         self.pdf_path = None
         self.pdfs = []
         if path:
-            self.from_path(path)
+            self.from_path(path, do_print)
 
     def get_metadata(self, path: str):
         if path in self.pdfs:
@@ -285,7 +285,7 @@ class BibResources:
             elif entry == folder_name + ".bib" and os.path.isfile(os.path.join(path, entry)):
                 self.bibtex_path = os.path.join(path, entry)
 
-    def from_path(self, path):
+    def from_path(self, path, do_print=False):
         self.get_pdf_path(path)
         # if path ends on "/", we need to prune that:
         if path[-1] == "/":
@@ -303,7 +303,7 @@ class BibResources:
                 return None
 
         self.add_entries()
-        self.sort_pdf()
+        self.sort_pdf(do_print)
         self.store_bibtex_entries(
             self.bibtex_path.replace(".bib", "_processed.bib"))
 
@@ -316,7 +316,7 @@ class BibResources:
             for entry in entries.values():
                 file.write(entry.save())
 
-    def sort_pdf(self) -> None:
+    def sort_pdf(self, do_print=False) -> None:
         for entry in self.entries.values():
             old_links = entry.get_links()
             if old_links is None:
@@ -380,7 +380,8 @@ class BibResources:
 
             entry.set_links(links)
             for key, values in failures.items():
-                print('Missing: ' + ' ; '.join(values))
+                if do_print:
+                    print('Missing: ' + ' ; '.join(values))
                 continue
         if self.files_folder_path:
             walk = list(os.walk(self.files_folder_path))
