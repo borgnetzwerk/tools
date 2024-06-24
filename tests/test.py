@@ -24,14 +24,14 @@ config = {
 folder = None
 
 # NLP (Flair and SpaCy)
-# folder = util_nlp.Folder(
-#     folder_path,
-#     nlptools=nlptools,
-#     language=language,
-#     publish=True,
-#     config=config,
-#     select=True,
-# )
+folder = util_nlp.Folder(
+    folder_path,
+    nlptools=nlptools,
+    language=language,
+    publish=True,
+    config=config,
+    select=True,
+)
 
 if not folder:
     folder = util_nlp.Folder(folder_path, select=True, config=config)

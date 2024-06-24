@@ -32,6 +32,9 @@ queue = [
     {"folder": "D:/workspace/raw (MP3)/HoP",
      "image": "D:/workspace/raw (MP3)/HoP/mask/ab67656300005f1fcabcff3dcfa8fbd5f5b0fa04.jpeg",
      "language": "en"}
+    # {"folder": "D:/workspace/raw (MP3)/random",
+    #  "language": "de"
+    #  }
 ]
 
 
