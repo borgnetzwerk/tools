@@ -5,6 +5,9 @@
 *.json
 *.txt
 *.log
+*.csv
+scripts/SLR/data/
+scripts/SLR/data_subset/
 Test.py
 
 # Byte-compiled / optimized / DLL files
