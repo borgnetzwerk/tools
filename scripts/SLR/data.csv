@@ -198,16 +198,11 @@ Wide Body Transports,,,,,,,,,Jian - 2011 - Knowledge search for new product deve
 ,,,Extensible Graphics Language (XGL),,,,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
 ,Computational Analysis Programming Interface (CAPRI),,,,,,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
 ,Geographic Independent Virtual Environment (GIVE),,,,,,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
-"incorporating visualization into multiobjective optimization tools
-for MDO problems",Cloud Visualization,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
-"incorporating visualization into multiobjective optimization tools
-for MDO problems",visualization in support of the Shopping Paradigm,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
-"incorporating visualization into multiobjective optimization tools
-for MDO problems",visualization interface for Physical Programming,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
-"incorporating visualization into multiobjective optimization tools
-for MDO problems",MOPCSSOViz,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
-"incorporating visualization into multiobjective optimization tools
-for MDO problems",Hyper-Pareto Frontier visualization,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+incorporating visualization into multiobjective optimization tools for MDO problems,Cloud Visualization,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+incorporating visualization into multiobjective optimization tools for MDO problems,visualization in support of the Shopping Paradigm,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+incorporating visualization into multiobjective optimization tools for MDO problems,visualization interface for Physical Programming,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+incorporating visualization into multiobjective optimization tools for MDO problems,MOPCSSOViz,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
+incorporating visualization into multiobjective optimization tools for MDO problems,Hyper-Pareto Frontier visualization,,,,,x,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
 Optimization,,,,,,,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
 Design Space Visualization,,,,,,,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
 Project Planning,,,,,,,,,Agrawal et al. - 2004 - Web-based visualization framework for decision-mak
@@ -261,8 +256,8 @@ learning of ontologies from textual data ,TextToOnto,,,,,,,,Procko und Ochoa - 2
 learning of ontologies from textual data ,Text2Onto,,,,,,,,Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
 ,KAON,,,,,,,,Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
 ,TEXT2RDF,,,,,,,,Procko und Ochoa - 2022 - Leveraging Linked Data for Knowledge Management A
-MDAO,,,,,,,,,Van Gent et al. - 2017 - Composing MDAO symphonies graph-based generation 
-,SWF software Package RCE,,,,,,,,Van Gent et al. - 2017 - Composing MDAO symphonies graph-based generation 
+MDAO,,,,,,,,,Van Gent et al. - 2017 - Composing MDAO symphonies graph-based generation
+,SWF software Package RCE,,,,,,,,Van Gent et al. - 2017 - Composing MDAO symphonies graph-based generation
 ,CFView,,,,,,,,Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
 ,QFView Web Interface,,,,,,,,Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
 ,,Knowledge Base,,,,,,,Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
@@ -271,7 +266,7 @@ MDAO,,,,,,,,,Van Gent et al. - 2017 - Composing MDAO symphonies graph-based gene
 ,, CFD simulations of the European Hypersonic Database,,,,,,,Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
 ,J2EE application servers,,,,,,,,Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
 ,Database Management System servers (DBMS),,,,,,,,Vucinic - 2010 - Multidisciplinary visualization aspects in Europea
-,,,PostgreSQL,,,,,,Vargas-Hernandez et al. - 2003 - Development of a computer aided conceptual design 
+,,,PostgreSQL,,,,,,Vargas-Hernandez et al. - 2003 - Development of a computer aided conceptual design
 Analysing information content (Data Mining Techniques),,,,,,,,,Xie - 2013 - Application of context aware systems to support kn
 Text Analyisis,,,,,,,,,Xie - 2013 - Application of context aware systems to support kn
 Link analysis,,,,,,,,,Xie - 2013 - Application of context aware systems to support kn
@@ -497,7 +492,7 @@ Analysis,,,,,,,,,Synthesis
 Solving,,,,,,,,,Synthesis
 Optimization,,,,,,,,,Synthesis
 Evaluation,,,,,,,,,Synthesis
-"""Detailed design",,,,,,,,,Synthesis
+Detailed design,,,,,,,,,Synthesis
 Analysis,,,,,,,,,Synthesis
 Solving,,,,,,,,,Synthesis
 Optimization,,,,,,,,,Synthesis
