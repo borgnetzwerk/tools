@@ -1,6 +1,4 @@
 process,software,data item,data model,data format specification,interchange format,data visualization,data validation,inference,source
-p1,s1,d1,d11,f1,x,x,,x,
-p1,s2,d1,d11,f1,x,,x,,
 CAD,,Explicit Geometry,,Step,x,,,,Böhnke - 2009 - Data integration in preliminary airplane design
 CAD,,Explicit Geometry,,Iges,x,,,,Böhnke - 2009 - Data integration in preliminary airplane design
 CAD,,Explicit Geometry,,DXF,x,,,,Böhnke - 2009 - Data integration in preliminary airplane design
