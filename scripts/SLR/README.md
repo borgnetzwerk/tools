@@ -24,17 +24,21 @@ We also extend our findings with a survey you can contribute to right now:
 - https://survey.uni-hannover.de/index.php/589597
 
 ### Results
-Paper instance occurence matrix, showing if an instance (column) occurs in a given paper (row). 
+#### Paper instance occurence matrix
+, showing if an instance (column) occurs in a given paper (row). 
 ![paper_instance_occurrence_matrix](<images/paper_instance_occurrence_matrix.png>)
 
-Instance - Instance - co-occurence, showing how many times instances co-occured in the same document.
+#### Instance - Instance - co-occurence
+, showing how many times instances co-occured in the same document.
 ![instance_instance_co_occurrence_matrix](<images/instance_instance_co_occurrence_matrix.png>)
 
-Instance - Instance - proximity, showing how close instances co-occured in the same document. Scores are sum(1/sqrt(distance)), so 100 characters distance award .1 points, while neighbors get full points 
+#### Instance - Instance - proximity
+, showing how close instances co-occured in the same document. Scores are sum(1/sqrt(distance)), so 100 characters distance award .1 points, while neighbors get full points 
 ![instance_instance_proximity_matrix](<images/instance_instance_proximity_matrix.png>)
 ![instance_instance_proximity_matrix_graph](<images/instance_instance_proximity_matrix_graph.png>)
 ![instance_instance_proximity_matrix_sankey](<images/instance_instance_proximity_matrix_sankey.png>)
 
+#### Chronological plots
 We can also plot the absolute & relative occurence of any process, software etc. in any given year:
 ![year_instance_occurrence_matrix_process_008_to_014](<images/year_instance_occurrence_matrix_process_008_to_014.png>)
 ![year_instance_occurrence_matrix_software_013_to_020](<images/year_instance_occurrence_matrix_software_013_to_020.png>)
@@ -43,5 +47,7 @@ We can also plot the absolute & relative occurence of any process, software etc.
 ![year_instance_occurrence_matrix_data_format_specification_010_to_017](<images/year_instance_occurrence_matrix_data_format_specification_010_to_017.png>)
 
 ### Additional Data
+
+#### Error Matrix
 The error_matrix holds all evidence of instance occurences did not pass the different metrics to count as "true" occurence: e.g. a "system administrator" only counts as such if both words occur close enough to eachother. An "administrator of the system" counts, while "system [...] administrator" with [...] being > 1000 characters does not count. The matrix shows the logarithmic distance (4 = 10.000 characters distance), or a -1 if earlier metrics suggested an occurence, but no single match could be found in the fulltext. 
-![Caption](<images/error_matrix.png)
+![error_matrix](<images/error_matrix.png)
