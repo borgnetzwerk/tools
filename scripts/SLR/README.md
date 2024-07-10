@@ -50,4 +50,4 @@ We can also plot the absolute & relative occurence of any process, software etc.
 
 #### Error Matrix
 The error_matrix holds all evidence of instance occurences did not pass the different metrics to count as "true" occurence: e.g. a "system administrator" only counts as such if both words occur close enough to eachother. An "administrator of the system" counts, while "system [...] administrator" with [...] being > 1000 characters does not count. The matrix shows the logarithmic distance (4 = 10.000 characters distance), or a -1 if earlier metrics suggested an occurence, but no single match could be found in the fulltext. 
-![error_matrix](<images/error_matrix.png)
+![error_matrix](<images/error_matrix.png>)
