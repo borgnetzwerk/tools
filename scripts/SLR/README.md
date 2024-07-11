@@ -1,4 +1,4 @@
-# SLR
+# Systematic Literature Review (SLR) on Knowledge Based Aerospace Engineering
 
 ## Notebook
 [co_occurence.ipynb](co_occurence.ipynb)
@@ -24,6 +24,10 @@ We also extend our findings with a survey you can contribute to right now:
 - https://survey.uni-hannover.de/index.php/589597
 
 ### Results
+
+Eventually, all findings will contribute to the Open Research Knowledge Graph. For now, this Comparison displays one of the major outcomes:
+* https://sandbox.orkg.org/comparison/R375625
+
 #### Paper instance occurence matrix
 , showing if an instance (column) occurs in a given paper (row). 
 ![paper_instance_occurrence_matrix](<images/paper_instance_occurrence_matrix.png>)
@@ -31,6 +35,9 @@ We also extend our findings with a survey you can contribute to right now:
 #### Instance - Instance - co-occurence
 , showing how many times instances co-occured in the same document.
 ![instance_instance_co_occurrence_matrix](<images/instance_instance_co_occurrence_matrix.png>)
+
+If we devide this by the total occurence, we can get a relative co-occurence as well: If Instance A (Column) occurs, how likely is it that Instance B (Row) occurs as well?
+![instance_instance_relative_co_occurrence_matrix](<images/instance_instance_relative_co_occurrence_matrix.png>)
 
 #### Instance - Instance - proximity
 , showing how close instances co-occured in the same document. Scores are sum(1/sqrt(distance)), so 100 characters distance award .1 points, while neighbors get full points 
