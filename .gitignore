@@ -9,6 +9,9 @@
 scripts/SLR/data/
 scripts/SLR/data_subset/
 Test.py
+scripts/SLR/ontology/obsidian/.obsidian/
+scripts/SLR/ontology/obsidian/input/
+scripts/SLR/ontology/obsidian/*.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
