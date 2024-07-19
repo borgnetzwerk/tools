@@ -1,17 +1,15 @@
 ---
 label: 
-layman term: 
-  - 
 source: 
-instance of: 
+instance_of: 
   - 
 aliases: 
 tags:
   - instance
-wikidata ID: 
-orkg ID: 
-wikidata candidates: 
+wikidata_uri: 
+orkg_uri: 
+wikidata_candidates: 
   - 
-orkg candidates:
+orkg_candidates:
   - 
 ---
