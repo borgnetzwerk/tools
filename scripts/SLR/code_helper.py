@@ -1,3 +1,5 @@
+import time
+
 # helpful functions
 def index_all(input_list, item):
     return [i for i, x in enumerate(input_list) if x == item]
