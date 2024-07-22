@@ -351,9 +351,6 @@ class Ontology:
                     for relation in value.items():
                         self.add_relation(relation)
 
-
-
-
         except Exception as e:
             self.load_csv(config, path, try_backup=True)
             # raise e
