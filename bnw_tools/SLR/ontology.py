@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 import json
 from bnw_tools.extract import util_zotero
+from .config import Config
 from .helper import *
 
 
@@ -70,9 +71,18 @@ class KnowledgeGraphEntry:
         for prop, value in other.__dict__.items():
             if not value:
                 continue
-            if not hasattr(self, prop) or not getattr(self, prop) or force:
+            if not hasattr(self, prop):
                 setattr(self, prop, value)
                 was_updated = True
+                continue
+            current = getattr(self, prop)
+            if current == value:
+                continue
+            elif force:
+                print(f"Updating {self.label}: {prop} from {current} to {value}")
+                setattr(self, prop, value)
+                was_updated = True
+                continue
         return was_updated
 
 
@@ -315,7 +325,7 @@ class Ontology:
         Warning("This function is not working")
         pass
 
-    def save(self, config: Config = None, path=None, name="ontology.json", sort=True):
+    def save(self, config: Config = None, path=None, name="ontology.json", sort=True, indent=4):
         # FIXME: Needs to be completely reworked
         # Warning("This function is not working")
         # pass
@@ -330,7 +340,7 @@ class Ontology:
         data = json_proof(self.__dict__)
 
         with open(filepath, "w", encoding="utf8") as f:
-            json.dump(data, f, indent=4)
+            json.dump(data, f, indent=indent)
 
     def load(self, config, path=None, name="ontology.json", try_backup=True):
         if not path:
@@ -340,8 +350,16 @@ class Ontology:
         filepath = os.path.join(path, name)
 
         try:
-            with open(filepath, "r", encoding="utf8") as f:
-                data = json.load(f)
+            data = {}
+            try:
+                with open(filepath, "r", encoding="utf8") as f:
+                    data = json.load(f)
+            except Exception as e:
+                pass
+            if not data:
+                filepath = filepath.replace(".json", "_backup.json")
+                with open(filepath, "r", encoding="utf8") as f:
+                    data = json.load(f)
             # self.add_instances(data)
             for key, value in data.items():
                 if key == "classes":
@@ -360,7 +378,6 @@ class Ontology:
             # raise e
 
         self.update_instance_by_class()
-
 
     def load_csv(self, config, path=None, name="instances.csv", try_backup=True):
         if not path:
@@ -444,6 +461,13 @@ class Ontology:
         if return_results:
             return candidates
 
+    def confirm(self, config:Config):
+        a = input("Do you want to save the ontology? (y/n)")
+        print(a)
+        if a == "y":
+            self.save(config, name="ontology_backup.json", indent=None)
+        else:
+            print("Ontology not saved.")
 
 def curate_instances(instances, path=None):
     if not path:

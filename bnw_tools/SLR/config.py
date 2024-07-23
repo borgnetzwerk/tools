@@ -7,7 +7,6 @@ class Config:
     def __init__(self, properties={}):
         self.for_git = properties.get("for_git", False)
         self.visualize = not self.for_git
-        self.visualize = True
         self.csv_separator = "," if self.for_git else ";"
         self.csv_decimal = "." if self.for_git else ","
         self.only_included_papers = True

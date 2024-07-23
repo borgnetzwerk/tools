@@ -44,7 +44,7 @@ class Director:
 class Builder:
     def __init__(self, director: Director = None, config: Config = None):
         self.director: Director = director
-        self.config = config if config else director.config if config else Config()
+        self.config = config if config else director.config if hasattr(director, "config") else None
 
     def build(self):
         pass
@@ -335,8 +335,10 @@ class InstanceBuilder(Builder):
 
         return instance_types_dicts
 
-    def csv_to_dict_of_sets(self, csv_file, config: Config, prune_nan=True):
+    def csv_to_dict_of_sets(self, csv_file, config: Config, prune_nan=True, separator = None):
         dict_of_sets = {}
+        if not separator:
+            separator = config.csv_separator
         # try:
         #     df = pd.read_csv(csv_file)
         # except pd.errors.ParserError:
@@ -347,16 +349,16 @@ class InstanceBuilder(Builder):
             df = pd.read_csv(
                 csv_file,
                 on_bad_lines="warn",
-                delimiter=config.csv_separator,
+                delimiter=separator,
                 encoding="utf-8",
-                quotechar='"',
+                # quotechar='"',
             )
         except:
             print("Error parsing CSV file. Trying again with 'encoding=ISO-8859-1'")
             df = pd.read_csv(
                 csv_file,
                 on_bad_lines="warn",
-                delimiter=config.csv_separator,
+                delimiter=separator,
                 encoding="ISO-8859-1",
             )
         for column in df.columns:
@@ -377,6 +379,7 @@ class InstanceBuilder(Builder):
                     entry = entry[1:]
                 while entry.endswith('"'):
                     entry = entry[:-1]
+                entry = entry.strip()
                 if original_entry != entry:
                     deletes.append(original_entry)
                     if entry not in dict_of_sets[column]:
