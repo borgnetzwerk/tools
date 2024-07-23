@@ -4,12 +4,12 @@ import os
 
 
 class Config:
-    def __init__(self, for_git=True):
-        self.for_git = for_git
-        self.visualize = not for_git
+    def __init__(self, properties={}):
+        self.for_git = properties.get("for_git", False)
+        self.visualize = not self.for_git
         self.visualize = True
-        self.csv_separator = "," if for_git else ";"
-        self.csv_decimal = "." if for_git else ","
+        self.csv_separator = "," if self.for_git else ";"
+        self.csv_decimal = "." if self.for_git else ","
         self.only_included_papers = True
         self.properties = ["source"]
         self.proximity_mode = "sqrt"  # "log" mode is untested/unsafe, prefer "sqrt"
@@ -42,6 +42,9 @@ class Config:
         self.proximity_seed = 17
         self.proximity_k_spring = 18
         self.proximity_min_value = 0.1
+
+        for attr, value in properties.items():
+            setattr(self, attr, value)
 
     def get_output_path(self, path="", visualization=False):
         """

@@ -335,52 +335,6 @@ class InstanceBuilder(Builder):
 
         return instance_types_dicts
 
-    def preprocess_csv(self, csv_file, config: Config, writeback=True):
-        with open(csv_file, "r", encoding="utf8") as f:
-            lines = f.readlines()
-
-        expected_columns = len(lines[0].split(config.csv_separator))
-        processed_lines = []
-        i = 0
-
-        while i < len(lines):
-            line = lines[i].strip()
-            if line.count('"') % 2 == 1:
-                # if the number of quotes is odd, the line is not complete
-                error = True
-                for j in range(i + 1, len(lines)):
-                    line = line + " " + lines[j].strip()
-                    if line.count('"') % 2 == 0:
-                        error = False
-                        print(f"Merged rows {i} to {j}")
-                        i = j + 1
-                        break
-                if error:
-                    raise Exception(
-                        f"Error: Lines {i} to {j-1} could not be processed. Odd number of quotes."
-                    )
-            else:
-                i += 1
-            if '""' in line:
-                # remove quotes from line
-                line = line.replace('""', "")
-            if line.count('"') % 2 == 0:
-                pos1 = line.find('"')
-                while pos1 != -1:
-                    pos2 = line.find('"', pos1 + 1)
-                    if not config.csv_separator in line[pos1:pos2]:
-                        line = line[pos1:pos2] + line[pos2 + 1 :]
-                    pos1 = line.find('"', pos2 + 1)
-            processed_lines.append(line)
-        if writeback and len(processed_lines) != len(lines) or lines != processed_lines:
-            print(
-                f"CSV file improved, found {len(lines) - len(processed_lines)} errors."
-            )
-            with open(csv_file, "w", encoding="utf8") as f:
-                f.write("\n".join(processed_lines))
-
-        return processed_lines
-
     def csv_to_dict_of_sets(self, csv_file, config: Config, prune_nan=True):
         dict_of_sets = {}
         # try:
@@ -389,14 +343,13 @@ class InstanceBuilder(Builder):
         #     print("Error parsing CSV file. Trying again with 'error_bad_lines=False'")
         # TODO: Specify modular separator and decimal here as well
 
-        self.preprocess_csv(csv_file, config)
-
         try:
             df = pd.read_csv(
                 csv_file,
                 on_bad_lines="warn",
                 delimiter=config.csv_separator,
                 encoding="utf-8",
+                quotechar='"',
             )
         except:
             print("Error parsing CSV file. Trying again with 'encoding=ISO-8859-1'")
