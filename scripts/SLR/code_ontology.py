@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 import json
 from bnw_tools.extract import util_zotero
-from code_helper import *
+from .code_helper import *
 
 
 class KnowledgeGraphEntryFactory:

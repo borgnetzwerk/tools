@@ -3,7 +3,7 @@ import csv
 import os
 import json
 
-from code_config import Config
+from .code_config import Config
 
 def prep_dict(input_dict):
     changes_needed = {}

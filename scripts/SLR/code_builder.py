@@ -1,7 +1,7 @@
 from __future__ import annotations
-from code_config import Config
-from code_ontology import *
-from code_helper import *
+from .code_config import Config
+from .code_ontology import *
+from .code_helper import *
 import os
 
 # Step 1: find occurrences of instances in bag of words of papers

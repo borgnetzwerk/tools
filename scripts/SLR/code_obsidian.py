@@ -1,8 +1,9 @@
 import os
 import json
-from code_ontology import *
-from code_builder import *
-from code_helper import *
+from .code_ontology import *
+from .code_builder import *
+from .code_helper import *
+
 
 class Node:
     def __init__(
