@@ -112,16 +112,18 @@ def parse_link(text):
 
 def json_proof(data):
     """Converts a dictionary to a JSON-proof string"""
+    res = data
     if isinstance(data, dict):
+        res = {}
         for key, value in data.items():
             if isinstance(value, dict):
-                data[key] = json_proof(value)
+                res[key] = json_proof(value)
             # if isinstance(value, list):
             #     data[key] = [json_proof(each) for each in value]
             # if isinstance(value, str):
             #     data[key] = value.replace('"', "'")
             elif hasattr(value, "__dict__"):
-                data[key] = json_proof(value.__dict__)
+                res[key] = json_proof(value.__dict__)
             else:
-                data[key] = value
-    return data
+                res[key] = value
+    return res

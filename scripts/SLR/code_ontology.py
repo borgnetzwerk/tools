@@ -269,9 +269,10 @@ class Ontology:
         return {}
 
     def get(self, label):
+        if label == "instances_by_class":
+            self.update_instance_by_class()
+
         if hasattr(self, label):
-            if label == "instances_by_class":
-                self.update_instance_by_class()
             return getattr(self, label)
         elif label in self.instances:
             return self.instances[label]
@@ -321,10 +322,7 @@ class Ontology:
 
         filepath = os.path.join(path, name)
 
-        data = self.__dict__
-        data.pop("instances_by_class")
-
-        data = json_proof(data)
+        data = json_proof(self.__dict__)
 
         with open(filepath, "w", encoding="utf8") as f:
             json.dump(data, f, indent=4)
@@ -353,7 +351,11 @@ class Ontology:
 
         except Exception as e:
             self.load_csv(config, path, try_backup=True)
+            # TODO: handle if not loaded correctly
             # raise e
+
+        self.update_instance_by_class()
+
 
     def load_csv(self, config, path=None, name="instances.csv", try_backup=True):
         if not path:
