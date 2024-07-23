@@ -1,4 +1,9 @@
+from .config import Config
+from .helper import *
+from .ontology import Ontology
+import os
 import requests
+import json
 
 
 class WikiData:

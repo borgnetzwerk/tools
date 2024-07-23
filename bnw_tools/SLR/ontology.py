@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 import json
 from bnw_tools.extract import util_zotero
-from .code_helper import *
+from .helper import *
 
 
 class KnowledgeGraphEntryFactory:
@@ -51,6 +51,11 @@ class KnowledgeGraphEntry:
                     continue
                 elif current and not overwrite:
                     continue
+            if isinstance(value, str):
+                if value == "{}":
+                    value = {}
+                elif value == "[]":
+                    value = []
             setattr(self, prop, value)
 
     def get(self, label, default=None):
@@ -327,7 +332,7 @@ class Ontology:
         with open(filepath, "w", encoding="utf8") as f:
             json.dump(data, f, indent=4)
 
-    def load(self, config, path=None, name="ontology.json"):
+    def load(self, config, path=None, name="ontology.json", try_backup=True):
         if not path:
             path = config.ontology_path
         if not name.endswith(".json"):
@@ -350,7 +355,7 @@ class Ontology:
                         self.add_relation(relation)
 
         except Exception as e:
-            self.load_csv(config, path, try_backup=True)
+            self.load_csv(config, path, try_backup=try_backup)
             # TODO: handle if not loaded correctly
             # raise e
 
