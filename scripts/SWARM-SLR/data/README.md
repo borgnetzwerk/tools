@@ -17,7 +17,7 @@ For fellow researchers interested in the survey design, all surveys are inspecta
 * [analysis628237.md](analysis628237.md) (Tool Assessment)
 
 ## Visualizations
-![A boxplot showing the survey replies to the survey "Tool Assisted Literature Surveys - A Requirements Review". It depicts a general agreement upon the validity of most of these requirements, with selected dips into disagreement.](<data/visualization/Tool Assisted Literature Surveys - A Requirements Review.png>)
+![A boxplot showing the survey replies to the survey "Tool Assisted Literature Surveys - A Requirements Review". It depicts a general agreement upon the validity of most of these requirements, with selected dips into disagreement.](<visualization/Tool Assisted Literature Surveys - A Requirements Review.png>)
 
 All visualizations can be found here:
 * [visualization](visualization)
