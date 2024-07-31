@@ -14,6 +14,18 @@
 [SWARM-SLR_Stage_IV.ipynb](SWARM-SLR_Stage_IV.ipynb)
 
 ## Background
+This work has been submitted to TPDL [[1]](https://arxiv.org/abs/2407.18657), accepted, and is currently being published. If you want to cite SWARM-SLR:
+
+```
+@misc{wittenborg_swarm-slr_2024,
+  title = {{SWARM}-{SLR} -- {Streamlined} {Workflow} {Automation} for {Machine}-actionable {Systematic} {Literature} {Reviews}},
+  url = {http://arxiv.org/abs/2407.18657},
+  author = {Wittenborg, Tim and Karras, Oliver and Auer, Sören},
+  year = {2024},
+  keywords = {Systematic Literature Review, Workflow Automation, Requirement, Software Tool, Crowdsourcing},
+}
+```
+
 SWARM-SLR currently postulates 65 requirements for a machine-readable SLR. These have been [evaluated](data/evaluation.ipynb), alongside with the question, which tools already address which of these requirements.
 
 If you too want to contribute your knowledge, click here:
