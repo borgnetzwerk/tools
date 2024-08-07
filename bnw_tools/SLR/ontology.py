@@ -461,11 +461,13 @@ class Ontology:
         if return_results:
             return candidates
 
-    def confirm(self, config:Config):
+    def confirm(self, config:Config, name = "ontology"):
         a = input("Do you want to save the ontology? (y/n)")
         print(a)
         if a == "y":
-            self.save(config, name="ontology_backup.json", indent=None)
+            if not name.endswith(".json"):
+                name += ".json"
+            self.save(config, name=name, indent=None)
         else:
             print("Ontology not saved.")
 

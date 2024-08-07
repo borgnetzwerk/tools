@@ -21,13 +21,13 @@ import math
 import pandas as pd
 
 
-class Director:
+class Director: # -> Now State machine
     def __init__(self, config: Config):
         self.config = config
         # self.ontology = Ontology()
         # self.ontology.load(config)
 
-        self.builder: dict[str, Builder] = {}
+        self.builder: dict[str, Builder] = {} # will be gone
         self.products = {}
 
     def set(self, key, value):
@@ -222,7 +222,7 @@ class PaperInstanceDirector(Director):
             self.ontology.save(self.config)
 
     def build_obsidian_folder(self):
-        self.builder["ObsidianFolder"] = ObsidianFolderBuilder(self)
+        self.builder["ObsidianFolder"] = ObsidianFolder(self)
         self.sync(self.builder["ObsidianFolder"])
         self.builder["ObsidianFolder"].build()
 
@@ -1165,7 +1165,7 @@ class ErrorMatrixBuilder(MatrixBuilder):
 
 
 
-class ObsidianFolderBuilder(Builder):
+class ObsidianFolder(Builder):
     """
     Represents the Obsidian readable representation of our ontology.
     Structure:
@@ -1200,17 +1200,21 @@ class ObsidianFolderBuilder(Builder):
         self.populate(force=True)
         self.save()
 
-    def load(self, path):
-        self.path = path
-        templates_path = os.path.join(path, "templates")
+    def load(self, path=None):
+        if path:
+            self.path = path
+        if not self.path:
+            Warning("Error: No path specified for Obsidian folder")
+            return
+        templates_path = os.path.join(self.path, "templates")
         for file in os.listdir(templates_path):
             if file.endswith(".md"):
                 filepath = os.path.join(templates_path, file)
                 self.templates[file[:-3]] = Node(path=filepath)
 
-        for file in os.listdir(path):
+        for file in os.listdir(self.path):
             if file.endswith(".md"):
-                filepath = os.path.join(path, file)
+                filepath = os.path.join(self.path, file)
                 node = Node(path=filepath)
                 try:
                     if "class" in node.instance.tags or hasattr(
@@ -1254,6 +1258,9 @@ class ObsidianFolderBuilder(Builder):
         if overwrite_templates:
             for template in self.templates.values():
                 template.save()
+
+        if self.instances and not self.nodes:
+            self.populate()
 
         for node in self.nodes.values():
             node.save()

@@ -14,6 +14,13 @@ orkg_candidates:
   - 
 ---
 
+## Overview
+```dataview
+TABLE length(rows) as Number
+WHERE contains(instance_of, this.file.link) AND !contains(file.path, "templates")
+GROUP BY contains(wikidata_uri, "http")
+```
+
 ## Instances
 ```dataview
 TABLE WITHOUT ID 
