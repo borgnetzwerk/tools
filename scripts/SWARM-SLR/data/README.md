@@ -16,7 +16,13 @@ For fellow researchers interested in the survey design, all surveys are inspecta
 * [Requirements Review Results](analysis555283.md)
 * [Tool Assessment Results](analysis628237.md)
 
-## Visualizations
+## Analysis
+All resuts are analyzed through
+
+* [evaluation.ipynb](evaluation.ipynb)
+
+Alongside streamlining the updating of the data and results presented here, it automatically visualizes the overall responses, as well as individual tool visualisations.
+
 ![A boxplot showing the survey replies to the survey "Tool Assisted Literature Surveys - A Requirements Review". It depicts a general agreement upon the validity of most of these requirements, with selected dips into disagreement.](<visualization/Tool Assisted Literature Surveys - A Requirements Review.png>)
 
 All visualizations can be found here:

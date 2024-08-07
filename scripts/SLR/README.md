@@ -21,7 +21,7 @@ By manually checking a subset of these Papers, we can validate our data analysis
 
 We also extend our findings with a survey you can contribute to right now:
 
-- https://survey.uni-hannover.de/index.php/589597
+- https://survey.uni-hannover.de/index.php/294574
 
 ### Results
 
