@@ -1180,6 +1180,10 @@ class Folder:
 
     # Define paths as a class-level property
 
+    # todo: future potential
+    # def __init__(self):
+    #     self.list = []
+
     def __init__(
         self,
         folder_path,
