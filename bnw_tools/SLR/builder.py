@@ -65,13 +65,6 @@ class PaperInstanceDirector(Director):
         # products
         # self.paper_instance_occurrence_matrix: np.ndarray = None
 
-        if ontology:
-            self.link_ontology(ontology)
-        else:
-            self.ontology = Ontology()
-            self.ontology.load(config)
-            self.link_ontology(self.ontology)
-
     def link_ontology(self, ontology: Ontology):
         self.ontology = ontology
 
@@ -99,82 +92,9 @@ class PaperInstanceDirector(Director):
         self.ontology.add_instances({"paper": papers})
         self.ontology.get_metadata("paper", self.config.folder_path)
 
-    def reduce_to_reviewed_papers(self):
-        review_path = self.config.review_path
-        # todo: sort by review score + average rank
-        ## TODO: Make this a function that imports more data from the reivew files
-        included_identifier = {
-            3: "review_score:: 3",
-            4: "review_score:: 4",
-            5: "review_score:: 5",
-        }
-        excluded_identifier = {
-            2: "review_score:: 2",
-            1: "review_score:: 1",
-            0: "review_score:: 0",
-        }
-        for file in os.listdir(review_path):
-            if file.endswith(".md"):
-                paper_name = file[:-3]
-                if paper_name in self.papers:
-                    paper = self.papers[paper_name]
-                    if (
-                        paper_name in self.included_papers
-                        or paper_name in self.excluded_papers
-                    ):
-                        continue
-                    # check if file contains "reviewed"ArithmeticError
-                    with open(
-                        os.path.join(review_path, file), "r", encoding="utf8"
-                    ) as f:
-                        content = f.read()
-                        for score, text in included_identifier.items():
-                            if text in content:
-                                paper.review_score = score
-                                self.included_papers[paper_name] = paper
-                                break
-                        for score, text in excluded_identifier.items():
-                            if text in content:
-                                self.excluded_papers[paper_name] = paper
-                                break
-        if self.config.only_included_papers:
-            self.papers = {k: v for k, v in self.included_papers.items()}
-        self.sort_papers()
-        if self.included_papers:
-            self.included_papers = self.sort_papers(self.included_papers)
-        if self.excluded_papers:
-            self.excluded_papers = self.sort_papers(self.excluded_papers)
 
-    def sort_papers(self, papers=None):
-        saveback = False
-        if not papers:
-            saveback = True
-        papers = papers or self.papers
-        # TODO: see if "if" and "else" can be deleted
-        papers = {
-            x: papers[x]
-            for x in sorted(
-                papers,
-                key=lambda x: (
-                    getattr(papers[x], "year", "9999")
-                    if hasattr(papers[x], "year")
-                    else "9999"
-                ),
-            )
-        }
-        if saveback:
-            self.papers = papers
-        else:
-            return papers
-        # papers_metadata = self.ontology.get_metadata("paper")
-        # papers = sorted(
-        #     papers,
-        #     key=lambda x: (
-        #         getattr(self.papers[x], "year", "9999")
-        #         if x in papers_metadata and "year" in papers_metadata[x]
-        #         else "9999"
-        #     ),
-        # )
+
+
 
     def get_instances(self):
         self.builder["InstanceBuilder"] = InstanceBuilder(self)
