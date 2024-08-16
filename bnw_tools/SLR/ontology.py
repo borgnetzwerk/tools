@@ -136,6 +136,17 @@ class Instance(KnowledgeGraphEntry):
                 properties[candidate] = None
 
         super().set_properties(properties, overwrite)
+    
+    def get_all_names(self):
+        names = [self.label]
+        if hasattr(self, "aliases"):
+            names += self.aliases
+        names = set(names)
+        if not names:
+            print("Instance without label found:")
+            print(json.dumps(self.__dict__, indent=4))
+            raise ValueError("Instance without label found")
+        return names
 
 
 class Ontology:
