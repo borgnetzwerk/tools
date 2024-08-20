@@ -915,12 +915,7 @@ class MatrixBuilder(Builder):
                 input = input[~deletions[delID]]
         return input
 
-    def reorder_matrix(self, new_order, cols=True):
-        if cols:
-            self.matrix = self.matrix[:, new_order]
-        else:
-            self.matrix = self.matrix[new_order, :]
-        self.remove_zeros()
+
         # this isn't quite right anymore
         # self.papers = self.handle_deletions(self.papers, self.deletions)
 
