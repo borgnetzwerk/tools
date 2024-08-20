@@ -124,4 +124,7 @@ def process_dataframe(config: Config, input_df, name="some_df", path=None):
     input_df.to_csv(
         filepath + ".csv", sep=config.csv_separator, decimal=config.csv_decimal
     )
-    show(input_df)
+    try:
+        show(input_df)
+    except:
+        return input_df
