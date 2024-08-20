@@ -986,8 +986,8 @@ class ErrorMatrixBuilder(MatrixBuilder):
             "occurrence_matrix"
         ].matrix
 
-    @time_function
-    def build_matrix(self):
+    # @time_function
+    # def build_matrix(self):
         # self.matrix = find_instance_piece_gap(
         # self.config,
         # self.papers,
@@ -1004,38 +1004,7 @@ class ErrorMatrixBuilder(MatrixBuilder):
         #     paper_instance_occurrence_matrix,
         #     pos_in_paper: PosInPaper,
         # ):
-        self.matrix = np.zeros(self.paper_instance_occurrence_matrix.shape, dtype=float)
-        for paperID, paper in enumerate(self.row_labels):
-            if paperID % 100 == 0:
-                # print(f"Processing paper {paperID} of {len(papers)}")
-                pass
-            if paper in self.paper_full_text:
-                for i, instance in enumerate(self.col_labels):
-                    if self.paper_instance_occurrence_matrix[paperID][i] == 0:
-                        continue
-                    wcID = self.pos_in_paper.word_combination_index_literal[instance]
-                    # TODO: handle if that instance has no word combination index entry
-                    if wcID is None:
-                        # word has no distance
-                        continue
-                    min_distance = self.pos_in_paper.find_min_distance_by_id(
-                        paperID, wcID
-                    )
-                    if min_distance is None:
-                        pass
-                    if min_distance > config.gap_too_large_threshold:
-                        # print(f"Gap for {instance} in {paper} ({min_distance} > {GAP_TOO_LARGE_THRESHOLD})")
-                        self.paper_instance_occurrence_matrix[paperID][i] = 0
-                        # get log base 10 of min distance
-                        self.matrix[paperID][i] = round(np.log10(min_distance), 1)
-
-                    # Some pieces may not be found in the full text
-                    if min_distance == -1:
-                        # print(f"{instance} not found in {paper} at all")
-                        self.paper_instance_occurrence_matrix[paperID][i] = 0
-                        self.matrix[paperID][i] = min_distance
-                        # for these, we do not store the gap
-                        continue
+        
 
         # return error_matrix
 
