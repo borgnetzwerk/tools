@@ -33,14 +33,17 @@ One of these tools is the "SWARM-SLR Workflow", the guided toolchain in this rep
 ![A boxplot showing the survey replies to the survey "Tool Assisted Literature Surveys - A Tool Review", specifically only for the "SWARM-SLR Workflow" presented here in the repository. It depicts a relatively consistend support for most of the SLR stages, with medium support early on, major support in the middle stages, medium support in the later stages. Some requirements are also not adressed at all.](<data/visualization/SWARM-SLR Workflow.png>)
 
 ## Citing SWARM-SLR
-This work has been submitted to TPDL [[1]](https://arxiv.org/abs/2407.18657), accepted, presented [[2]](https://github.com/borgnetzwerk/tools/blob/main/scripts/SWARM-SLR/SWARM-SLR.pdf), and is currently being published. If you want to cite SWARM-SLR:
+This work has been submitted to TPDL [[1]](https://arxiv.org/abs/2407.18657), accepted, presented [[2]](https://github.com/borgnetzwerk/tools/blob/main/scripts/SWARM-SLR/SWARM-SLR.pdf), and published[[3]](https://doi.org/10.1007/978-3-031-72437-4_2). If you want to cite SWARM-SLR:
 
 ```
-@misc{wittenborg_swarm-slr_2024,
-  title = {{SWARM}-{SLR} -- {Streamlined} {Workflow} {Automation} for {Machine}-actionable {Systematic} {Literature} {Reviews}},
-  url = {http://arxiv.org/abs/2407.18657},
-  author = {Wittenborg, Tim and Karras, Oliver and Auer, Sören},
-  year = {2024},
+@InProceedings{wittenborg_swarm-slr_2024,
+  author="Wittenborg, Tim and Karras, Oliver and Auer, S{\"o}ren",
+  title="SWARM-SLR - Streamlined Workflow Automation for Machine-Actionable Systematic Literature Reviews",
+  booktitle="Linking Theory and Practice of Digital Libraries",
+  year="2024",
   keywords = {Systematic Literature Review, Workflow Automation, Requirement, Software Tool, Crowdsourcing},
+  publisher="Springer Nature Switzerland",
+  pages="20--40",
+  isbn="978-3-031-72437-4"
 }
 ```
