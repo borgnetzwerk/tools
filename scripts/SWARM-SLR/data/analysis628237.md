@@ -481,3 +481,42 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 15.09 | 12.89 | 30.79 | 15.12 | 49.99 | 18.23 | 15.38 | 31.31 | 11.98 | 21.98 | 4.55 |
 
+### Response ID: 96
+#### Tool: ORKG Ask
+#### Metadata:
+| Date submitted | Last page | Start language | Date started | Date last action | Age | Education | Survey count | Experience |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2024-08-21 13:57:24 | 11 | en | 2024-08-21 13:46:32 | 2024-08-21 13:57:24 | 32 | Ph.D. or higher | More than 5 | Good |
+#### Scores:
+['A3', 'A7', 'A4', 'A6', 'A8', 'A4', 'A4', 'A8', 'A8', 'A6', 'A8', 'A2', 'A8', 'A8', 'A4', 'A5', 'A1', 'A1', 'A3', 'A7', 'A5', 'A1', 'A1', 'A1', 'A5', 'A3', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A7', 'A5', 'A8', 'A4', 'A6', 'A3', 'A5', 'A1', 'A3', 'A1', 'A3', 'A5', 'A5', 'A3', 'A5', 'A5', 'A7', 'A5', 'A9', 'A1', 'A7', 'A3', 'A3', 'A3', 'A7', 'A7', 'A7', 'A7', 'A3', 'A3', 'A7', 'A9', 'A9']
+#### Time total: 658 seconds (10.97 minutes)
+| Choose your Tool | Planning a review | Defining a scope | Search | Select | Evaluate | Analysis | Synthesis | Reporting | Demographic data | Conclusion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 26.59 | 28.21 | 261.11 | 39.72 | 84.94 | 95.94 | 25.38 | 47.9 | 19.6 | 23.14 | 5.46 |
+
+### Response ID: 97
+#### Tool: ORKG Ask
+#### Metadata:
+| Date submitted | Last page | Start language | Date started | Date last action | Age | Education | Survey count | Experience |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2024-08-22 12:59:40 | 11 | en | 2024-08-22 12:46:46 | 2024-08-22 12:59:40 | 31 | Ph.D. or higher | 1 | Fair |
+#### Scores:
+['A8', 'A4', 'A2', 'A5', 'A9', 'A7', 'A5', 'A9', 'A9', 'A5', 'A8', 'A3', 'A9', 'A9', 'A3', 'A2', 'A1', 'A2', 'A7', 'A7', 'A3', 'A7', 'A7', 'A7', 'A7', 'A4', 'A7', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A1', 'A10', 'A10', 'A9', 'A3', 'A3', 'A6', 'A4', 'A1', 'A4', 'A4', 'A4', 'A2', 'A6', 'A4', 'A9', 'A9', 'A9', 'A3', 'A2', 'A3', 'A7', 'A2', 'A6', 'A9', 'A6', 'A9', 'A2', 'A2', 'A9', 'A9', 'A9']
+#### Time total: 778 seconds (12.97 minutes)
+| Choose your Tool | Planning a review | Defining a scope | Search | Select | Evaluate | Analysis | Synthesis | Reporting | Demographic data | Conclusion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 43.21 | 104.77 | 125.16 | 64.8 | 165.15 | 118.29 | 14.74 | 63.54 | 23.48 | 44.12 | 11.21 |
+
+### Response ID: 99
+#### Tool: ORKG Ask
+#### Metadata:
+| Date submitted | Last page | Start language | Date started | Date last action | Age | Education | Survey count | Experience |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2024-09-12 16:13:03 | 11 | en | 2024-09-12 14:38:21 | 2024-09-12 16:13:03 |  | Ph.D. or higher | 1 | Good |
+#### Scores:
+['A3', 'A5', 'A4', 'A7', 'A8', 'A5', 'A6', 'A4', 'A8', 'A8', 'A4', 'A4', 'A6', 'A10', 'A6', 'A6', 'A1', 'A3', 'A7', 'A7', 'A5', 'A1', 'A1', 'A9', 'A3', 'A3', 'A7', 'A9', 'A9', 'A9', 'A9', 'A9', 'A9', 'A7', 'A10', 'A4', 'A6', 'A5', 'A5', 'A3', 'A7', 'A2', 'A4', 'A1', 'A5', 'A5', 'A9', 'A9', 'A5', 'A5', 'A9', 'A3', 'A6', 'A7', 'A7', 'A9', 'A9', 'A9', 'A9', 'A9', 'A3', 'A5', 'A5', 'A5', 'A9']
+#### Time total: 742 seconds (12.36 minutes)
+| Choose your Tool | Planning a review | Defining a scope | Search | Select | Evaluate | Analysis | Synthesis | Reporting | Demographic data | Conclusion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 19.64 | 41.24 | 123.02 | 43.45 | 129.88 | 57.59 | 26.76 | 46.33 | 44.92 | 31.13 | 177.86 |
+
