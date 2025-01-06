@@ -6969,6 +6969,7 @@
     <owl:NamedIndividual rdf:about="http://tib.eu/slr#http://purl.obolibrary.org/obo/bfo_000001516">
         <rdf:type rdf:resource="http://tib.eu/slr#http://purl.obolibrary.org/obo/BFO_0000015"/>
         <webprotege:RBl7XaioQSg3g21Wr88BAf7 rdf:resource="http://tib.eu/slr#http://purl.obolibrary.org/obo/bfo_0000015130"/>
+        <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q10418049</wikidata_uri>
         <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">archive</rdfs:label>
     </owl:NamedIndividual>
@@ -9374,6 +9375,7 @@
         <hasSoftware rdf:resource="http://tib.eu/slr#http://www.ebi.ac.uk/swo/swo_00000012"/>
         <webprotege:R7NnYCnkiXns2ntVncqu1F0 rdf:resource="http://webprotege.stanford.edu/R81IXS3kOGNwYWYLECJ3vFk"/>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CAD representation</aliase>
+        <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">computer-aided design model</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">None</wikidata_uri>
         <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CAD model</rdfs:label>
@@ -10174,10 +10176,9 @@
         <rdf:type rdf:resource="http://tib.eu/slr#http://purl.obolibrary.org/obo/IAO_0000098"/>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">.cgns</aliase>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CFD General Notation System</aliase>
-        <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CGNS</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">expert survey</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q2931409</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">cgns</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CGNS</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -10225,10 +10226,9 @@
 
     <owl:NamedIndividual rdf:about="http://tib.eu/slr#http://purl.obolibrary.org/obo/iao_000009814">
         <rdf:type rdf:resource="http://tib.eu/slr#http://purl.obolibrary.org/obo/IAO_0000098"/>
-        <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DWF</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q1196547</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">dwf</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DWF</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -11295,7 +11295,7 @@
         <rdf:type rdf:resource="http://tib.eu/slr#http://www.ebi.ac.uk/swo/SWO_0000001"/>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">None</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">c application</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C application</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -11486,11 +11486,10 @@
 
     <owl:NamedIndividual rdf:about="http://tib.eu/slr#http://www.ebi.ac.uk/swo/swo_0000001124">
         <rdf:type rdf:resource="http://tib.eu/slr#http://www.ebi.ac.uk/swo/SWO_0000001"/>
-        <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Solid Edge</aliase>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">solidedge</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q644575</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">solidedge</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Solid Edge</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -11517,7 +11516,7 @@
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Statistical Product and Service Solutions</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q181596</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">spss</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SPSS</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -11780,6 +11779,7 @@
 
     <owl:NamedIndividual rdf:about="http://tib.eu/slr#http://www.ebi.ac.uk/swo/swo_0000001146">
         <rdf:type rdf:resource="http://tib.eu/slr#http://www.ebi.ac.uk/swo/SWO_0000001"/>
+        <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">vdk hc</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">None</wikidata_uri>
         <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">vdk/hc</rdfs:label>
@@ -11986,12 +11986,11 @@
         <hasProcess rdf:resource="http://webprotege.stanford.edu/R7UAi7iWbhos2mCUJV1Yos7"/>
         <hasProcess rdf:resource="http://webprotege.stanford.edu/R80a5E8TH8QYyemc4bcVZT"/>
         <hasProcess rdf:resource="http://webprotege.stanford.edu/RDl95MHy1nkRdzBAExSWCeQ"/>
-        <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CATIA</aliase>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CATIA V5</aliase>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Computer Aided Three Dimensional Interactive Application</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q467731</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">catia</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CATIA</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -12461,7 +12460,7 @@
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">google.com</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q9366</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">google</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Google</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -12700,10 +12699,9 @@
     <owl:NamedIndividual rdf:about="http://tib.eu/slr#http://www.ebi.ac.uk/swo/swo_00000017">
         <rdf:type rdf:resource="http://tib.eu/slr#http://www.ebi.ac.uk/swo/SWO_0000001"/>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Apache Solr Enterprise Search Server</aliase>
-        <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Solr</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q2858103</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">solr</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Solr</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -12868,7 +12866,7 @@
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">API</aliase>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">application program interface</aliase>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q165194</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">api</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Application Program Interface (API)</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -13678,7 +13676,7 @@
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Basic Formal Ontology</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q4866972</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">bfo</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Basic Formal Ontology (BFO)</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -13712,7 +13710,7 @@
         <rdf:type rdf:resource="http://tib.eu/slr#https://www.wikidata.org/wiki/Q1172480"/>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">None</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">rvf</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Requirements Verification Framework (RVF)</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -13764,7 +13762,7 @@
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Simple Protocol RDF Query Language</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q54871</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">sparql</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SPARQL</rdfs:label>
     </owl:NamedIndividual>
     
 
@@ -13935,10 +13933,9 @@
     <owl:NamedIndividual rdf:about="http://tib.eu/slr#https://www.wikidata.org/wiki/q11724807">
         <rdf:type rdf:resource="http://tib.eu/slr#https://www.wikidata.org/wiki/Q1172480"/>
         <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C</aliase>
-        <aliase rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C programming language</aliase>
         <source rdf:datatype="http://www.w3.org/2001/XMLSchema#string">literature review</source>
         <wikidata_uri rdf:datatype="http://www.w3.org/2001/XMLSchema#string">https://www.wikidata.org/wiki/Q15777</wikidata_uri>
-        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">c</rdfs:label>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C programming language</rdfs:label>
     </owl:NamedIndividual>
     
 
