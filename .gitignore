@@ -176,3 +176,6 @@ pipelines/k_score/runs/*
 pipelines/bibtex_to_ORKG/runs/*
 data/ignore/*
 pipelines/file_whisper.py
+
+# knowledge synthesis for the WissKomm Wiki, kept there
+_knowledge_synthesis/
